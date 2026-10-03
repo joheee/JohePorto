@@ -94,3 +94,13 @@ export function timeAgo(from: Date | string, now = new Date()): string {
   if (days < 30) return days === 1 ? "yesterday" : `${days} days ago`;
   return then.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 }
+
+// "Mar 2025"
+export function formatMonthYear(month: number, year: number): string {
+  return `${MONTH_NAMES[month - 1]} ${year}`;
+}
+
+// Oldest first by month and year; projects from the same month are ordered by title.
+export function sortProjectsByDate<T extends { month: number; year: number; title: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => a.year * 12 + a.month - (b.year * 12 + b.month) || a.title.localeCompare(b.title));
+}

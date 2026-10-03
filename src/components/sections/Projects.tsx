@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import FormattedText from "@/components/FormattedText";
+import { formatMonthYear } from "@/lib/format";
 import type { Project } from "@/types/content";
 import Section from "./Section";
 
@@ -52,7 +53,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
         </div>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((p, i) => (
+          {projects.map((p) => (
             <motion.li
               key={p.slug}
               whileHover={{ y: -6 }}
@@ -82,7 +83,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
                 <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-accent transition-transform duration-500 group-hover:scale-x-100" />
 
                 <div className="relative mb-5 flex items-center justify-between">
-                  <span className="font-mono text-xs text-muted">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="font-mono text-xs text-muted">{formatMonthYear(p.month, p.year)}</span>
                   <ArrowUpRight className="h-4 w-4 text-muted transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
                 </div>
                 <h3 className="relative text-lg font-semibold tracking-tight">{p.title}</h3>
@@ -125,7 +126,8 @@ export default function Projects({ projects }: { projects: Project[] }) {
                 </svg>
               </button>
             </div>
-            {selected.summary && <p className="mt-2 text-muted">{selected.summary}</p>}
+            <p className="mt-1 font-mono text-xs text-muted">{formatMonthYear(selected.month, selected.year)}</p>
+            {selected.summary && <p className="mt-3 text-muted">{selected.summary}</p>}
             {selected.description && <FormattedText text={selected.description} className="mt-6 leading-7" />}
             <Chips items={selected.stack} className="mt-6" />
             {selected.links.length > 0 && (

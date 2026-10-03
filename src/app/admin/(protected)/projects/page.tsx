@@ -2,6 +2,7 @@ import Link from "next/link";
 import DeleteProjectButton from "@/components/admin/DeleteProjectButton";
 import { buttonClass, ghostButtonClass } from "@/components/admin/fields";
 import { requireAdmin } from "@/lib/auth";
+import { formatMonthYear } from "@/lib/format";
 import { getProjects } from "@/lib/projects";
 
 export default async function AdminProjectsPage() {
@@ -29,7 +30,7 @@ export default async function AdminProjectsPage() {
               <div>
                 <p className="font-semibold">{p.title}</p>
                 <p className="text-sm text-muted">
-                  /{p.slug} · order {p.order}
+                  {formatMonthYear(p.month, p.year)} · /{p.slug}
                   {p.stack.length > 0 && ` · ${p.stack.join(", ")}`}
                 </p>
               </div>

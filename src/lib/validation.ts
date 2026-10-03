@@ -122,8 +122,8 @@ export function parseProject(input: unknown): Project {
   const slug = text(o.slug, "Slug", 60, true);
   if (!SLUG_RE.test(slug)) fail("Slug may only contain lowercase letters, numbers and hyphens");
 
-  const order = Number(o.order);
-  if (!Number.isFinite(order) || order < 0 || order > 10000) fail("Order must be a number between 0 and 10000");
+  const month = int(o.month, "Project month", 1, 12);
+  const year = int(o.year, "Project year", 1950, 2100);
 
   return {
     slug,
@@ -132,6 +132,7 @@ export function parseProject(input: unknown): Project {
     description: text(o.description, "Description", 3000),
     stack: strings(o.stack, "Stack", 20, 40),
     links: items(o.links, "Links", 10, (x) => link(x, "Project link")),
-    order,
+    month,
+    year,
   };
 }

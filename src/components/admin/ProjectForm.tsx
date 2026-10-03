@@ -6,6 +6,7 @@ import { saveProject } from "@/app/admin/(protected)/actions";
 import type { Project, SocialLink } from "@/types/content";
 import { Field, SaveStatus, buttonClass, ghostButtonClass, inputClass } from "./fields";
 import AutoTextarea from "@/components/AutoTextarea";
+import DateSelects from "./DateSelects";
 
 const slugify = (s: string) =>
   s
@@ -24,7 +25,8 @@ export default function ProjectForm({ initial }: { initial?: Project }) {
   const [summary, setSummary] = useState(initial?.summary ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [stackText, setStackText] = useState(initial?.stack.join(", ") ?? "");
-  const [order, setOrder] = useState(String(initial?.order ?? 0));
+  const [month, setMonth] = useState(initial ? String(initial.month) : "");
+  const [year, setYear] = useState(initial ? String(initial.year) : "");
   const [links, setLinks] = useState<SocialLink[]>(initial?.links ?? []);
 
   const [pending, startTransition] = useTransition();
@@ -42,7 +44,8 @@ export default function ProjectForm({ initial }: { initial?: Project }) {
           description,
           stack: stackText.split(/[,\n]/),
           links,
-          order: order === "" ? NaN : Number(order),
+          month: month === "" ? null : Number(month),
+          year: year === "" ? null : Number(year),
         },
         isNew,
       );
@@ -89,13 +92,12 @@ export default function ProjectForm({ initial }: { initial?: Project }) {
       <Field label="Description" hint="Shown in the detail modal.">
         <AutoTextarea className={inputClass} rows={6} value={description} onChange={(e) => setDescription(e.target.value)} />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-        <Field label="Stack" hint="Comma separated.">
-          <input className={inputClass} value={stackText} onChange={(e) => setStackText(e.target.value)} />
-        </Field>
-        <Field label="Order" hint="Lower comes first.">
-          <input className={inputClass} type="number" min={0} value={order} onChange={(e) => setOrder(e.target.value)} />
-        </Field>
+      <Field label="Stack" hint="Comma separated.">
+        <input className={inputClass} value={stackText} onChange={(e) => setStackText(e.target.value)} />
+      </Field>
+      <div className="max-w-md space-y-1.5">
+        <DateSelects label="Created" month={month} year={year} onMonth={setMonth} onYear={setYear} />
+        <p className="text-xs text-muted">When you made it. Projects are shown on the site oldest first by this date.</p>
       </div>
 
       <div className="space-y-3">

@@ -7,6 +7,7 @@ import type { Profile, SocialLink } from "@/types/content";
 import AutoTextarea from "@/components/AutoTextarea";
 import ChipsInput from "./ChipsInput";
 import ConfirmDialog from "./ConfirmDialog";
+import DateSelects from "./DateSelects";
 import { Field, SaveStatus, buttonClass, ghostButtonClass, inputClass } from "./fields";
 import FormCard, { SectionIcon, type CardIcon } from "./FormCard";
 
@@ -39,8 +40,6 @@ type Form = {
   socials: SocialLink[];
   experience: Row[];
 };
-
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 const SECTIONS: { id: string; label: string; icon: CardIcon }[] = [
   { id: "hero", label: "Hero", icon: "hero" },
@@ -131,46 +130,6 @@ const PLUS = "M12 5v14M5 12h14";
 const TRASH = "M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14M10 11v6M14 11v6";
 const CHEVRON = "m6 9 6 6 6-6";
 const CLOSE = "M6 6l12 12M18 6L6 18";
-
-function DateSelects({
-  label,
-  month,
-  year,
-  onMonth,
-  onYear,
-}: {
-  label: string;
-  month: string;
-  year: string;
-  onMonth: (v: string) => void;
-  onYear: (v: string) => void;
-}) {
-  const thisYear = new Date().getFullYear();
-  const years = Array.from({ length: thisYear + 5 - 1969 }, (_, i) => thisYear + 5 - i); // newest first
-  return (
-    <fieldset className="space-y-1.5">
-      <legend className="mb-1.5 text-sm font-medium">{label}</legend>
-      <div className="grid grid-cols-2 gap-2">
-        <select className={inputClass} aria-label={`${label} month`} required value={month} onChange={(e) => onMonth(e.target.value)}>
-          <option value="">Month</option>
-          {MONTHS.map((m, idx) => (
-            <option key={m} value={idx + 1}>
-              {m}
-            </option>
-          ))}
-        </select>
-        <select className={inputClass} aria-label={`${label} year`} required value={year} onChange={(e) => onYear(e.target.value)}>
-          <option value="">Year</option>
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
-      </div>
-    </fieldset>
-  );
-}
 
 // ---------- the form ----------
 

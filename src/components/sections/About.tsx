@@ -30,7 +30,10 @@ export default async function About() {
               <h3 className={label}>Skills</h3>
               <ul className="flex flex-wrap gap-2">
                 {profile.skills.map((s) => (
-                  <li key={s} className="rounded-full border border-border px-3 py-1 text-sm">
+                  <li
+                    key={s}
+                    className="cursor-default rounded-full border border-border px-3 py-1 text-sm transition duration-200 hover:border-accent hover:bg-accent/10 hover:text-accent motion-safe:hover:-translate-y-0.5"
+                  >
                     {s}
                   </li>
                 ))}

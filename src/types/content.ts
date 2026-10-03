@@ -35,7 +35,8 @@ export type Project = {
   description: string;
   stack: string[];
   links: SocialLink[];
-  order: number;
+  month: number; // 1-12: when the project was created
+  year: number;
 };
 
 // Contact-form message, stored in Firestore as `messages/{id}`.
