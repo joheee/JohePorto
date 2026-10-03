@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getProfile } from "@/lib/settings";
+import MobileMenu from "./MobileMenu";
 import NavLinks from "./NavLinks";
 import ThemeToggle from "./ThemeToggle";
 
@@ -15,6 +16,7 @@ export default async function Navbar() {
         <div className="flex items-center gap-4 sm:gap-6">
           <NavLinks />
           <ThemeToggle />
+          <MobileMenu />
         </div>
       </nav>
     </header>

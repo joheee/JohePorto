@@ -20,7 +20,7 @@ export default function RotatingText({
   }, [words.length]);
 
   return (
-    <span className={`relative inline-flex h-[1.5em] overflow-hidden align-bottom ${className ?? ""}`}>
+    <span className={`relative inline-flex h-[1.8em] items-center overflow-hidden align-bottom leading-[1.8] ${className ?? ""}`}>
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
           key={words[i]}

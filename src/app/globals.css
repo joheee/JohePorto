@@ -4,6 +4,7 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
   --muted: #6b7280;
@@ -14,6 +15,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark; /* native controls (selects, date pickers, scrollbars) follow the theme */
   --background: #0a0a0a;
   --foreground: #ededed;
   --muted: #9ca3af;
@@ -53,6 +55,37 @@ dialog::backdrop {
 @media (prefers-reduced-motion: reduce) {
   dialog::backdrop {
     animation: none;
+  }
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Visible keyboard focus on links and buttons (inputs draw their own ring). */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+/* Hero "scroll" cue: a small bar that slides down and fades. */
+@keyframes scroll-cue {
+  0% {
+    transform: translateY(-100%);
+  }
+  60%,
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ping,
+  .scroll-cue-bar {
+    animation: none !important;
   }
 }
 

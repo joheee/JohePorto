@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { saveProject } from "@/app/admin/(protected)/actions";
 import type { Project, SocialLink } from "@/types/content";
 import { Field, SaveStatus, buttonClass, ghostButtonClass, inputClass } from "./fields";
-import AutoTextarea from "./AutoTextarea";
+import AutoTextarea from "@/components/AutoTextarea";
 
 const slugify = (s: string) =>
   s

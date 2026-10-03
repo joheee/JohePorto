@@ -17,11 +17,12 @@ export default async function Experience() {
         <ol className="pl-6">
           {experience.map((e, i) => (
             <TimelineItem key={`${e.company}-${e.startYear}-${e.startMonth}-${i}`} last={i === experience.length - 1}>
-              <p className="font-mono text-xs text-muted">{formatPeriod(e)}</p>
-              <h3 className="mt-1 font-semibold">
-                {e.role} · {e.company}
-              </h3>
-              {e.summary && <FormattedText text={e.summary} className="mt-2 text-muted" />}
+              <p className="inline-block rounded-full border border-border bg-card/60 px-3 py-0.5 font-mono text-xs text-muted">
+                {formatPeriod(e)}
+              </p>
+              <h3 className="mt-3 text-lg font-semibold leading-snug tracking-tight">{e.role}</h3>
+              <p className="mt-0.5 text-sm font-medium text-accent">{e.company}</p>
+              {e.summary && <FormattedText text={e.summary} className="mt-3 text-muted" />}
             </TimelineItem>
           ))}
         </ol>

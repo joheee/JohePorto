@@ -42,7 +42,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-full flex flex-col">
+      {/* min-h-dvh, not min-h-full: Lenis' CSS sets html/body height to auto, which would stop the
+          footer from sinking to the bottom of short pages. */}
+      <body className="min-h-dvh flex flex-col">
         <MotionProvider>
           <SmoothScroll>
             <ScrollProgress />

@@ -51,11 +51,6 @@ export default function NavLinks() {
           </Link>
         </li>
       ))}
-      <li className="sm:hidden">
-        <Link href="/#contact" className="transition-colors hover:text-foreground">
-          Contact
-        </Link>
-      </li>
     </ul>
   );
 }

@@ -60,3 +60,22 @@ export function sortExperienceNewestFirst<T extends Dated>(items: T[]): T[] {
 export function withCreatedAt<T extends { createdAt: string }>(items: T[], now = new Date().toISOString()): T[] {
   return items.map((e) => (e.createdAt ? e : { ...e, createdAt: now }));
 }
+
+// Headline numbers derived from the profile (nothing hand-typed): years since the earliest
+// role started, distinct companies, and number of skills. Empty when there is no data.
+export function experienceStats(
+  items: Pick<ExperienceItem, "company" | "startMonth" | "startYear">[],
+  skillCount: number,
+  now = new Date(),
+): { value: string; label: string }[] {
+  const stats: { value: string; label: string }[] = [];
+  if (items.length > 0) {
+    const earliest = Math.min(...items.map((e) => e.startYear * 12 + e.startMonth));
+    const years = Math.floor((now.getFullYear() * 12 + now.getMonth() + 1 - earliest) / 12);
+    if (years >= 1) stats.push({ value: `${years}+`, label: years === 1 ? "year of experience" : "years of experience" });
+    const companies = new Set(items.map((e) => e.company.trim().toLowerCase())).size;
+    stats.push({ value: String(companies), label: companies === 1 ? "company" : "companies" });
+  }
+  if (skillCount > 0) stats.push({ value: String(skillCount), label: "tools & skills" });
+  return stats;
+}
