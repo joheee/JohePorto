@@ -19,6 +19,15 @@ const paths = {
     </>
   ),
   home: <path d="M3 11.5 12 4l9 7.5M5 10v10h5v-6h4v6h5V10" />,
+  close: <path d="M6 6l12 12M18 6L6 18" />,
+  lock: (
+    <>
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </>
+  ),
+  back: <path d="M19 12H5M11 6l-6 6 6 6" />,
+  edit: <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4zM13.5 6.5l4 4" />,
   plus: <path d="M12 5v14M5 12h14" />,
   settings: <path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4" />,
   external: <path d="M7 17 17 7M8 7h9v9" />,

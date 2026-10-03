@@ -3,7 +3,7 @@
 Personal portfolio site. Next.js (App Router, TypeScript, Tailwind) on Vercel, Firebase (Firestore + Auth) as the backend.
 All public content (name, hero, bio, skills, experience, projects) lives in Firestore and is edited from a private admin.
 
-- **Live:** https://johedotcom.vercel.app (Vercel project `johedotcom`)
+- **Live:** https://www.johe.my.id (custom domain; the apex `johe.my.id` redirects to `www`, and `johedotcom.vercel.app` still works and canonicalises to `www`). Vercel project `johedotcom`.
 - **Firebase project:** `joheportobackend` (one project shared by local dev and production: same data, same rules)
 - **Repo:** github.com/joheee/JohePorto, branch `main`
 - **Read first:** `AGENTS.md`. This is Next.js 16: APIs differ from older versions. Read the relevant guide in `node_modules/next/dist/docs/` before writing code.
@@ -49,7 +49,7 @@ The navbar has **no Blog link** on purpose until the blog exists (it caused a 40
 | `/admin/login` | Email + password (Firebase Auth), show/hide password |
 | `/admin` | Dashboard: stat cards, recent messages, setup checklist, quick actions |
 | `/admin/settings` | One form for the whole profile (hero, about, contact/links, experience) |
-| `/admin/projects`, `/new`, `/[slug]` | List, create, edit, delete projects |
+| `/admin/projects`, `/new`, `/[slug]` | List, create, edit, delete projects. The list uses the **same cards as the public site** (shared `ProjectCardContent`) in a 1/2/3-column grid, plus Edit and Delete (confirm modal) on each card. The form mirrors Settings: Basics / Details / Links cards, chip input for the stack, counters, floating save bar with unsaved-changes tracking. The slug is auto-filled from the title on new projects and locked (with a lock icon) on edit. |
 | `/admin/messages` | Inbox: read/unread, reply (mailto), delete |
 | `/admin/posts` | **Planned** (dashboard shows "Posts: Blog coming soon") |
 
@@ -92,7 +92,7 @@ Owner = a single hard-coded UID. Public read: published posts, projects, setting
 
 **Validation limits** (see `lib/validation.ts`): name 80, pitch 300, bio 8x1500, skills 40x40, roles 8x60, socials 10, experience 20 (summary 2000, role/company 100, single-line), projects: title 100, summary 200, description 3000, stack 20, links 10, slug `[a-z0-9-]` max 60.
 
-**UI system:** dark/light via `data-theme` on `<html>` (inline script, no flash); tokens in `globals.css` (`--accent` indigo, etc.). Shared admin pieces: `fields.tsx`, `FormCard`, `ChipsInput`, `AutoTextarea` (auto-height, also used on the public contact form), `ConfirmDialog` (native `<dialog>`, replaces `confirm()`/`alert()` everywhere), `DateSelects` (month/year), `AdminNav` (active tab), `Icons`. Public: `Section`, `Reveal`/`TimelineItem` (motion), `FormattedText` (bullet lines), `PingDot`, `CopyEmail`, `MobileMenu`.
+**UI system:** dark/light via `data-theme` on `<html>` (inline script, no flash); tokens in `globals.css` (`--accent` indigo, etc.). Shared admin pieces: `fields.tsx`, `FormCard`, `ChipsInput`, `AutoTextarea` (auto-height, also used on the public contact form), `ConfirmDialog` (native `<dialog>`, replaces `confirm()`/`alert()` everywhere), `DateSelects` (month/year), `AdminNav` (active tab), `Icons`. `SettingsForm` and `ProjectForm` share the same pattern (single `form` state, `toPayload()` doubles as the dirty check, `saved` snapshot for Discard, `beforeunload` warning). Public: `Section`, `Reveal`/`TimelineItem` (motion), `FormattedText` (bullet lines), `ProjectCardContent` (project card body, shared with the admin list), `PingDot`, `CopyEmail`, `MobileMenu`.
 
 **Env vars** (`.env.example`; real values in `.env`, gitignored; same names set in Vercel Production):
 `NEXT_PUBLIC_FIREBASE_*` (6 web-config values), `FIREBASE_SERVICE_ACCOUNT_KEY` (service-account JSON, one line, **no surrounding quotes in Vercel**), `ADMIN_UID`, optional `NEXT_PUBLIC_SITE_URL` (custom domain; otherwise `VERCEL_PROJECT_PRODUCTION_URL`, else localhost). `NEXT_PUBLIC_*` are baked in at build time: redeploy after changing them.
@@ -133,6 +133,8 @@ firestore.rules   .env.example   AGENTS.md   session.md
 - Do **not** delete `.next` or run `next build` while the user's `npm run dev` is running (they share `.next`; the user runs dev on port 3000). Build in a scratch copy instead (copy `node_modules` for real: a symlinked one breaks Turbopack).
 - Lenis' CSS sets `html`/`body` height to auto: use `min-h-dvh` (not `min-h-full`) on `<body>` so the footer sinks on short pages.
 - iPhone browsers zoom into inputs under 16px: `globals.css` forces 16px for fields on `pointer: coarse` (unlayered rule so it beats utilities).
+- `ghostButtonClass`/`buttonClass` set `inline-flex`, so `hidden` loses to it: hide them with `max-sm:hidden` (a variant), not `hidden sm:inline-flex`.
+- The admin forms have a sticky save bar: `html` has `scroll-padding-bottom` so focused fields stay clear of it. In tests, scroll targets to the middle before clicking, or the bar swallows the click.
 - A transformed child inside a scroll container (`overflow-y-auto`) flashes a scrollbar while it animates: animate the dialog itself (`dialog[open]` keyframes in `globals.css`), never its content.
 - CSS grid columns need `minmax(0, 1fr)` or one long unbreakable line stretches the layout.
 - `backdrop-filter` on the header makes `position: fixed` children relative to the header: use `absolute`.

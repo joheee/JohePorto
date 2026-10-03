@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import FormattedText from "@/components/FormattedText";
+import ProjectCardContent, { ProjectChips } from "@/components/ProjectCardContent";
 import { formatMonthYear } from "@/lib/format";
 import type { Project } from "@/types/content";
 import Section from "./Section";
@@ -12,19 +13,6 @@ function ArrowUpRight({ className = "h-4 w-4" }: { className?: string }) {
     <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M7 17 17 7M8 7h9v9" />
     </svg>
-  );
-}
-
-function Chips({ items, className = "" }: { items: string[]; className?: string }) {
-  if (items.length === 0) return null;
-  return (
-    <ul className={`flex flex-wrap gap-1.5 ${className}`}>
-      {items.map((s) => (
-        <li key={s} className="rounded-full border border-border bg-background/60 px-2.5 py-0.5 font-mono text-xs text-muted">
-          {s}
-        </li>
-      ))}
-    </ul>
   );
 }
 
@@ -82,13 +70,10 @@ export default function Projects({ projects }: { projects: Project[] }) {
                 {/* accent line that draws across the top on hover */}
                 <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-accent transition-transform duration-500 group-hover:scale-x-100" />
 
-                <div className="relative mb-5 flex items-center justify-between">
-                  <span className="font-mono text-xs text-muted">{formatMonthYear(p.month, p.year)}</span>
-                  <ArrowUpRight className="h-4 w-4 text-muted transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
-                </div>
-                <h3 className="relative text-lg font-semibold tracking-tight">{p.title}</h3>
-                <p className="relative mt-2 flex-1 text-sm leading-6 text-muted">{p.summary}</p>
-                <Chips items={p.stack} className="relative mt-5" />
+                <ProjectCardContent
+                  project={p}
+                  trailing={<ArrowUpRight className="h-4 w-4 text-muted transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />}
+                />
               </button>
             </motion.li>
           ))}
@@ -123,7 +108,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
             <p className="mt-1 font-mono text-xs text-muted">{formatMonthYear(selected.month, selected.year)}</p>
             {selected.summary && <p className="mt-3 text-muted">{selected.summary}</p>}
             {selected.description && <FormattedText text={selected.description} className="mt-6 leading-7" />}
-            <Chips items={selected.stack} className="mt-6" />
+            <ProjectChips items={selected.stack} className="mt-6" />
             {selected.links.length > 0 && (
               <ul className="mt-8 flex flex-wrap gap-3">
                 {selected.links.map((l, i) => (

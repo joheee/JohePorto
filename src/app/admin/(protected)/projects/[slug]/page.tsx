@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import Icon from "@/components/admin/Icons";
 import ProjectForm from "@/components/admin/ProjectForm";
 import { requireAdmin } from "@/lib/auth";
 import { getProject } from "@/lib/projects";
@@ -14,7 +16,13 @@ export default async function EditProjectPage({ params }: { params: Promise<{ sl
 
   return (
     <div>
-      <h1 className="mb-8 text-3xl font-bold tracking-tight">Edit project</h1>
+      <Link href="/admin/projects" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground">
+        <Icon name="back" /> Projects
+      </Link>
+      <div className="mb-10">
+        <h1 className="text-3xl font-bold tracking-tight">Edit project</h1>
+        <p className="mt-2 max-w-xl truncate text-sm leading-6 text-muted">{project.title}</p>
+      </div>
       <ProjectForm initial={project} />
     </div>
   );

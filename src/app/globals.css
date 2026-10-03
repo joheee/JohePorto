@@ -39,6 +39,8 @@
 
 html {
   scroll-padding-top: 4rem;
+  /* The admin forms have a floating save bar: keep focused fields clear of it when tabbing. */
+  scroll-padding-bottom: 6rem;
 }
 
 /* Fade the modal backdrop in (the dialog content itself is animated with Motion). */
