@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import FormattedText from "@/components/FormattedText";
-import ProjectCardContent, { ProjectChips } from "@/components/ProjectCardContent";
+import ProjectCardContent, { ProjectChips, ProjectLinks } from "@/components/ProjectCardContent";
 import { formatMonthYear } from "@/lib/format";
 import type { Project } from "@/types/content";
 import Section from "./Section";
@@ -48,33 +48,37 @@ export default function Projects({ projects }: { projects: Project[] }) {
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              <button
-                type="button"
-                onClick={() => setSelected(p)}
+              <div
                 onMouseMove={(e) => {
                   // Feed the cursor position to the spotlight layer (no re-render).
                   const r = e.currentTarget.getBoundingClientRect();
                   e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
                   e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
                 }}
-                className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-6 text-left transition-colors hover:border-accent"
+                className="group relative flex h-full w-full flex-col rounded-2xl border border-border bg-card transition-colors hover:border-accent has-[.card-body:focus-visible]:border-accent has-[.card-body:focus-visible]:ring-2 has-[.card-body:focus-visible]:ring-accent/60 has-[.card-body:focus-visible]:ring-offset-2 has-[.card-body:focus-visible]:ring-offset-background"
               >
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                  style={{
-                    background:
-                      "radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%)",
-                  }}
-                />
-                {/* accent line that draws across the top on hover */}
-                <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-accent transition-transform duration-500 group-hover:scale-x-100" />
+                {/* Decorative hover layers, clipped to the card's rounded corners. */}
+                <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+                  <span
+                    className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    style={{
+                      background:
+                        "radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%)",
+                    }}
+                  />
+                  {/* accent line that draws across the top on hover */}
+                  <span className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-accent transition-transform duration-500 group-hover:scale-x-100" />
+                </span>
 
-                <ProjectCardContent
-                  project={p}
-                  trailing={<ArrowUpRight className="h-4 w-4 text-muted transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />}
-                />
-              </button>
+                {/* The body opens the pop-up. The links sit below it, outside the button. */}
+                <button type="button" onClick={() => setSelected(p)} className="card-body relative flex flex-1 flex-col rounded-t-2xl p-6 pb-4 text-left">
+                  <ProjectCardContent
+                    project={p}
+                    trailing={<ArrowUpRight className="h-4 w-4 text-muted transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />}
+                  />
+                </button>
+                <ProjectLinks links={p.links} className="relative px-6 pb-6" />
+              </div>
             </motion.li>
           ))}
         </ul>

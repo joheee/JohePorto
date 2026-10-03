@@ -70,7 +70,14 @@ button:focus-visible,
 summary:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-  border-radius: 0.5rem;
+  /* No border-radius here: forcing one reshaped round buttons and pills while focused. The outline
+     follows each element's own corners. */
+}
+
+/* A project card's clickable body fills the card, so a ring around the button would cut across the
+   card and ignore its rounded corners. The card draws a matching ring instead (see Projects.tsx). */
+.card-body:focus-visible {
+  outline: none;
 }
 
 /* Hero "scroll" cue: a small bar that slides down and fades. */

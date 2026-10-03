@@ -136,3 +136,9 @@ export function parseProject(input: unknown): Project {
     year,
   };
 }
+
+// Every project needs at least one link. Checked when saving only, so older projects without a
+// link still load (and can be edited) instead of disappearing.
+export function assertHasLink(project: Project): void {
+  if (project.links.length === 0) fail("Add at least one link");
+}

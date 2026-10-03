@@ -30,7 +30,8 @@ const slugify = (s: string) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
 
-const empty: Form = { title: "", slug: "", summary: "", description: "", stack: [], month: "", year: "", links: [] };
+const blankLink: SocialLink = { label: "", href: "" };
+const empty: Form = { title: "", slug: "", summary: "", description: "", stack: [], month: "", year: "", links: [blankLink] };
 
 const toForm = (p: Project): Form => ({
   title: p.title,
@@ -40,7 +41,7 @@ const toForm = (p: Project): Form => ({
   stack: p.stack,
   month: String(p.month),
   year: String(p.year),
-  links: p.links,
+  links: p.links.length > 0 ? p.links : [blankLink], // a project needs at least one link
 });
 
 // What the server action receives. Also used to detect unsaved changes.
@@ -171,16 +172,17 @@ export default function ProjectForm({ initial }: { initial?: Project }) {
         </div>
       </FormCard>
 
-      <FormCard id="links" icon="link" title="Links" description="Where people can see it: source code, a live demo, a write-up.">
-        {form.links.length === 0 && <p className="text-sm text-muted">No links yet.</p>}
+      <FormCard id="links" icon="link" title="Links" description="Where people can see it: source code, a live demo, a write-up. At least one link is required.">
         {form.links.map((l, i) => (
           <div key={i} className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <input className={`${inputClass} sm:w-40 sm:shrink-0`} aria-label="Link name" placeholder="Name" value={l.label} onChange={(e) => setLink(i, { label: e.target.value })} />
-            <input className={inputClass} aria-label="Link URL" placeholder="https://…" value={l.href} onChange={(e) => setLink(i, { href: e.target.value })} />
+            <input className={`${inputClass} sm:w-40 sm:shrink-0`} aria-label="Link name" placeholder="e.g. GitHub" required maxLength={40} value={l.label} onChange={(e) => setLink(i, { label: e.target.value })} />
+            <input className={inputClass} aria-label="Link URL" placeholder="https://…" required value={l.href} onChange={(e) => setLink(i, { href: e.target.value })} />
             <button
               type="button"
               aria-label="Remove link"
-              className="flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border border-border text-muted transition-colors hover:border-red-500/50 hover:text-red-500 sm:self-auto"
+              disabled={form.links.length === 1}
+              title={form.links.length === 1 ? "A project needs at least one link" : undefined}
+              className="flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border border-border text-muted transition-colors hover:border-red-500/50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted sm:self-auto"
               onClick={() => set("links", form.links.filter((_, idx) => idx !== i))}
             >
               <Icon name="close" />

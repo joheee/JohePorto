@@ -49,7 +49,7 @@ The navbar has **no Blog link** on purpose until the blog exists (it caused a 40
 | `/admin/login` | Email + password (Firebase Auth), show/hide password |
 | `/admin` | Dashboard: stat cards, recent messages, setup checklist, quick actions |
 | `/admin/settings` | One form for the whole profile (hero, about, contact/links, experience) |
-| `/admin/projects`, `/new`, `/[slug]` | List, create, edit, delete projects. The list uses the **same cards as the public site** (shared `ProjectCardContent`) in a 1/2/3-column grid, plus Edit and Delete (confirm modal) on each card. The form mirrors Settings: Basics / Details / Links cards, chip input for the stack, counters, floating save bar with unsaved-changes tracking. The slug is auto-filled from the title on new projects and locked (with a lock icon) on edit. |
+| `/admin/projects`, `/new`, `/[slug]` | List, create, edit, delete projects. The list uses the **same cards as the public site** (shared `ProjectCardContent`) in a 1/2/3-column grid, with the project's link pills under the card and Edit and Delete (confirm modal) at the bottom. The form mirrors Settings: Basics / Details / Links cards, chip input for the stack, counters, floating save bar with unsaved-changes tracking. The slug is auto-filled from the title on new projects and locked (with a lock icon) on edit. |
 | `/admin/messages` | Inbox: read/unread, reply (mailto), delete |
 | `/admin/posts` | **Planned** (dashboard shows "Posts: Blog coming soon") |
 
@@ -65,7 +65,7 @@ Each `experience` item: `role`, `company`, `summary` (lines starting with `•` 
 Fallback: if the document is missing/invalid the site shows placeholder content from `src/lib/content.ts` (`defaultProfile`).
 
 **`projects/{slug}`** (document ID = slug, immutable)
-`title`, `summary`, `description` (same bullet formatting), `stack[]`, `links[{label,href}]`, **`month`, `year`** (manual "Created" date, required), `updatedAt`.
+`title`, `summary`, `description` (same bullet formatting), `stack[]`, `links[{label,href}]` (**at least one required when saving**; older projects with none still load and show one blank row to fill in), **`month`, `year`** (manual "Created" date, required), `updatedAt`.
 Shown **oldest first** by month/year, ties by title. No `order` field any more.
 Legacy: a project saved before month/year existed (currently `postgresql-physical-backup-with-pgbackrest`, still has `order: 0`) falls back **at read time** to the month it was last saved (shows "Oct 2026"). Edit it in `/admin/projects` to set the real date.
 
@@ -92,7 +92,7 @@ Owner = a single hard-coded UID. Public read: published posts, projects, setting
 
 **Validation limits** (see `lib/validation.ts`): name 80, pitch 300, bio 8x1500, skills 40x40, roles 8x60, socials 10, experience 20 (summary 2000, role/company 100, single-line), projects: title 100, summary 200, description 3000, stack 20, links 10, slug `[a-z0-9-]` max 60.
 
-**UI system:** dark/light via `data-theme` on `<html>` (inline script, no flash); tokens in `globals.css` (`--accent` indigo, etc.). Shared admin pieces: `fields.tsx`, `FormCard`, `ChipsInput`, `AutoTextarea` (auto-height, also used on the public contact form), `ConfirmDialog` (native `<dialog>`, replaces `confirm()`/`alert()` everywhere), `DateSelects` (month/year), `AdminNav` (active tab), `Icons`. `SettingsForm` and `ProjectForm` share the same pattern (single `form` state, `toPayload()` doubles as the dirty check, `saved` snapshot for Discard, `beforeunload` warning). Public: `Section`, `Reveal`/`TimelineItem` (motion), `FormattedText` (bullet lines), `ProjectCardContent` (project card body, shared with the admin list), `PingDot`, `CopyEmail`, `MobileMenu`.
+**UI system:** dark/light via `data-theme` on `<html>` (inline script, no flash); tokens in `globals.css` (`--accent` indigo, etc.). Shared admin pieces: `fields.tsx`, `FormCard`, `ChipsInput`, `AutoTextarea` (auto-height, also used on the public contact form), `ConfirmDialog` (native `<dialog>`, replaces `confirm()`/`alert()` everywhere), `DateSelects` (month/year), `AdminNav` (active tab), `Icons`. `SettingsForm` and `ProjectForm` share the same pattern (single `form` state, `toPayload()` doubles as the dirty check, `saved` snapshot for Discard, `beforeunload` warning). Public: `Section`, `Reveal`/`TimelineItem` (motion), `FormattedText` (bullet lines), `ProjectCardContent` + `ProjectLinks` (project card body and link pills, shared with the admin list; on the public site the card is a `div` with a clickable body `button` and the links **outside** it, since a link inside a button is invalid), `PingDot`, `CopyEmail`, `MobileMenu`.
 
 **Env vars** (`.env.example`; real values in `.env`, gitignored; same names set in Vercel Production):
 `NEXT_PUBLIC_FIREBASE_*` (6 web-config values), `FIREBASE_SERVICE_ACCOUNT_KEY` (service-account JSON, one line, **no surrounding quotes in Vercel**), `ADMIN_UID`, optional `NEXT_PUBLIC_SITE_URL` (custom domain; otherwise `VERCEL_PROJECT_PRODUCTION_URL`, else localhost). `NEXT_PUBLIC_*` are baked in at build time: redeploy after changing them.
@@ -135,6 +135,7 @@ firestore.rules   .env.example   AGENTS.md   session.md
 - iPhone browsers zoom into inputs under 16px: `globals.css` forces 16px for fields on `pointer: coarse` (unlayered rule so it beats utilities).
 - `ghostButtonClass`/`buttonClass` set `inline-flex`, so `hidden` loses to it: hide them with `max-sm:hidden` (a variant), not `hidden sm:inline-flex`.
 - The admin forms have a sticky save bar: `html` has `scroll-padding-bottom` so focused fields stay clear of it. In tests, scroll targets to the middle before clicking, or the bar swallows the click.
+- The global `:focus-visible` outline must **not** set `border-radius` (it reshaped round pills while focused). A control that fills its container (the project card's body button) must hide its own ring (`.card-body:focus-visible`) and let the container draw a matching `ring` via `has-[...]`, otherwise a rectangular outline cuts across the card and overlaps its border (visible after closing the pop-up, which returns focus to the card).
 - A transformed child inside a scroll container (`overflow-y-auto`) flashes a scrollbar while it animates: animate the dialog itself (`dialog[open]` keyframes in `globals.css`), never its content.
 - CSS grid columns need `minmax(0, 1fr)` or one long unbreakable line stretches the layout.
 - `backdrop-filter` on the header makes `position: fixed` children relative to the header: use `absolute`.

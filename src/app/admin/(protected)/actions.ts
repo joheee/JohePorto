@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getAdmin } from "@/lib/auth";
 import { withCreatedAt } from "@/lib/format";
 import { adminDb } from "@/lib/firebase-admin";
-import { SLUG_RE, ValidationError, parseProfile, parseProject } from "@/lib/validation";
+import { SLUG_RE, ValidationError, assertHasLink, parseProfile, parseProject } from "@/lib/validation";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -46,6 +46,7 @@ export async function saveProfile(input: unknown): Promise<ActionResult> {
 export async function saveProject(input: unknown, isNew: boolean): Promise<ActionResult> {
   return guard(async () => {
     const project = parseProject(input);
+    assertHasLink(project);
     const ref = adminDb().collection("projects").doc(project.slug);
     const { slug, ...data } = project; // the slug is the document ID
     void slug;

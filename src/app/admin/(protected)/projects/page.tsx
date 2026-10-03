@@ -2,7 +2,7 @@ import Link from "next/link";
 import DeleteProjectButton from "@/components/admin/DeleteProjectButton";
 import Icon from "@/components/admin/Icons";
 import { buttonClass, ghostButtonClass } from "@/components/admin/fields";
-import ProjectCardContent from "@/components/ProjectCardContent";
+import ProjectCardContent, { ProjectLinks } from "@/components/ProjectCardContent";
 import { requireAdmin } from "@/lib/auth";
 import { getProjects } from "@/lib/projects";
 
@@ -42,6 +42,7 @@ export default async function AdminProjectsPage() {
               {/* Same card as the public site (shared ProjectCardContent), plus the admin actions. */}
               <div className="relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-6">
                 <ProjectCardContent project={p} />
+                <ProjectLinks links={p.links} emptyLabel="No links yet. Add one by editing the project." className="relative mt-5" />
                 <div className="relative mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-4">
                   <Link href={`/admin/projects/${p.slug}`} className={ghostButtonClass}>
                     <Icon name="edit" className="h-3.5 w-3.5" /> Edit
