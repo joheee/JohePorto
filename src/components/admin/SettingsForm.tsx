@@ -36,7 +36,6 @@ type Form = {
   status: string;
   focus: string;
   email: string;
-  cvUrl: string;
   socials: SocialLink[];
   experience: Row[];
 };
@@ -61,7 +60,6 @@ function toForm(p: Profile): Form {
     status: p.status,
     focus: p.focus,
     email: p.email,
-    cvUrl: p.cvUrl,
     socials: p.socials,
     experience: p.experience.map((x, i) => ({
       uid: `e${i}`,
@@ -91,7 +89,6 @@ function toPayload(f: Form) {
     status: f.status,
     focus: f.focus,
     email: f.email,
-    cvUrl: f.cvUrl,
     socials: f.socials,
     experience: f.experience.map((x) => ({
       role: x.role,
@@ -273,14 +270,9 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
         </FormCard>
 
         <FormCard id="contact" icon="contact" title="Contact & links" description="How people reach you.">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Email">
-              <input className={inputClass} type="email" value={form.email} onChange={(e) => set("email", e.target.value)} required placeholder="you@example.com" />
-            </Field>
-            <Field label="CV link" hint="Optional. https://… or /cv.pdf. Empty hides the button.">
-              <input className={inputClass} value={form.cvUrl} onChange={(e) => set("cvUrl", e.target.value)} placeholder="https://…" />
-            </Field>
-          </div>
+          <Field label="Email">
+            <input className={inputClass} type="email" value={form.email} onChange={(e) => set("email", e.target.value)} required placeholder="you@example.com" />
+          </Field>
 
           <div className="space-y-3">
             <p className="text-sm font-medium">Social links</p>

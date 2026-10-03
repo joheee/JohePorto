@@ -25,11 +25,10 @@ function strings(v: unknown, label: string, maxItems: number, maxLen: number): s
   return items(v, label, maxItems, (x) => text(x, label, maxLen)).filter(Boolean);
 }
 
-function url(v: unknown, label: string, allowRelative = false): string {
+function url(v: unknown, label: string): string {
   const s = text(v, label, 500);
   if (!s) return "";
-  const ok = /^https?:\/\/\S+$/i.test(s) || (allowRelative && /^\/(?!\/)\S*$/.test(s));
-  if (!ok) fail(`${label} must start with http:// or https://${allowRelative ? " (or /)" : ""}`);
+  if (!/^https?:\/\/\S+$/i.test(s)) fail(`${label} must start with http:// or https://`);
   return s;
 }
 
@@ -71,7 +70,6 @@ export function parseProfile(input: unknown): Profile {
     roles,
     pitch: text(o.pitch, "Pitch", 300),
     email,
-    cvUrl: url(o.cvUrl, "CV link", true),
     location: text(o.location, "Location", 100),
     status: text(o.status, "Status", 100),
     focus: text(o.focus, "Current focus", 300),

@@ -6,7 +6,6 @@ export const defaultProfile: Profile = {
   roles: ["Software Engineer", "Web Developer", "Problem Solver"],
   pitch: "I build fast, reliable web products from idea to deployment.",
   email: "you@example.com",
-  cvUrl: "",
   location: "Your City, Country",
   status: "Open to new opportunities",
   focus: "Currently building a personal site with Next.js and Firebase.",

@@ -18,7 +18,6 @@ export type Profile = {
   roles: string[]; // rotating line in the hero
   pitch: string;
   email: string;
-  cvUrl: string; // "" hides the download button
   location: string;
   status: string;
   focus: string;

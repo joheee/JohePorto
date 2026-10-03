@@ -1,4 +1,4 @@
-import Link from "next/link";
+import AdminNav from "@/components/admin/AdminNav";
 import SignOutButton from "@/components/admin/SignOutButton";
 import { requireAdmin } from "@/lib/auth";
 
@@ -9,20 +9,7 @@ export default async function ProtectedLayout({ children }: LayoutProps<"/admin"
   return (
     <div className="mx-auto w-full max-w-5xl px-6 py-10">
       <div className="mb-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-border pb-4">
-        <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-          <Link href="/admin" className="font-semibold">
-            Dashboard
-          </Link>
-          <Link href="/admin/settings" className="text-muted transition-colors hover:text-foreground">
-            Settings
-          </Link>
-          <Link href="/admin/projects" className="text-muted transition-colors hover:text-foreground">
-            Projects
-          </Link>
-          <Link href="/admin/messages" className="text-muted transition-colors hover:text-foreground">
-            Messages
-          </Link>
-        </nav>
+        <AdminNav />
         <div className="flex items-center gap-4 text-sm text-muted">
           <span className="hidden sm:inline">{admin.email}</span>
           <SignOutButton />

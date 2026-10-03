@@ -79,3 +79,18 @@ export function experienceStats(
   if (skillCount > 0) stats.push({ value: String(skillCount), label: "tools & skills" });
   return stats;
 }
+
+// "just now", "5 min ago", "3 hours ago", "2 days ago", then a plain date.
+export function timeAgo(from: Date | string, now = new Date()): string {
+  const then = typeof from === "string" ? new Date(from) : from;
+  const seconds = Math.round((now.getTime() - then.getTime()) / 1000);
+  if (Number.isNaN(seconds)) return "";
+  if (seconds < 45) return "just now";
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+  const days = Math.round(hours / 24);
+  if (days < 30) return days === 1 ? "yesterday" : `${days} days ago`;
+  return then.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}

@@ -27,15 +27,6 @@ export default async function Experience() {
           ))}
         </ol>
       )}
-      {profile.cvUrl && (
-        <a
-          href={profile.cvUrl}
-          download
-          className="mt-10 inline-block rounded-full border border-border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-card"
-        >
-          Download CV
-        </a>
-      )}
     </Section>
   );
 }

@@ -89,6 +89,17 @@ summary:focus-visible {
   }
 }
 
+/* iPhone browsers (Safari and Chrome) zoom the page when a field smaller than 16px is focused.
+   On touch devices keep every field at 16px. This rule is unlayered, so it beats Tailwind's
+   text-sm utility; desktop keeps the smaller size. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
