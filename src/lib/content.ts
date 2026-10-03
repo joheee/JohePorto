@@ -33,10 +33,11 @@ export const defaultProfile: Profile = {
   ],
 };
 
+// Add { label: "Blog", href: "/blog" } here once the blog exists: a link to a missing page is a 404
+// for visitors, a console error, and a broken internal link for search engines.
 export const navLinks = [
   { label: "About", href: "/#about" },
   { label: "Projects", href: "/#projects" },
   { label: "Experience", href: "/#experience" },
-  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/#contact" },
 ];
