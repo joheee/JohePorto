@@ -1,82 +1,165 @@
-# johePorto: Core Structure
+# johePorto: Core Context
 
-Personal website. Next.js (App Router, TypeScript, Tailwind) hosted on Vercel, Firebase (Firestore + Auth) as the backend.
+Personal portfolio site. Next.js (App Router, TypeScript, Tailwind) on Vercel, Firebase (Firestore + Auth) as the backend.
+All public content (name, hero, bio, skills, experience, projects) lives in Firestore and is edited from a private admin.
+
+- **Live:** https://johedotcom.vercel.app (Vercel project `johedotcom`)
+- **Firebase project:** `joheportobackend` (one project shared by local dev and production: same data, same rules)
+- **Repo:** github.com/joheee/JohePorto, branch `main`
+- **Read first:** `AGENTS.md`. This is Next.js 16: APIs differ from older versions. Read the relevant guide in `node_modules/next/dist/docs/` before writing code.
+
+---
+
+## Status
+
+| Area | State |
+|---|---|
+| Scaffold, Firebase (Firestore, Auth), env vars | Done |
+| Public home page (hero, about, projects, experience, contact) | Done, data-driven from Firestore |
+| Admin: login, dashboard, settings, projects, messages inbox | Done |
+| SEO (meta, OG image, robots, sitemap, JSON-LD, icons, 404/error pages) | Done (Lighthouse 100 SEO / 100 a11y) |
+| **Blog** (`/blog`, `/blog/[slug]`, `/admin/posts`, "Latest posts") | **Not started** (the main open item) |
+| ATS-friendly resume page / PDF | Not started (planned) |
+| Contact-form rate limiting / App Check, email notification | Not started |
+
+The navbar has **no Blog link** on purpose until the blog exists (it caused a 404, a console error and a broken link for crawlers). Re-add `{ label: "Blog", href: "/blog" }` to `navLinks` in `src/lib/content.ts` when `/blog` ships, and add `/blog` + each post to `src/app/sitemap.ts`.
+
+---
 
 ## Stack
-- **Framework:** Next.js 16 + React 19, App Router, `src/` directory, `@/*` import alias
-- **Styling:** Tailwind CSS 4
-- **Database:** Firebase Firestore (free Spark plan)
-- **Auth:** Firebase Auth (admin only)
-- **Hosting:** Vercel (Next.js app); Firebase is used only as a backend, not for hosting
-- **Package manager:** npm
+- Next.js 16.3 (Turbopack) + React 19, App Router, `src/`, alias `@/*`; Tailwind CSS 4; TypeScript
+- Firebase web SDK (`firebase` 12) on the client, **`firebase-admin` 13** on the server (see gotchas: do not upgrade to 14 casually)
+- `motion` (animations), `lenis` (smooth scroll)
+- npm; Node **22.x** (`engines` in package.json)
+- Hosting: Vercel Hobby (non-commercial). Firebase is backend only.
 
 ## Routes
 
-### Public (two pages)
+### Public
+| Route | Notes |
+|---|---|
+| `/` | Static (ISR). Sections: Hero, About (bento), Projects, Experience (timeline), Contact. JSON-LD (Person + WebSite). |
+| `/robots.txt`, `/sitemap.xml` | Generated. Robots blocks `/admin` and `/api/`. Sitemap currently lists only `/`. |
+| `/opengraph-image`, `/twitter-image`, `/icon`, `/apple-icon` | Generated PNGs (1200x630 card from the profile; initial-letter icons). Card revalidates hourly. |
+| 404 / error | `not-found.tsx` (noindex), `error.tsx` |
+
+### Private (`/admin`, noindex)
 | Route | Purpose |
 |---|---|
-| `/` | Single-page portfolio, sections scroll top to bottom |
-| `/blog` | Post list with tags and search/filter |
-| `/blog/[slug]` | Individual post (shareable URL, good for SEO) |
+| `/admin/login` | Email + password (Firebase Auth), show/hide password |
+| `/admin` | Dashboard: stat cards, recent messages, setup checklist, quick actions |
+| `/admin/settings` | One form for the whole profile (hero, about, contact/links, experience) |
+| `/admin/projects`, `/new`, `/[slug]` | List, create, edit, delete projects |
+| `/admin/messages` | Inbox: read/unread, reply (mailto), delete |
+| `/admin/posts` | **Planned** (dashboard shows "Posts: Blog coming soon") |
 
-### `/` sections
-1. Hero: name, one-line pitch, social links
-2. About: short bio, skills
-3. Projects: card grid, details open in a modal or expand in place
-4. Experience: timeline, optional CV download
-5. Latest posts: 3 newest, links to `/blog`
-6. Contact: form (saved to Firestore) plus email and socials
+### API
+- `POST /api/contact`: validates, honeypot, saves to `messages` (Admin SDK). **No rate limiting yet.**
+- `POST /api/auth/session` / `DELETE`: exchanges a fresh Firebase ID token for an httpOnly session cookie (owner only) / signs out.
 
-### Private
-| Route | Purpose |
-|---|---|
-| `/admin` | Dashboard (Firebase Auth, owner only) |
-| `/admin/posts` | Create, edit, publish/draft, delete posts |
-| `/admin/projects` | Manage projects |
-| `/admin/messages` | Read contact-form messages |
+## Firestore data model
 
-## Firestore collections
-- `posts`: title, slug, content (Markdown), tags, status, createdAt
-- `projects`: title, slug, summary, stack, links, featured, order
-- `messages`: name, email, text, createdAt (contact form)
-- `settings`: bio, experience, social links (optionally editable from admin)
+**`settings/profile`** (single document, the whole public profile)
+`name`, `roles[]` (rotating hero line), `pitch`, `email`, `location`, `status`, `focus` ("Now" tile), `bio[]` (paragraphs), `skills[]`, `socials[{label,href}]`, `experience[]`, `updatedAt`.
+Each `experience` item: `role`, `company`, `summary` (lines starting with `•` or `-` render as bullets), `current` (bool), `startMonth`, `startYear`, `endMonth|null`, `endYear|null`, `createdAt` (Firestore **Timestamp**, kept on edit, stamped when an entry is first saved). Sorted on the site LinkedIn-style: current roles first, then by end date, then start date. Experience is a free-order array in the admin; sorting is display-only.
+Fallback: if the document is missing/invalid the site shows placeholder content from `src/lib/content.ts` (`defaultProfile`).
 
-## Planned folder layout (`src/`)
+**`projects/{slug}`** (document ID = slug, immutable)
+`title`, `summary`, `description` (same bullet formatting), `stack[]`, `links[{label,href}]`, **`month`, `year`** (manual "Created" date, required), `updatedAt`.
+Shown **oldest first** by month/year, ties by title. No `order` field any more.
+Legacy: a project saved before month/year existed (currently `postgresql-physical-backup-with-pgbackrest`, still has `order: 0`) falls back **at read time** to the month it was last saved (shows "Oct 2026"). Edit it in `/admin/projects` to set the real date.
+
+**`messages/{id}`**: `name`, `email`, `text`, `read` (bool; missing = unread), `createdAt` (Timestamp). Written by the API route only.
+
+**`posts/{id}`**: planned (`title`, `slug`, `content` Markdown, `tags`, `status`, `createdAt`). Rules already exist.
+
+**Leftover junk from early open-rules tests, safe to delete in the console:** `posts/gnsBWLddPHkVuJapWb2C`, `projects/yY5zllSxhqxAYzSr5lAw`, `settings/main`. (The post would appear on the blog once it exists.)
+
+### Security rules (`firestore.rules`, must be published in the console by hand)
+Owner = a single hard-coded UID. Public read: published posts, projects, settings. Public create-only on `messages` (field/size limits). Everything else owner-only. **The app itself uses the Admin SDK (bypasses rules)**, so rules protect against direct client access with the public web config.
+
+---
+
+## Architecture
+
+**Reading data:** server components call `getProfile()` (`lib/settings.ts`), `getProjects()`/`getProject()` (`lib/projects.ts`), `getMessages()` (`lib/messages.ts`): Admin SDK, `server-only`, wrapped in React `cache`. Firestore Timestamps are converted to ISO strings before reaching client components.
+
+**Writing data:** Server Actions in `src/app/admin/(protected)/actions.ts` (`saveProfile`, `saveProject`, `deleteProject`, `setMessageRead`, `deleteMessage`). Every action: re-checks the owner (`getAdmin()`), validates with `lib/validation.ts` (`parseProfile`, `parseProject`; server is the source of truth, forms also use native `required`), writes with the Admin SDK, then `revalidatePath`. Profile/project actions revalidate `/` (layout); message actions only `/admin/messages` + `/admin`.
+
+**Auth:** client signs in with Firebase Auth, posts the ID token to `/api/auth/session`, server verifies it (revocation check, UID === `ADMIN_UID`, sign-in < 5 min old) and sets an httpOnly 5-day session cookie. `lib/auth.ts`: `getAdmin()` / `requireAdmin()` verify the cookie on **every admin page and action** (layouts do not re-render on client navigation). `src/proxy.ts` (Next 16's middleware) is only an optimistic redirect for cookie-less visitors. Never rely on it alone.
+
+**Caching:** public pages are static. A save made in the **production** admin revalidates production. Saves made from **local dev write to the same Firestore but cannot revalidate the Vercel deployment**: production shows the new data after the next deploy (or a save in the prod admin).
+
+**Validation limits** (see `lib/validation.ts`): name 80, pitch 300, bio 8x1500, skills 40x40, roles 8x60, socials 10, experience 20 (summary 2000, role/company 100, single-line), projects: title 100, summary 200, description 3000, stack 20, links 10, slug `[a-z0-9-]` max 60.
+
+**UI system:** dark/light via `data-theme` on `<html>` (inline script, no flash); tokens in `globals.css` (`--accent` indigo, etc.). Shared admin pieces: `fields.tsx`, `FormCard`, `ChipsInput`, `AutoTextarea` (auto-height, also used on the public contact form), `ConfirmDialog` (native `<dialog>`, replaces `confirm()`/`alert()` everywhere), `DateSelects` (month/year), `AdminNav` (active tab), `Icons`. Public: `Section`, `Reveal`/`TimelineItem` (motion), `FormattedText` (bullet lines), `PingDot`, `CopyEmail`, `MobileMenu`.
+
+**Env vars** (`.env.example`; real values in `.env`, gitignored; same names set in Vercel Production):
+`NEXT_PUBLIC_FIREBASE_*` (6 web-config values), `FIREBASE_SERVICE_ACCOUNT_KEY` (service-account JSON, one line, **no surrounding quotes in Vercel**), `ADMIN_UID`, optional `NEXT_PUBLIC_SITE_URL` (custom domain; otherwise `VERCEL_PROJECT_PRODUCTION_URL`, else localhost). `NEXT_PUBLIC_*` are baked in at build time: redeploy after changing them.
+
+## Folder layout (actual)
 ```
 src/
   app/
-    layout.tsx            shared layout, navbar, footer, theme
-    page.tsx              home (portfolio sections)
-    blog/
-      page.tsx            post list
-      [slug]/page.tsx     post detail
-    admin/                protected admin pages
-    api/                  route handlers (contact form, revalidate)
-  components/             UI and section components
-  lib/
-    firebase.ts           client SDK init
-    firebase-admin.ts     Admin SDK init (server only)
-    posts.ts, projects.ts data access helpers
+    layout.tsx, page.tsx, globals.css, not-found.tsx, error.tsx
+    robots.ts, sitemap.ts, opengraph-image.tsx, twitter-image.tsx, icon.tsx, apple-icon.tsx
+    admin/
+      layout.tsx (noindex metadata)  login/page.tsx
+      (protected)/  layout.tsx (auth + nav) page.tsx (dashboard) actions.ts
+                    settings/  projects/ (+ new, [slug])  messages/
+    api/ auth/session/route.ts  contact/route.ts
+  components/  admin/  layout/  motion/  sections/  (+ AutoTextarea, CopyEmail, FormattedText, PingDot)
+  lib/  auth, content (defaults + navLinks), firebase, firebase-admin, format, messages, og, projects,
+        session-cookie, settings, site, validation
+  types/content.ts
+  proxy.ts
+firestore.rules   .env.example   AGENTS.md   session.md
 ```
 
-## Rendering and data
-- Public pages are statically rendered and revalidated (ISR) when content changes in admin, to keep Firestore reads low.
-- Client uses the Firebase web SDK (public config in `NEXT_PUBLIC_FIREBASE_*`).
-- Server code and API routes use the Firebase Admin SDK, with the service account stored in a Vercel environment variable.
+---
 
-## Security
-- Firestore rules: public read for published content; write only for the owner's UID; contact messages are create-only for the public.
-- Rate-limit or add App Check on write endpoints.
+## Gotchas and decisions (learned the hard way)
 
-## Free-tier notes
-- Vercel Hobby is non-commercial.
-- Firestore Spark: roughly 50k reads and 20k writes per day, 1 GiB storage.
-- Firebase Storage may require the Blaze plan. Verify before relying on it; alternatives are Vercel Blob, Cloudinary, or images in the repo.
+**Vercel / Firebase**
+- `firebase-admin` is pinned to **13.x**. v14 pulls `jwks-rsa` 4 -> ESM-only `jose` 6 loaded with `require()`, which crashed `/admin/login` on Vercel (`ERR_REQUIRE_ESM`) while working locally on Node 26. `engines.node` is 22.x; check the Vercel project's Node setting too.
+- Missing `NEXT_PUBLIC_FIREBASE_*` at build time makes any page importing the client SDK 500 with `auth/invalid-api-key` (the home page does not import it, so it looked fine).
+- Firestore `serverTimestamp()` cannot be used inside arrays: experience `createdAt` uses `Timestamp.fromDate`.
+- Both environments share one Firestore: a schema change can break the *currently deployed* code reading the same documents. Deploy new code **before** saving data in the new format; when removing/renaming a field the old code requires, keep it until the deploy is live.
+- Disable sign-ups in Firebase Auth settings (not verified done): the owner check is the UID, but open sign-up is unnecessary exposure.
 
-## Build order
-1. ~~Scaffold Next.js + TypeScript + Tailwind~~ (done)
-2. Firebase project, Firestore and Auth, env vars
-3. Home page layout and sections
-4. Admin login and posts management
-5. Blog list and post pages
-6. Contact form, security rules, deploy to Vercel
+**Next.js 16 / Tailwind 4**
+- `middleware` is `proxy.ts`; `cookies()` is async; typed `LayoutProps<"/">` helpers; no `cacheComponents` here, so the model is static pages + `revalidatePath`.
+- Tailwind v4 `translate-*` uses the CSS `translate` property (not `transform`); `hover:` only applies on hover-capable devices (`@media (hover: hover)`); `transition-colors` also animates `outline-color`.
+- Do **not** delete `.next` or run `next build` while the user's `npm run dev` is running (they share `.next`; the user runs dev on port 3000). Build in a scratch copy instead (copy `node_modules` for real: a symlinked one breaks Turbopack).
+- Lenis' CSS sets `html`/`body` height to auto: use `min-h-dvh` (not `min-h-full`) on `<body>` so the footer sinks on short pages.
+- iPhone browsers zoom into inputs under 16px: `globals.css` forces 16px for fields on `pointer: coarse` (unlayered rule so it beats utilities).
+- A transformed child inside a scroll container (`overflow-y-auto`) flashes a scrollbar while it animates: animate the dialog itself (`dialog[open]` keyframes in `globals.css`), never its content.
+- CSS grid columns need `minmax(0, 1fr)` or one long unbreakable line stretches the layout.
+- `backdrop-filter` on the header makes `position: fixed` children relative to the header: use `absolute`.
+- Hero entrance is CSS (`.rise`), not motion, so text paints before JS loads (LCP). Keep above-the-fold content visible in server HTML.
+
+## Testing approach
+There is no test suite in the repo. Verification is done with throwaway Node scripts in the session scratchpad: `puppeteer-core` driving the system Chrome (`/usr/bin/google-chrome-stable`), signing in by minting a Firebase custom token for `ADMIN_UID` and exchanging it at `/api/auth/session`. Tips: launch with `--blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4` to test hover (headless reports no hover); `waitForFunction` hangs in a background tab (call `bringToFront()`); intercept the Next server-action POST to test payloads without writing; sample `requestAnimationFrame` frames to catch animation glitches; wait ~450ms before reading colours (transitions); Lighthouse runs from a scratch install against a production build. Any test that writes data must use temporary documents and delete them by exact ID.
+
+## Deploy checklist
+1. Commit and push `main` (Vercel deploys). Confirm the deployment is on the latest commit.
+2. After changing `NEXT_PUBLIC_*` or `NEXT_PUBLIC_SITE_URL`: redeploy without build cache.
+3. Publish `firestore.rules` in the Firebase console if it changed (UID must be filled in).
+4. Check `/`, `/admin/login`, `/robots.txt`, `/sitemap.xml`, `/opengraph-image` on the live URL.
+5. One-time: add the site to Google Search Console and submit the sitemap; re-scrape the link preview (LinkedIn Post Inspector etc.).
+
+## Next steps (suggested order)
+1. **Blog:** `lib/posts.ts` + validation, `/admin/posts` (list, editor with Markdown, tags via `ChipsInput`, draft/published, delete via `ConfirmDialog`), `/blog` (search + tag filter), `/blog/[slug]` (`generateMetadata`, `generateStaticParams`, JSON-LD `BlogPosting`), "Latest posts" section, dashboard Posts card + checklist step, nav link, sitemap entries. Decide: plain Markdown + image links first (image upload may need the Blaze plan).
+2. **ATS resume:** print-friendly `/resume` generated from the profile data (no separate CV file; the `cvUrl` field was removed on purpose).
+3. **Contact hardening:** per-IP rate limit (or App Check), optional email notification (e.g. Resend).
+4. **Housekeeping:** delete the leftover test documents, set the real date on the legacy project, turn off Auth sign-ups.
+5. **Later:** analytics (privacy-friendly), project images, automated tests + CI.
+
+## Build order (original plan, with status)
+1. ~~Scaffold Next.js + TypeScript + Tailwind~~ done
+2. ~~Firebase project, Firestore and Auth, env vars~~ done
+3. ~~Home page layout and sections~~ done (+ UI polish, mobile menu, motion)
+4. Admin login and posts management: **login, dashboard, settings, projects, messages done; posts pending**
+5. Blog list and post pages: **pending**
+6. Contact form, security rules, deploy to Vercel: **form, rules, deploy done; rate limiting pending**
+7. ~~SEO~~ done (added to the plan)
