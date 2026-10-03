@@ -104,6 +104,17 @@ function toPayload(f: Form) {
   };
 }
 
+// Role and company are single-line values that wrap instead of scrolling sideways. They use an
+// auto-height textarea, so Enter must not add a line break and pasted line breaks become spaces.
+const flatten = (v: string) => v.replace(/\s*[\r\n]+\s*/g, " ");
+const oneLine = {
+  rows: 1,
+  maxLength: 100,
+  onKeyDown: (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") e.preventDefault();
+  },
+};
+
 const update = <T,>(list: T[], i: number, patch: Partial<T>) =>
   list.map((x, idx) => (idx === i ? { ...x, ...patch } : x));
 
@@ -361,10 +372,10 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
                       <div inert={!x.open} className="space-y-4 border-t border-border p-4 sm:p-5">
                         <div className="grid gap-4 sm:grid-cols-2">
                           <Field label="Role">
-                            <input className={inputClass} required placeholder="e.g. DevOps Engineer" value={x.role} onChange={(e) => setRow(x.uid, { role: e.target.value })} />
+                            <AutoTextarea {...oneLine} className={inputClass} required placeholder="e.g. DevOps Engineer" value={x.role} onChange={(e) => setRow(x.uid, { role: flatten(e.target.value) })} />
                           </Field>
                           <Field label="Company">
-                            <input className={inputClass} required placeholder="e.g. Acme Inc." value={x.company} onChange={(e) => setRow(x.uid, { company: e.target.value })} />
+                            <AutoTextarea {...oneLine} className={inputClass} required placeholder="e.g. Acme Inc." value={x.company} onChange={(e) => setRow(x.uid, { company: flatten(e.target.value) })} />
                           </Field>
                         </div>
 

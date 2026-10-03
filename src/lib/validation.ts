@@ -14,6 +14,11 @@ function text(v: unknown, label: string, max: number, required = false): string 
   return s;
 }
 
+// A single line of text: line breaks collapse into one space.
+function line(v: unknown, label: string, max: number, required = false): string {
+  return text(typeof v === "string" ? v.replace(/\s*[\r\n]+\s*/g, " ") : v, label, max, required);
+}
+
 function items<T>(v: unknown, label: string, max: number, map: (x: unknown) => T): T[] {
   if (!Array.isArray(v)) return fail(`${label} must be a list`);
   if (v.length > max) fail(`${label} has too many items (max ${max})`);
@@ -95,8 +100,8 @@ export function parseProfile(input: unknown): Profile {
       }
 
       return {
-        role: text(e.role, "Experience role", 100, true),
-        company: text(e.company, "Experience company", 100, true),
+        role: line(e.role, "Experience role", 100, true),
+        company: line(e.company, "Experience company", 100, true),
         summary: text(e.summary, "Experience summary", 2000),
         current: e.current as boolean,
         startMonth,
