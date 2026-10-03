@@ -1,4 +1,5 @@
 import "server-only";
+import { Timestamp } from "firebase-admin/firestore";
 import { cache } from "react";
 import type { Profile } from "@/types/content";
 import { defaultProfile } from "./content";
@@ -11,7 +12,15 @@ export const getProfile = cache(async (): Promise<Profile> => {
   try {
     const snap = await adminDb().doc("settings/profile").get();
     if (!snap.exists) return defaultProfile;
-    return parseProfile({ ...defaultProfile, ...snap.data() });
+    const data = snap.data()!;
+    // Firestore Timestamps can't cross into client components: hand them over as ISO strings.
+    const experience = Array.isArray(data.experience)
+      ? data.experience.map((e: Record<string, unknown>) => ({
+          ...e,
+          createdAt: e.createdAt instanceof Timestamp ? e.createdAt.toDate().toISOString() : e.createdAt,
+        }))
+      : data.experience;
+    return parseProfile({ ...defaultProfile, ...data, experience });
   } catch (e) {
     console.error("getProfile failed, using defaults:", e);
     return defaultProfile;

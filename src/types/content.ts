@@ -3,8 +3,13 @@ export type SocialLink = { label: string; href: string };
 export type ExperienceItem = {
   role: string;
   company: string;
-  period: string;
   summary: string;
+  current: boolean; // "I am currently working here"
+  startMonth: number; // 1-12
+  startYear: number;
+  endMonth: number | null; // null while current
+  endYear: number | null;
+  createdAt: string; // ISO datetime. Stored in Firestore as a Timestamp. "" until first saved.
 };
 
 // Stored in Firestore as the single document `settings/profile`.

@@ -33,6 +33,25 @@ function url(v: unknown, label: string, allowRelative = false): string {
   return s;
 }
 
+function int(v: unknown, label: string, min: number, max: number): number {
+  const n = typeof v === "number" ? v : typeof v === "string" && v.trim() !== "" ? Number(v) : NaN;
+  if (v === undefined || v === null || v === "" || Number.isNaN(n)) return fail(`${label} is required`);
+  if (!Number.isInteger(n) || n < min || n > max) return fail(`${label} is not valid`);
+  return n;
+}
+
+// "" (not set yet) or an ISO date/datetime such as 2022-02-01 or 2022-02-01T10:30:00.000Z.
+// Returned normalised to a full ISO datetime in UTC.
+function isoDateTime(v: unknown, label: string): string {
+  if (v === undefined || v === null || v === "") return "";
+  const s = text(v, label, 40);
+  const d = new Date(s);
+  if (!/^\d{4}-\d{2}-\d{2}(T[\d:.]+(Z|[+-]\d{2}:\d{2}))?$/.test(s) || Number.isNaN(d.getTime())) {
+    fail(`${label} must be a valid date and time`);
+  }
+  return d.toISOString();
+}
+
 function link(x: unknown, label: string): SocialLink {
   const o = (x ?? {}) as Record<string, unknown>;
   return { label: text(o.label, `${label} name`, 40, true), href: url(o.href, `${label} URL`) || fail(`${label} URL is required`) };
@@ -61,11 +80,32 @@ export function parseProfile(input: unknown): Profile {
     socials: items(o.socials, "Social links", 10, (x) => link(x, "Social link")),
     experience: items(o.experience, "Experience", 20, (x): ExperienceItem => {
       const e = (x ?? {}) as Record<string, unknown>;
+      if (typeof e.current !== "boolean") fail("Experience: current must be true or false");
+
+      const startMonth = int(e.startMonth, "Experience start month", 1, 12);
+      const startYear = int(e.startYear, "Experience start year", 1950, 2100);
+
+      // While "currently working here", there is no end date.
+      let endMonth: number | null = null;
+      let endYear: number | null = null;
+      if (!e.current) {
+        endMonth = int(e.endMonth, "Experience end month", 1, 12);
+        endYear = int(e.endYear, "Experience end year", 1950, 2100);
+        if (endYear * 12 + endMonth < startYear * 12 + startMonth) {
+          fail("Experience end date can't be before the start date");
+        }
+      }
+
       return {
         role: text(e.role, "Experience role", 100, true),
         company: text(e.company, "Experience company", 100, true),
-        period: text(e.period, "Experience period", 60),
-        summary: text(e.summary, "Experience summary", 600),
+        summary: text(e.summary, "Experience summary", 2000),
+        current: e.current as boolean,
+        startMonth,
+        startYear,
+        endMonth,
+        endYear,
+        createdAt: isoDateTime(e.createdAt, "Experience created at"),
       };
     }),
   };

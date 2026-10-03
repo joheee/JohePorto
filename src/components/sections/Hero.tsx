@@ -7,7 +7,7 @@ export default async function Hero() {
   const profile = await getProfile();
 
   return (
-    <section className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-5xl flex-col justify-center px-6 py-20">
+    <section id="hero" className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-5xl flex-col justify-center px-6 py-20">
       <Stagger>
         <StaggerItem>
           <p className="mb-6 font-mono text-base text-accent sm:text-lg">

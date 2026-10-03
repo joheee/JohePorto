@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { saveProject } from "@/app/admin/(protected)/actions";
 import type { Project, SocialLink } from "@/types/content";
 import { Field, SaveStatus, buttonClass, ghostButtonClass, inputClass } from "./fields";
+import AutoTextarea from "./AutoTextarea";
 
 const slugify = (s: string) =>
   s
@@ -83,10 +84,10 @@ export default function ProjectForm({ initial }: { initial?: Project }) {
         />
       </Field>
       <Field label="Summary" hint="Shown on the card.">
-        <textarea className={inputClass} rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} />
+        <AutoTextarea className={inputClass} rows={2} value={summary} onChange={(e) => setSummary(e.target.value)} />
       </Field>
       <Field label="Description" hint="Shown in the detail modal.">
-        <textarea className={inputClass} rows={6} value={description} onChange={(e) => setDescription(e.target.value)} />
+        <AutoTextarea className={inputClass} rows={6} value={description} onChange={(e) => setDescription(e.target.value)} />
       </Field>
       <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
         <Field label="Stack" hint="Comma separated.">

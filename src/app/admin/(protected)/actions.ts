@@ -1,8 +1,9 @@
 "use server";
 
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
 import { getAdmin } from "@/lib/auth";
+import { withCreatedAt } from "@/lib/format";
 import { adminDb } from "@/lib/firebase-admin";
 import { SLUG_RE, ValidationError, parseProfile, parseProject } from "@/lib/validation";
 
@@ -28,7 +29,15 @@ export async function saveProfile(input: unknown): Promise<ActionResult> {
     const profile = parseProfile(input);
     await adminDb()
       .doc("settings/profile")
-      .set({ ...profile, updatedAt: FieldValue.serverTimestamp() });
+      .set({
+        ...profile,
+        // createdAt is a real Firestore Timestamp: kept for existing entries, set now for new ones.
+        experience: withCreatedAt(profile.experience).map((e) => ({
+          ...e,
+          createdAt: Timestamp.fromDate(new Date(e.createdAt)),
+        })),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
   });
 }
 

@@ -23,8 +23,13 @@ export const defaultProfile: Profile = {
     {
       role: "Software Engineer",
       company: "Company Name",
-      period: "2024 – Present",
       summary: "What you built and the impact it had.",
+      current: true,
+      startMonth: 1,
+      startYear: 2024,
+      endMonth: null,
+      endYear: null,
+      createdAt: "",
     },
   ],
 };

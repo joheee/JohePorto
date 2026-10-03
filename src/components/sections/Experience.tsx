@@ -1,25 +1,29 @@
+import FormattedText from "@/components/FormattedText";
 import Reveal from "@/components/motion/Reveal";
+import { formatPeriod, sortExperienceNewestFirst } from "@/lib/format";
 import { getProfile } from "@/lib/settings";
 import Section from "./Section";
 
 export default async function Experience() {
   const profile = await getProfile();
+  // Current roles first, then by end date and start date (newest first).
+  const experience = sortExperienceNewestFirst(profile.experience);
 
   return (
     <Section id="experience" number="03" title="Experience">
-      {profile.experience.length === 0 ? (
+      {experience.length === 0 ? (
         <p className="text-muted">Nothing here yet.</p>
       ) : (
         <ol className="space-y-8 border-l border-border pl-6">
-          {profile.experience.map((e, i) => (
-            <li key={`${e.company}-${e.period}-${i}`}>
+          {experience.map((e, i) => (
+            <li key={`${e.company}-${e.startYear}-${e.startMonth}-${i}`}>
               <Reveal delay={i * 0.15} className="relative">
                 <span className="absolute -left-[1.9rem] top-2 h-2 w-2 rounded-full bg-accent" />
-                {e.period && <p className="font-mono text-xs text-muted">{e.period}</p>}
+                <p className="font-mono text-xs text-muted">{formatPeriod(e)}</p>
                 <h3 className="mt-1 font-semibold">
                   {e.role} · {e.company}
                 </h3>
-                {e.summary && <p className="mt-2 text-muted">{e.summary}</p>}
+                {e.summary && <FormattedText text={e.summary} className="mt-2 text-muted" />}
               </Reveal>
             </li>
           ))}
