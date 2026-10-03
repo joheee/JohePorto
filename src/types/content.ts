@@ -38,3 +38,13 @@ export type Project = {
   links: SocialLink[];
   order: number;
 };
+
+// Contact-form message, stored in Firestore as `messages/{id}`.
+export type Message = {
+  id: string;
+  name: string;
+  email: string;
+  text: string;
+  createdAt: string; // ISO datetime (Firestore Timestamp)
+  read: boolean; // messages saved before this field existed count as unread
+};

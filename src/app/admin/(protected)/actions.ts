@@ -10,12 +10,14 @@ import { SLUG_RE, ValidationError, parseProfile, parseProject } from "@/lib/vali
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 // Server Actions are reachable by direct POST, so every one re-checks the owner itself.
-async function guard(fn: () => Promise<void>): Promise<ActionResult> {
+async function guard(fn: () => Promise<void>, { paths }: { paths?: string[] } = {}): Promise<ActionResult> {
   if (!(await getAdmin())) return { ok: false, error: "Not authorized. Please sign in again." };
   try {
     await fn();
-    // Rebuild the public pages (and the layout: name, metadata) with the new data.
-    revalidatePath("/", "layout");
+    // Default: rebuild the whole site (public pages, name/metadata in the layout, admin lists).
+    // `paths`: refresh only those pages. Either way the page you're on updates in the same response.
+    if (paths) paths.forEach((p) => revalidatePath(p));
+    else revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
     if (e instanceof ValidationError) return { ok: false, error: e.message };
@@ -63,4 +65,34 @@ export async function deleteProject(slug: string): Promise<ActionResult> {
     if (typeof slug !== "string" || !SLUG_RE.test(slug)) throw new ValidationError("Invalid project");
     await adminDb().collection("projects").doc(slug).delete();
   });
+}
+
+// Firestore auto-generated document IDs.
+const MESSAGE_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
+
+// The public site doesn't show messages: refresh only the inbox and the dashboard counts.
+const MESSAGE_PATHS = ["/admin/messages", "/admin"];
+
+export async function setMessageRead(id: string, read: boolean): Promise<ActionResult> {
+  return guard(
+    async () => {
+      if (typeof id !== "string" || !MESSAGE_ID_RE.test(id) || typeof read !== "boolean") {
+        throw new ValidationError("Invalid message");
+      }
+      const ref = adminDb().collection("messages").doc(id);
+      if (!(await ref.get()).exists) throw new ValidationError("Message not found");
+      await ref.update({ read });
+    },
+    { paths: MESSAGE_PATHS },
+  );
+}
+
+export async function deleteMessage(id: string): Promise<ActionResult> {
+  return guard(
+    async () => {
+      if (typeof id !== "string" || !MESSAGE_ID_RE.test(id)) throw new ValidationError("Invalid message");
+      await adminDb().collection("messages").doc(id).delete();
+    },
+    { paths: MESSAGE_PATHS },
+  );
 }

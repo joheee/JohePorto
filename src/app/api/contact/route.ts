@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
   await adminDb()
     .collection("messages")
-    .add({ name, email, text, createdAt: FieldValue.serverTimestamp() });
+    .add({ name, email, text, read: false, createdAt: FieldValue.serverTimestamp() });
 
   return Response.json({ ok: true });
 }

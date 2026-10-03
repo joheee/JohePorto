@@ -1,26 +1,44 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { deleteProject } from "@/app/admin/(protected)/actions";
+import ConfirmDialog from "./ConfirmDialog";
 import { ghostButtonClass } from "./fields";
 
 export default function DeleteProjectButton({ slug, title }: { slug: string; title: string }) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
 
-  function onClick() {
-    if (!confirm(`Delete "${title}"? This can't be undone.`)) return;
+  function onConfirm() {
+    setOpen(false);
+    setError("");
     startTransition(async () => {
       const res = await deleteProject(slug);
-      if (!res.ok) alert(res.error);
+      if (!res.ok) setError(res.error);
       router.refresh();
     });
   }
 
   return (
-    <button type="button" onClick={onClick} disabled={pending} className={`${ghostButtonClass} text-red-500`}>
-      {pending ? "Deleting…" : "Delete"}
-    </button>
+    <>
+      <button type="button" onClick={() => setOpen(true)} disabled={pending} className={`${ghostButtonClass} text-red-500`}>
+        {pending ? "Deleting…" : "Delete"}
+      </button>
+      {error && (
+        <span role="alert" className="text-sm text-red-500">
+          {error}
+        </span>
+      )}
+      <ConfirmDialog
+        open={open}
+        title="Delete this project?"
+        description={`"${title}" will be removed from your site. This can't be undone.`}
+        onConfirm={onConfirm}
+        onCancel={() => setOpen(false)}
+      />
+    </>
   );
 }

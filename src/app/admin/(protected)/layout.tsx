@@ -19,6 +19,9 @@ export default async function ProtectedLayout({ children }: LayoutProps<"/admin"
           <Link href="/admin/projects" className="text-muted transition-colors hover:text-foreground">
             Projects
           </Link>
+          <Link href="/admin/messages" className="text-muted transition-colors hover:text-foreground">
+            Messages
+          </Link>
         </nav>
         <div className="flex items-center gap-4 text-sm text-muted">
           <span className="hidden sm:inline">{admin.email}</span>
