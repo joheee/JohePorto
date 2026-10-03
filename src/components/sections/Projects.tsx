@@ -106,13 +106,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
         className="m-auto max-h-[85vh] w-[min(92vw,40rem)] overflow-y-auto rounded-2xl border border-border bg-background p-0 text-foreground backdrop:bg-black/50 backdrop:backdrop-blur-sm"
       >
         {selected && (
-          <motion.div
-            key={selected.slug}
-            className="p-6 sm:p-8"
-            initial={{ opacity: 0, scale: 0.96, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
+          <div className="p-6 sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <h3 className="text-2xl font-bold tracking-tight">{selected.title}</h3>
               <button
@@ -149,7 +143,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
                 ))}
               </ul>
             )}
-          </motion.div>
+          </div>
         )}
       </dialog>
     </Section>
