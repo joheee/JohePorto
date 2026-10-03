@@ -1,5 +1,5 @@
 import FormattedText from "@/components/FormattedText";
-import Reveal from "@/components/motion/Reveal";
+import TimelineItem from "@/components/motion/TimelineItem";
 import { formatPeriod, sortExperienceNewestFirst } from "@/lib/format";
 import { getProfile } from "@/lib/settings";
 import Section from "./Section";
@@ -14,18 +14,15 @@ export default async function Experience() {
       {experience.length === 0 ? (
         <p className="text-muted">Nothing here yet.</p>
       ) : (
-        <ol className="space-y-8 border-l border-border pl-6">
+        <ol className="pl-6">
           {experience.map((e, i) => (
-            <li key={`${e.company}-${e.startYear}-${e.startMonth}-${i}`}>
-              <Reveal delay={i * 0.15} className="relative">
-                <span className="absolute -left-[1.9rem] top-2 h-2 w-2 rounded-full bg-accent" />
-                <p className="font-mono text-xs text-muted">{formatPeriod(e)}</p>
-                <h3 className="mt-1 font-semibold">
-                  {e.role} · {e.company}
-                </h3>
-                {e.summary && <FormattedText text={e.summary} className="mt-2 text-muted" />}
-              </Reveal>
-            </li>
+            <TimelineItem key={`${e.company}-${e.startYear}-${e.startMonth}-${i}`} last={i === experience.length - 1}>
+              <p className="font-mono text-xs text-muted">{formatPeriod(e)}</p>
+              <h3 className="mt-1 font-semibold">
+                {e.role} · {e.company}
+              </h3>
+              {e.summary && <FormattedText text={e.summary} className="mt-2 text-muted" />}
+            </TimelineItem>
           ))}
         </ol>
       )}
