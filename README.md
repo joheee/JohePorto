@@ -2,7 +2,7 @@
 
 A personal portfolio site with a private admin. All public content (name, hero, bio, skills, experience, projects) is stored in Firestore and edited from `/admin`, so no code change is needed to update the site.
 
-**Live:** https://johedotcom.vercel.app
+**Live:** https://johe.my.id
 
 ## Features
 
