@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Replace OWNER_UID with your Firebase Auth UID (same value as ADMIN_UID).
+    function isOwner() {
+      return request.auth != null && request.auth.uid == '7S8Hb5sMOvYLh0Jnem0NqlZPBDJ2';
+    }
+
+    match /posts/{id} {
+      allow read: if resource.data.status == 'published' || isOwner();
+      allow write: if isOwner();
+    }
+
+    match /projects/{id} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    // Contact form: the public can only create; only the owner can read or delete.
+    match /messages/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'email', 'text', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 100
+        && request.resource.data.email is string && request.resource.data.email.size() <= 200
+        && request.resource.data.text is string && request.resource.data.text.size() <= 5000;
+      allow read, update, delete: if isOwner();
+    }
+  }
+}
