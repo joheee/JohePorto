@@ -3,9 +3,11 @@ import Contact from "@/components/sections/Contact";
 import Experience from "@/components/sections/Experience";
 import Hero from "@/components/sections/Hero";
 import Projects from "@/components/sections/Projects";
-import { projects } from "@/lib/content";
+import { getProjects } from "@/lib/projects";
 
-export default function Home() {
+export default async function Home() {
+  const projects = await getProjects();
+
   return (
     <>
       <Hero />

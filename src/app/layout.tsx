@@ -5,7 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import MotionProvider from "@/components/motion/MotionProvider";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import SmoothScroll from "@/components/motion/SmoothScroll";
-import { profile } from "@/lib/content";
+import { getProfile } from "@/lib/settings";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,13 +18,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: `${profile.name} | ${profile.role}`,
-    template: `%s | ${profile.name}`,
-  },
-  description: profile.pitch,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const profile = await getProfile();
+  return {
+    title: {
+      default: `${profile.name} | ${profile.roles[0]}`,
+      template: `%s | ${profile.name}`,
+    },
+    description: profile.pitch,
+  };
+}
 
 // Runs before paint so the saved/system theme is applied without a flash.
 const themeScript = `(function(){try{var t=localStorage.getItem("theme");if(!t){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}})()`;

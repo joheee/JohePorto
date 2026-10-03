@@ -13,6 +13,12 @@ export default async function ProtectedLayout({ children }: LayoutProps<"/admin"
           <Link href="/admin" className="font-semibold">
             Dashboard
           </Link>
+          <Link href="/admin/settings" className="text-muted transition-colors hover:text-foreground">
+            Settings
+          </Link>
+          <Link href="/admin/projects" className="text-muted transition-colors hover:text-foreground">
+            Projects
+          </Link>
         </nav>
         <div className="flex items-center gap-4 text-sm text-muted">
           <span className="hidden sm:inline">{admin.email}</span>

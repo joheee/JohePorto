@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import type { Project } from "@/lib/content";
+import type { Project } from "@/types/content";
 import Section from "./Section";
 
 export default function Projects({ projects }: { projects: Project[] }) {
@@ -18,6 +18,7 @@ export default function Projects({ projects }: { projects: Project[] }) {
 
   return (
     <Section id="projects" number="02" title="Projects">
+      {projects.length === 0 && <p className="text-muted">Projects coming soon.</p>}
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((p) => (
           <motion.li
