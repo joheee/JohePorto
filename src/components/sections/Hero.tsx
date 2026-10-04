@@ -1,17 +1,34 @@
 import Link from "next/link";
 import PingDot from "@/components/PingDot";
-import Reveal from "@/components/motion/Reveal";
 import RotatingText from "@/components/motion/RotatingText";
-import { experienceStats } from "@/lib/format";
+import { experienceStats, sortExperienceNewestFirst } from "@/lib/format";
 import { getProfile } from "@/lib/settings";
 
 // Staggered entrance in plain CSS (see .rise in globals.css): it starts on first paint, so the text is
 // visible before JavaScript has loaded. That keeps Largest Contentful Paint fast.
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
+// "4+" -> counts 0..4 then shows "+". The real value stays in the page for screen readers; the animated
+// digits are drawn by CSS (see .count in globals.css).
+function StatValue({ value }: { value: string }) {
+  const m = /^(\d+)(.*)$/.exec(value);
+  if (!m) return <p className="text-4xl font-bold tracking-tight">{value}</p>;
+  return (
+    <p className="text-4xl font-bold tracking-tight">
+      <span className="sr-only">{value}</span>
+      <span aria-hidden>
+        <span className="count" style={{ "--to": m[1] } as React.CSSProperties} />
+        {m[2]}
+      </span>
+    </p>
+  );
+}
+
 export default async function Hero() {
   const profile = await getProfile();
   const stats = experienceStats(profile.experience, profile.skills.length);
+  // The newest role you are still in (nothing to maintain: it follows Settings > Experience).
+  const current = sortExperienceNewestFirst(profile.experience).find((e) => e.current);
 
   return (
     <section
@@ -44,9 +61,16 @@ export default async function Hero() {
               <p className="mt-8 max-w-xl text-lg leading-8 text-muted sm:text-xl">{profile.pitch}</p>
             </div>
           )}
+          {current && (
+            <div className="rise" style={rise(4)}>
+              <p className="mt-5 font-mono text-sm text-muted">
+                Currently <span className="text-foreground">{current.role}</span> at <span className="text-foreground">{current.company}</span>
+              </p>
+            </div>
+          )}
           {/* Phones: the two main actions side by side, the social links as an even row below.
               From sm up the wrappers disappear (`contents`) and everything sits in one row. */}
-          <div className="rise mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center" style={rise(4)}>
+          <div className="rise mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center" style={rise(5)}>
             <div className="grid grid-cols-2 gap-3 sm:contents">
               <Link
                 href="/#contact"
@@ -87,16 +111,16 @@ export default async function Hero() {
         </div>
 
         {stats.length > 0 && (
-          <Reveal delay={0.5} className="hidden lg:block">
+          <div className="rise hidden lg:block" style={rise(5)}>
             <ul className="space-y-3">
               {stats.map((s) => (
                 <li key={s.label} className="rounded-2xl border border-border bg-card/60 px-5 py-4 transition-colors hover:border-accent">
-                  <p className="text-4xl font-bold tracking-tight">{s.value}</p>
+                  <StatValue value={s.value} />
                   <p className="mt-1 text-sm text-muted">{s.label}</p>
                 </li>
               ))}
             </ul>
-          </Reveal>
+          </div>
         )}
       </div>
 

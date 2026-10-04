@@ -74,6 +74,66 @@ summary:focus-visible {
      follows each element's own corners. */
 }
 
+/* Cursor glow behind the page (see CursorGlow.tsx): a soft accent-coloured light. */
+.cursor-glow {
+  /* Softer on the light theme, where the same tint reads much stronger against white. */
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 13%, transparent), transparent);
+  animation: glow-drift 16s ease-in-out infinite alternate;
+}
+
+[data-theme="dark"] .cursor-glow {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent);
+}
+
+@keyframes glow-drift {
+  from {
+    transform: translate3d(-3rem, -1.5rem, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3rem, 2rem, 0) scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-glow {
+    animation: none;
+  }
+}
+
+/* Stat numbers count up from 0 in pure CSS (an animatable integer): no JavaScript, no flicker. Without
+   support for @property, or with reduced motion, the final number is simply shown. Keep them out of
+   motion's Reveal: inside its opacity:0 wrapper the browser never redraws the changing counter text. */
+@property --count {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: false;
+}
+
+.count {
+  --count: var(--to);
+  counter-reset: count var(--count);
+  animation: count-up 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.9s both;
+}
+
+.count::before {
+  content: counter(count);
+}
+
+@keyframes count-up {
+  from {
+    --count: 0;
+  }
+  to {
+    --count: var(--to);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .count {
+    animation: none;
+  }
+}
+
 /* Hero "scroll" cue: a small bar that slides down and fades. */
 @keyframes scroll-cue {
   0% {

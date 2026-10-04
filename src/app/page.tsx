@@ -1,3 +1,4 @@
+import CursorGlow from "@/components/motion/CursorGlow";
 import About from "@/components/sections/About";
 import Contact from "@/components/sections/Contact";
 import Experience from "@/components/sections/Experience";
@@ -35,6 +36,7 @@ export default async function Home() {
     <>
       {/* "<" is escaped so profile text can never close the script tag (see the Next.js JSON-LD guide). */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <CursorGlow />
       <Hero />
       <About />
       <Projects projects={projects} />
