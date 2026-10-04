@@ -1,7 +1,7 @@
 "use server";
 
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { getAdmin } from "@/lib/auth";
 import { withCreatedAt } from "@/lib/format";
 import { buildSkillIndex, canonicalizeStack } from "@/lib/skills";
@@ -19,7 +19,10 @@ async function guard(fn: () => Promise<void>, { paths }: { paths?: string[] } = 
     // Default: rebuild the whole site (public pages, name/metadata in the layout, admin lists).
     // `paths`: refresh only those pages. Either way the page you're on updates in the same response.
     if (paths) paths.forEach((p) => revalidatePath(p));
-    else revalidatePath("/", "layout");
+    else {
+      updateTag("site"); // the cached profile/projects reads (lib/settings.ts, lib/projects.ts)
+      revalidatePath("/", "layout");
+    }
     return { ok: true };
   } catch (e) {
     if (e instanceof ValidationError) return { ok: false, error: e.message };

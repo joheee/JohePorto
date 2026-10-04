@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import type { Project } from "@/types/content";
 import { adminDb } from "./firebase-admin";
@@ -13,9 +14,10 @@ function withLegacyDate(data: FirebaseFirestore.DocumentData) {
   return saved ? { ...data, month: saved.getUTCMonth() + 1, year: saved.getUTCFullYear() } : data;
 }
 
-// All projects, oldest first by their month and year. Invalid documents are skipped.
-export const getProjects = cache(async (): Promise<Project[]> => {
-  try {
+// All projects, oldest first by their month and year. Invalid documents are skipped. Cached across
+// requests like the profile (see settings.ts); a failed read throws, so it is never cached.
+const readProjects = unstable_cache(
+  async (): Promise<Project[]> => {
     const snap = await adminDb().collection("projects").get();
     const projects: Project[] = [];
     for (const doc of snap.docs) {
@@ -26,6 +28,14 @@ export const getProjects = cache(async (): Promise<Project[]> => {
       }
     }
     return sortProjectsByDate(projects);
+  },
+  ["projects", process.env.VERCEL_GIT_COMMIT_SHA ?? "local"],
+  { tags: ["site"], revalidate: 3600 },
+);
+
+export const getProjects = cache(async (): Promise<Project[]> => {
+  try {
+    return await readProjects();
   } catch (e) {
     console.error("getProjects failed:", e);
     return [];

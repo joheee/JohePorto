@@ -1,5 +1,6 @@
 import "server-only";
 import { Timestamp } from "firebase-admin/firestore";
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import type { Profile } from "@/types/content";
 import { defaultProfile } from "./content";
@@ -8,8 +9,11 @@ import { parseProfile } from "./validation";
 
 // Reads settings/profile (Admin SDK). Falls back to the placeholder profile if the document
 // doesn't exist yet or can't be read, so the site never breaks.
-export const getProfile = cache(async (): Promise<Profile> => {
-  try {
+// Pages render per request now (CSP nonce), so the Firestore read is cached across requests. Saves clear
+// it (updateTag("site") in the actions); the hourly refresh and the deploy id in the key cover changes made
+// from local dev, which cannot reach the production cache.
+const readProfile = unstable_cache(
+  async (): Promise<Profile> => {
     const snap = await adminDb().doc("settings/profile").get();
     if (!snap.exists) return defaultProfile;
     const data = snap.data()!;
@@ -24,6 +28,15 @@ export const getProfile = cache(async (): Promise<Profile> => {
     // not pick up the placeholder groups.
     const skillGroups = data.skillGroups ?? (data.skills ? undefined : defaultProfile.skillGroups);
     return parseProfile({ ...defaultProfile, ...data, skillGroups, experience });
+  },
+  ["profile", process.env.VERCEL_GIT_COMMIT_SHA ?? "local"],
+  { tags: ["site"], revalidate: 3600 },
+);
+
+// A failed read is never cached (the cached function throws), it just shows the placeholder this once.
+export const getProfile = cache(async (): Promise<Profile> => {
+  try {
+    return await readProfile();
   } catch (e) {
     console.error("getProfile failed, using defaults:", e);
     return defaultProfile;
