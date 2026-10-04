@@ -193,6 +193,7 @@ function Icon({ d, className = "h-4 w-4" }: { d: string; className?: string }) {
 const PLUS = "M12 5v14M5 12h14";
 const TRASH = "M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14M10 11v6M14 11v6";
 const CHEVRON = "m6 9 6 6 6-6";
+const CHEVRON_UP = "m18 15-6-6-6 6";
 const CLOSE = "M6 6l12 12M18 6L6 18";
 
 // ---------- the form ----------
@@ -215,6 +216,22 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
     setGroup(g.uid, { items: names.map((n) => g.items.find((s) => s.name.toLowerCase() === n.toLowerCase()) ?? { name: n, aliases: [] }) });
   const addToGroup = (uid: string, ...names: string[]) =>
     setForm((f) => ({ ...f, skillGroups: f.skillGroups.map((g) => (g.uid === uid ? { ...g, items: [...g.items, ...names.map((name) => ({ name, aliases: [] }))] } : g)) }));
+  // Moves a group one place. The order here is the order on the site and on the resume.
+  const [moved, setMoved] = useState(""); // spoken to screen readers
+  function moveGroup(uid: string, by: -1 | 1) {
+    const from = form.skillGroups.findIndex((g) => g.uid === uid);
+    const to = from + by;
+    if (from < 0 || to < 0 || to >= form.skillGroups.length) return;
+    const next = [...form.skillGroups];
+    [next[from], next[to]] = [next[to], next[from]];
+    set("skillGroups", next);
+    setMoved(`${next[to].name || "Group"} moved to position ${to + 1} of ${next.length}`);
+    // The button may now be disabled (first/last place): keep focus on one that still works.
+    requestAnimationFrame(() => {
+      const pick = (dir: string) => document.querySelector<HTMLButtonElement>(`[data-move="${uid}:${dir}"]:not(:disabled)`);
+      (pick(by === 1 ? "down" : "up") ?? pick(by === 1 ? "up" : "down"))?.focus();
+    });
+  }
   const setEdu = (uid: string, patch: Partial<EduRow>) =>
     setForm((f) => ({ ...f, education: f.education.map((r) => (r.uid === uid ? { ...r, ...patch } : r)) }));
 
@@ -330,13 +347,34 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
           </Field>
         </FormCard>
 
-        <FormCard id="skills" icon="skills" title="Skills" description="Grouped like on your resume. Jobs and projects pick from these, so spellings stay consistent.">
+        <FormCard id="skills" icon="skills" title="Skills" description="Grouped like on your resume, in the order shown here. Jobs and projects pick from these, so spellings stay consistent.">
           {form.skillGroups.length === 0 && <p className="text-sm text-muted">No groups yet. Add one, for example &quot;DevOps Tools&quot;.</p>}
 
           <div className="space-y-3">
+            <p role="status" className="sr-only">
+              {moved}
+            </p>
             {form.skillGroups.map((g, i) => (
               <div key={g.uid} className="space-y-3 rounded-xl border border-border bg-background p-4">
                 <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 gap-1">
+                    {([-1, 1] as const).map((by) => {
+                      const disabled = by === -1 ? i === 0 : i === form.skillGroups.length - 1;
+                      return (
+                        <button
+                          key={by}
+                          type="button"
+                          data-move={`${g.uid}:${by === -1 ? "up" : "down"}`}
+                          aria-label={`Move ${g.name || `group ${i + 1}`} ${by === -1 ? "up" : "down"}`}
+                          disabled={disabled}
+                          onClick={() => moveGroup(g.uid, by)}
+                          className="flex h-10 w-9 items-center justify-center rounded-xl border border-border text-muted transition-colors hover:bg-card hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted"
+                        >
+                          <Icon d={by === -1 ? CHEVRON_UP : CHEVRON} />
+                        </button>
+                      );
+                    })}
+                  </div>
                   <input
                     className={inputClass}
                     aria-label={`Group ${i + 1} name`}
