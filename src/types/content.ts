@@ -12,6 +12,18 @@ export type ExperienceItem = {
   createdAt: string; // ISO datetime. Stored in Firestore as a Timestamp. "" until first saved.
 };
 
+export type EducationItem = {
+  school: string;
+  degree: string;
+  location: string; // "" when unset
+  summary: string; // one point per line, like experience (e.g. "GPA: 3.72")
+  current: boolean; // still studying
+  startMonth: number;
+  startYear: number;
+  endMonth: number | null;
+  endYear: number | null;
+};
+
 // Stored in Firestore as the single document `settings/profile`.
 export type Profile = {
   name: string;
@@ -25,6 +37,7 @@ export type Profile = {
   skills: string[];
   socials: SocialLink[];
   experience: ExperienceItem[];
+  education: EducationItem[];
 };
 
 // Stored in Firestore as `projects/{slug}`.

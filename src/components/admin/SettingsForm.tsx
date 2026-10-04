@@ -27,6 +27,20 @@ type Row = {
   createdAt: string; // not editable: carried through so existing entries keep it
 };
 
+type EduRow = {
+  uid: string;
+  open: boolean;
+  school: string;
+  degree: string;
+  location: string;
+  summary: string;
+  current: boolean;
+  startMonth: string;
+  startYear: string;
+  endMonth: string;
+  endYear: string;
+};
+
 type Form = {
   name: string;
   roles: string[];
@@ -39,6 +53,7 @@ type Form = {
   email: string;
   socials: SocialLink[];
   experience: Row[];
+  education: EduRow[];
 };
 
 const SECTIONS: { id: string; label: string; icon: CardIcon }[] = [
@@ -46,7 +61,30 @@ const SECTIONS: { id: string; label: string; icon: CardIcon }[] = [
   { id: "about", label: "About", icon: "about" },
   { id: "contact", label: "Contact & links", icon: "contact" },
   { id: "experience", label: "Experience", icon: "experience" },
+  { id: "education", label: "Education", icon: "education" },
 ];
+
+// Month/year pieces shared by experience and education rows.
+type RowDates = { current: boolean; startMonth: string; startYear: string; endMonth: string; endYear: string };
+
+const datesPayload = (x: RowDates) => ({
+  current: x.current,
+  startMonth: x.startMonth === "" ? null : Number(x.startMonth),
+  startYear: x.startYear === "" ? null : Number(x.startYear),
+  endMonth: x.current || x.endMonth === "" ? null : Number(x.endMonth),
+  endYear: x.current || x.endYear === "" ? null : Number(x.endYear),
+});
+
+const periodLabel = (x: RowDates) =>
+  x.startMonth !== "" && x.startYear !== "" && (x.current || (x.endMonth !== "" && x.endYear !== ""))
+    ? formatPeriod({
+        current: x.current,
+        startMonth: Number(x.startMonth),
+        startYear: Number(x.startYear),
+        endMonth: x.current ? null : Number(x.endMonth),
+        endYear: x.current ? null : Number(x.endYear),
+      })
+    : "Dates not set";
 
 function toForm(p: Profile): Form {
   return {
@@ -73,6 +111,19 @@ function toForm(p: Profile): Form {
       endYear: x.endYear === null ? "" : String(x.endYear),
       createdAt: x.createdAt,
     })),
+    education: p.education.map((x, i) => ({
+      uid: `d${i}`,
+      open: false,
+      school: x.school,
+      degree: x.degree,
+      location: x.location,
+      summary: x.summary,
+      current: x.current,
+      startMonth: String(x.startMonth),
+      startYear: String(x.startYear),
+      endMonth: x.endMonth === null ? "" : String(x.endMonth),
+      endYear: x.endYear === null ? "" : String(x.endYear),
+    })),
   };
 }
 
@@ -93,12 +144,15 @@ function toPayload(f: Form) {
       role: x.role,
       company: x.company,
       summary: x.summary,
-      current: x.current,
-      startMonth: x.startMonth === "" ? null : Number(x.startMonth),
-      startYear: x.startYear === "" ? null : Number(x.startYear),
-      endMonth: x.current || x.endMonth === "" ? null : Number(x.endMonth),
-      endYear: x.current || x.endYear === "" ? null : Number(x.endYear),
+      ...datesPayload(x),
       createdAt: x.createdAt,
+    })),
+    education: f.education.map((x) => ({
+      school: x.school,
+      degree: x.degree,
+      location: x.location,
+      summary: x.summary,
+      ...datesPayload(x),
     })),
   };
 }
@@ -136,7 +190,7 @@ const CLOSE = "M6 6l12 12M18 6L6 18";
 export default function SettingsForm({ initial }: { initial: Profile }) {
   const [form, setForm] = useState<Form>(() => toForm(initial));
   const [saved, setSaved] = useState<Form>(form); // last saved state: what "Discard" returns to
-  const [toRemove, setToRemove] = useState<string | null>(null); // uid of the experience entry being removed
+  const [toRemove, setToRemove] = useState<string | null>(null); // uid of the experience or education entry being removed
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
   const counter = useRef(0);
@@ -144,6 +198,8 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   const setRow = (uid: string, patch: Partial<Row>) =>
     setForm((f) => ({ ...f, experience: f.experience.map((r) => (r.uid === uid ? { ...r, ...patch } : r)) }));
+  const setEdu = (uid: string, patch: Partial<EduRow>) =>
+    setForm((f) => ({ ...f, education: f.education.map((r) => (r.uid === uid ? { ...r, ...patch } : r)) }));
 
   const dirty = JSON.stringify(toPayload(form)) !== JSON.stringify(toPayload(saved));
 
@@ -177,7 +233,16 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
     }));
   }
 
+  function addEducation() {
+    const uid = `n${++counter.current}`;
+    setForm((f) => ({
+      ...f,
+      education: [...f.education, { uid, open: true, school: "", degree: "", location: "", summary: "", current: false, startMonth: "", startYear: "", endMonth: "", endYear: "" }],
+    }));
+  }
+
   const removing = form.experience.find((r) => r.uid === toRemove);
+  const removingEdu = form.education.find((r) => r.uid === toRemove);
 
   return (
     <form
@@ -185,7 +250,10 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
       // A required field inside a collapsed card can't be focused by the browser: open that card.
       onInvalidCapture={(e) => {
         const uid = (e.target as HTMLElement).closest("[data-entry]")?.getAttribute("data-entry");
-        if (uid) setRow(uid, { open: true });
+        if (uid) {
+          setRow(uid, { open: true });
+          setEdu(uid, { open: true });
+        }
       }}
       className="lg:grid lg:grid-cols-[11rem_minmax(0,1fr)] lg:gap-10"
     >
@@ -283,16 +351,7 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
 
           <ul className="space-y-3">
             {form.experience.map((x, i) => {
-              const dated = x.startMonth !== "" && x.startYear !== "" && (x.current || (x.endMonth !== "" && x.endYear !== ""));
-              const period = dated
-                ? formatPeriod({
-                    current: x.current,
-                    startMonth: Number(x.startMonth),
-                    startYear: Number(x.startYear),
-                    endMonth: x.current ? null : Number(x.endMonth),
-                    endYear: x.current ? null : Number(x.endYear),
-                  })
-                : "Dates not set";
+              const period = periodLabel(x);
               return (
                 <li key={x.uid} data-entry={x.uid} className="rounded-xl border border-border bg-background">
                   <div className="flex items-center gap-2 p-2 pr-3">
@@ -380,6 +439,98 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
           </button>
         </FormCard>
 
+        <FormCard id="education" icon="education" title="Education" description="Shown under Experience, newest first, whatever the order here.">
+          {form.education.length === 0 && <p className="text-sm text-muted">No entries yet.</p>}
+
+          <ul className="space-y-3">
+            {form.education.map((x, i) => (
+              <li key={x.uid} data-entry={x.uid} className="rounded-xl border border-border bg-background">
+                <div className="flex items-center gap-2 p-2 pr-3">
+                  <button
+                    type="button"
+                    aria-expanded={x.open}
+                    aria-controls={`entry-${x.uid}`}
+                    onClick={() => setEdu(x.uid, { open: !x.open })}
+                    className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-card"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 font-mono text-xs text-accent">{i + 1}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">
+                        {x.school || x.degree ? [x.degree, x.school].filter(Boolean).join(" · ") : "New entry"}
+                      </span>
+                      <span className="block truncate font-mono text-xs text-muted">{periodLabel(x)}</span>
+                    </span>
+                    {x.current && (
+                      <span className="hidden shrink-0 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs text-emerald-500 sm:inline">Current</span>
+                    )}
+                    <Icon d={CHEVRON} className={`h-4 w-4 shrink-0 text-muted transition-transform duration-300 ${x.open ? "rotate-180" : ""}`} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Remove education ${i + 1}`}
+                    onClick={() => setToRemove(x.uid)}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-red-500/10 hover:text-red-500"
+                  >
+                    <Icon d={TRASH} />
+                  </button>
+                </div>
+
+                <div id={`entry-${x.uid}`} className={`grid transition-[grid-template-rows] duration-300 ease-out ${x.open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+                  <div className="overflow-hidden">
+                    <div inert={!x.open} className="space-y-4 border-t border-border p-4 sm:p-5">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="School">
+                          <AutoTextarea {...oneLine} className={inputClass} required placeholder="e.g. BINUS University" value={x.school} onChange={(e) => setEdu(x.uid, { school: flatten(e.target.value) })} />
+                        </Field>
+                        <Field label="Degree">
+                          <AutoTextarea {...oneLine} className={inputClass} required placeholder="e.g. Bachelor of Computer Engineering" value={x.degree} onChange={(e) => setEdu(x.uid, { degree: flatten(e.target.value) })} />
+                        </Field>
+                      </div>
+                      <Field label="Location">
+                        <AutoTextarea {...oneLine} className={inputClass} placeholder="e.g. West Jakarta, Jakarta" value={x.location} onChange={(e) => setEdu(x.uid, { location: flatten(e.target.value) })} />
+                      </Field>
+
+                      <label className="flex w-fit cursor-pointer items-center gap-2.5 rounded-full border border-border px-4 py-2 text-sm transition-colors hover:bg-card">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 accent-[var(--accent)]"
+                          checked={x.current}
+                          onChange={(e) => setEdu(x.uid, e.target.checked ? { current: true, endMonth: "", endYear: "" } : { current: false })}
+                        />
+                        I am currently studying here
+                      </label>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <DateSelects label="Start date" month={x.startMonth} year={x.startYear} onMonth={(v) => setEdu(x.uid, { startMonth: v })} onYear={(v) => setEdu(x.uid, { startYear: v })} />
+                        {x.current ? (
+                          <div className="space-y-1.5">
+                            <p className="mb-1.5 text-sm font-medium">End date</p>
+                            <p className="rounded-xl border border-dashed border-border px-4 py-2.5 text-sm text-muted">Present</p>
+                          </div>
+                        ) : (
+                          <DateSelects label="End date" month={x.endMonth} year={x.endYear} onMonth={(v) => setEdu(x.uid, { endMonth: v })} onYear={(v) => setEdu(x.uid, { endYear: v })} />
+                        )}
+                      </div>
+
+                      <Field label="Details" hint="One point per line. Start a line with • or - to make it a bullet, e.g. GPA: 3.72 or your final project.">
+                        <AutoTextarea className={inputClass} rows={3} value={x.summary} onChange={(e) => setEdu(x.uid, { summary: e.target.value })} />
+                      </Field>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <button
+            type="button"
+            onClick={addEducation}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-3 text-sm text-muted transition-colors hover:border-accent hover:text-accent"
+          >
+            <Icon d={PLUS} /> Add education
+          </button>
+        </FormCard>
+
         {/* Floating save bar */}
         <div className="sticky bottom-4 z-30 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-background/90 px-5 py-3 shadow-lg shadow-black/10 backdrop-blur">
           <div className="flex min-w-0 items-center gap-3">
@@ -411,13 +562,19 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
       <ConfirmDialog
         open={toRemove !== null}
         title="Remove this entry?"
-        description={removing ? `${[removing.role, removing.company].filter(Boolean).join(" · ") || "This entry"} will be removed when you save.` : undefined}
+        description={
+          removing
+            ? `${[removing.role, removing.company].filter(Boolean).join(" · ") || "This entry"} will be removed when you save.`
+            : removingEdu
+              ? `${[removingEdu.degree, removingEdu.school].filter(Boolean).join(" · ") || "This entry"} will be removed when you save.`
+              : undefined
+        }
         confirmLabel="Remove"
         onCancel={() => setToRemove(null)}
         onConfirm={() => {
           const uid = toRemove;
           setToRemove(null);
-          if (uid) setForm((f) => ({ ...f, experience: f.experience.filter((r) => r.uid !== uid) }));
+          if (uid) setForm((f) => ({ ...f, experience: f.experience.filter((r) => r.uid !== uid), education: f.education.filter((r) => r.uid !== uid) }));
         }}
       />
     </form>

@@ -40,6 +40,7 @@ export function formatPeriod(e: Dated): string {
 //   2. then finished roles by end date, latest first,
 //   3. the same end date: latest start first,
 //   4. still tied: the entry later in the stored list comes first.
+// Also used for education (anything with start and end dates).
 export function sortExperienceNewestFirst<T extends Dated>(items: T[]): T[] {
   const isCurrent = (e: Dated) => e.current || e.endYear === null || e.endMonth === null;
   const start = (e: Dated) => e.startYear * 12 + e.startMonth;

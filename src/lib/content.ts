@@ -31,6 +31,7 @@ export const defaultProfile: Profile = {
       createdAt: "",
     },
   ],
+  education: [],
 };
 
 // Add { label: "Blog", href: "/blog" } here once the blog exists: a link to a missing page is a 404

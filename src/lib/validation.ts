@@ -1,4 +1,4 @@
-import type { ExperienceItem, Profile, Project, SocialLink } from "@/types/content";
+import type { EducationItem, ExperienceItem, Profile, Project, SocialLink } from "@/types/content";
 
 export class ValidationError extends Error {}
 
@@ -61,6 +61,25 @@ function link(x: unknown, label: string): SocialLink {
   return { label: text(o.label, `${label} name`, 40, true), href: url(o.href, `${label} URL`) || fail(`${label} URL is required`) };
 }
 
+// Start/end month and year shared by experience and education. No end date while `current`.
+function period(e: Record<string, unknown>, label: string) {
+  if (typeof e.current !== "boolean") fail(`${label}: current must be true or false`);
+
+  const startMonth = int(e.startMonth, `${label} start month`, 1, 12);
+  const startYear = int(e.startYear, `${label} start year`, 1950, 2100);
+
+  let endMonth: number | null = null;
+  let endYear: number | null = null;
+  if (!e.current) {
+    endMonth = int(e.endMonth, `${label} end month`, 1, 12);
+    endYear = int(e.endYear, `${label} end year`, 1950, 2100);
+    if (endYear * 12 + endMonth < startYear * 12 + startMonth) {
+      fail(`${label} end date can't be before the start date`);
+    }
+  }
+  return { current: e.current as boolean, startMonth, startYear, endMonth, endYear };
+}
+
 export function parseProfile(input: unknown): Profile {
   const o = (input ?? {}) as Record<string, unknown>;
 
@@ -83,32 +102,23 @@ export function parseProfile(input: unknown): Profile {
     socials: items(o.socials, "Social links", 10, (x) => link(x, "Social link")),
     experience: items(o.experience, "Experience", 20, (x): ExperienceItem => {
       const e = (x ?? {}) as Record<string, unknown>;
-      if (typeof e.current !== "boolean") fail("Experience: current must be true or false");
-
-      const startMonth = int(e.startMonth, "Experience start month", 1, 12);
-      const startYear = int(e.startYear, "Experience start year", 1950, 2100);
-
-      // While "currently working here", there is no end date.
-      let endMonth: number | null = null;
-      let endYear: number | null = null;
-      if (!e.current) {
-        endMonth = int(e.endMonth, "Experience end month", 1, 12);
-        endYear = int(e.endYear, "Experience end year", 1950, 2100);
-        if (endYear * 12 + endMonth < startYear * 12 + startMonth) {
-          fail("Experience end date can't be before the start date");
-        }
-      }
-
       return {
         role: line(e.role, "Experience role", 100, true),
         company: line(e.company, "Experience company", 100, true),
         summary: text(e.summary, "Experience summary", 2000),
-        current: e.current as boolean,
-        startMonth,
-        startYear,
-        endMonth,
-        endYear,
+        ...period(e, "Experience"),
         createdAt: isoDateTime(e.createdAt, "Experience created at"),
+      };
+    }),
+    // Profiles saved before education existed have no `education` field.
+    education: items(o.education ?? [], "Education", 10, (x): EducationItem => {
+      const e = (x ?? {}) as Record<string, unknown>;
+      return {
+        school: line(e.school, "Education school", 100, true),
+        degree: line(e.degree, "Education degree", 100, true),
+        location: line(e.location ?? "", "Education location", 100),
+        summary: text(e.summary ?? "", "Education details", 1000),
+        ...period(e, "Education"),
       };
     }),
   };

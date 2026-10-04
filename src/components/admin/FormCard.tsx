@@ -28,6 +28,12 @@ const icons = {
       <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
     </>
   ),
+  education: (
+    <>
+      <path d="M22 9 12 4 2 9l10 5 10-5z" />
+      <path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5M22 9v6" />
+    </>
+  ),
 };
 
 export type CardIcon = keyof typeof icons;
