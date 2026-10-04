@@ -20,7 +20,10 @@ export const getProfile = cache(async (): Promise<Profile> => {
           createdAt: e.createdAt instanceof Timestamp ? e.createdAt.toDate().toISOString() : e.createdAt,
         }))
       : data.experience;
-    return parseProfile({ ...defaultProfile, ...data, experience });
+    // A profile saved before skill groups existed must turn its own flat `skills` into a group,
+    // not pick up the placeholder groups.
+    const skillGroups = data.skillGroups ?? (data.skills ? undefined : defaultProfile.skillGroups);
+    return parseProfile({ ...defaultProfile, ...data, skillGroups, experience });
   } catch (e) {
     console.error("getProfile failed, using defaults:", e);
     return defaultProfile;

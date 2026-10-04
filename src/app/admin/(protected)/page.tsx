@@ -71,7 +71,7 @@ export default async function AdminDashboard() {
   // Setup checklist, derived from what is actually saved.
   const checklist: { done: boolean; label: string; hint: string; href: string }[] = [
     { done: !!profile.pitch && profile.bio.length > 0, label: "Write your pitch and bio", hint: "The first thing visitors read.", href: "/admin/settings#hero" },
-    { done: profile.skills.length > 0, label: "Add your skills", hint: "Shown as chips in About.", href: "/admin/settings#about" },
+    { done: profile.skills.length > 0, label: "Add your skills", hint: "Grouped on your site and resume.", href: "/admin/settings#skills" },
     { done: profile.socials.length > 0, label: "Add your social links", hint: "GitHub, LinkedIn and so on.", href: "/admin/settings#contact" },
     { done: profile.experience.length > 0, label: "Add your work experience", hint: "Appears as the timeline.", href: "/admin/settings#experience" },
     { done: projects.length > 0, label: "Add your first project", hint: "The Projects section is empty until you do.", href: "/admin/projects/new" },

@@ -1,4 +1,5 @@
-import type { EducationItem, ExperienceItem, Profile, Project, SocialLink } from "@/types/content";
+import type { EducationItem, ExperienceItem, Profile, Project, SkillGroup, SocialLink } from "@/types/content";
+import { skillKey } from "./skills";
 
 export class ValidationError extends Error {}
 
@@ -80,6 +81,41 @@ function period(e: Record<string, unknown>, label: string) {
   return { current: e.current as boolean, startMonth, startYear, endMonth, endYear };
 }
 
+function legacySkills(v: unknown): string[] {
+  const seen = new Set<string>();
+  return strings(v ?? [], "Skills", 40, 40).filter((s) => !seen.has(skillKey(s)) && !!seen.add(skillKey(s)));
+}
+
+// A skill is a name, or { name, aliases }. Aliases that normalise to the skill's own name are dropped,
+// and no spelling may belong to two skills, so every name maps to exactly one catalog entry.
+function skillGroups(v: unknown): SkillGroup[] {
+  const owners = new Map<string, string>(); // key -> the skill that owns it
+  const groups = items(v, "Skill groups", 12, (x): SkillGroup => {
+    const g = (x ?? {}) as Record<string, unknown>;
+    return {
+      name: line(g.name, "Skill group name", 40, true),
+      items: items(g.items ?? [], "Skills", 40, (y) => {
+        const o = typeof y === "string" ? { name: y, aliases: [] } : ((y ?? {}) as Record<string, unknown>);
+        const name = line(o.name, "Skill name", 40, true);
+        const own = new Set([skillKey(name)]);
+        const aliases = strings(o.aliases ?? [], "Skill aliases", 8, 40).filter((a) => {
+          const k = skillKey(a);
+          if (!k || own.has(k)) return false;
+          own.add(k);
+          return true;
+        });
+        for (const k of own) {
+          const owner = owners.get(k);
+          if (owner !== undefined) fail(owner === name ? `"${name}" is listed twice` : `"${name}" overlaps with "${owner}": each skill can only be listed once`);
+          owners.set(k, name);
+        }
+        return { name, aliases };
+      }),
+    };
+  });
+  return groups.filter((g) => g.items.length > 0);
+}
+
 export function parseProfile(input: unknown): Profile {
   const o = (input ?? {}) as Record<string, unknown>;
 
@@ -88,6 +124,9 @@ export function parseProfile(input: unknown): Profile {
 
   const roles = strings(o.roles, "Roles", 8, 60);
   if (roles.length === 0) fail("Add at least one role");
+
+  // Profiles saved before skill groups existed only have a flat `skills` list: it becomes one group.
+  const groups = skillGroups(o.skillGroups !== undefined ? o.skillGroups : [{ name: "Skills", items: legacySkills(o.skills) }]);
 
   return {
     name: text(o.name, "Name", 80, true),
@@ -98,7 +137,8 @@ export function parseProfile(input: unknown): Profile {
     status: text(o.status, "Status", 100),
     focus: text(o.focus, "Current focus", 300),
     bio: strings(o.bio, "Bio", 8, 1500),
-    skills: strings(o.skills, "Skills", 40, 40),
+    skillGroups: groups,
+    skills: groups.flatMap((g) => g.items.map((s) => s.name)),
     socials: items(o.socials, "Social links", 10, (x) => link(x, "Social link")),
     experience: items(o.experience, "Experience", 20, (x): ExperienceItem => {
       const e = (x ?? {}) as Record<string, unknown>;
@@ -108,6 +148,7 @@ export function parseProfile(input: unknown): Profile {
         summary: text(e.summary, "Experience summary", 2000),
         // Entries saved before this field existed have none.
         location: line(e.location ?? "", "Experience location", 100),
+        stack: strings(e.stack ?? [], "Experience tech stack", 20, 40),
         ...period(e, "Experience"),
         createdAt: isoDateTime(e.createdAt, "Experience created at"),
       };

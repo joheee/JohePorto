@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { saveProfile } from "@/app/admin/(protected)/actions";
 import { formatPeriod } from "@/lib/format";
-import type { Profile, SocialLink } from "@/types/content";
+import { buildSkillIndex, findUnassigned, findVariants, skillKey, suggestSkills, type SkillUsage } from "@/lib/skills";
+import type { Profile, Skill, SocialLink } from "@/types/content";
 import AutoTextarea from "@/components/AutoTextarea";
 import ChipsInput from "./ChipsInput";
 import ConfirmDialog from "./ConfirmDialog";
@@ -20,6 +21,7 @@ type Row = {
   company: string;
   summary: string;
   location: string;
+  stack: string[];
   current: boolean;
   startMonth: string;
   startYear: string;
@@ -42,12 +44,14 @@ type EduRow = {
   endYear: string;
 };
 
+type Group = { uid: string; name: string; items: Skill[] };
+
 type Form = {
   name: string;
   roles: string[];
   pitch: string;
   bio: string; // paragraphs separated by a blank line
-  skills: string[];
+  skillGroups: Group[];
   location: string;
   status: string;
   focus: string;
@@ -60,6 +64,7 @@ type Form = {
 const SECTIONS: { id: string; label: string; icon: CardIcon }[] = [
   { id: "hero", label: "Hero", icon: "hero" },
   { id: "about", label: "About", icon: "about" },
+  { id: "skills", label: "Skills", icon: "skills" },
   { id: "contact", label: "Contact & links", icon: "contact" },
   { id: "experience", label: "Experience", icon: "experience" },
   { id: "education", label: "Education", icon: "education" },
@@ -93,7 +98,7 @@ function toForm(p: Profile): Form {
     roles: p.roles,
     pitch: p.pitch,
     bio: p.bio.join("\n\n"),
-    skills: p.skills,
+    skillGroups: p.skillGroups.map((g, i) => ({ uid: `g${i}`, name: g.name, items: g.items })),
     location: p.location,
     status: p.status,
     focus: p.focus,
@@ -106,6 +111,7 @@ function toForm(p: Profile): Form {
       company: x.company,
       summary: x.summary,
       location: x.location,
+      stack: x.stack,
       current: x.current,
       startMonth: String(x.startMonth),
       startYear: String(x.startYear),
@@ -136,7 +142,7 @@ function toPayload(f: Form) {
     roles: f.roles,
     pitch: f.pitch,
     bio: f.bio.split(/\n\s*\n/),
-    skills: f.skills,
+    skillGroups: f.skillGroups.map((g) => ({ name: g.name, items: g.items })),
     location: f.location,
     status: f.status,
     focus: f.focus,
@@ -147,6 +153,7 @@ function toPayload(f: Form) {
       company: x.company,
       summary: x.summary,
       location: x.location,
+      stack: x.stack,
       ...datesPayload(x),
       createdAt: x.createdAt,
     })),
@@ -190,7 +197,7 @@ const CLOSE = "M6 6l12 12M18 6L6 18";
 
 // ---------- the form ----------
 
-export default function SettingsForm({ initial }: { initial: Profile }) {
+export default function SettingsForm({ initial, projectStacks }: { initial: Profile; projectStacks: SkillUsage[] }) {
   const [form, setForm] = useState<Form>(() => toForm(initial));
   const [saved, setSaved] = useState<Form>(form); // last saved state: what "Discard" returns to
   const [toRemove, setToRemove] = useState<string | null>(null); // uid of the experience or education entry being removed
@@ -201,8 +208,24 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   const setRow = (uid: string, patch: Partial<Row>) =>
     setForm((f) => ({ ...f, experience: f.experience.map((r) => (r.uid === uid ? { ...r, ...patch } : r)) }));
+  const setGroup = (uid: string, patch: Partial<Group>) =>
+    setForm((f) => ({ ...f, skillGroups: f.skillGroups.map((g) => (g.uid === uid ? { ...g, ...patch } : g)) }));
+  // The chips hold names only: keep the aliases of names that stay, give new names none.
+  const setGroupNames = (g: Group, names: string[]) =>
+    setGroup(g.uid, { items: names.map((n) => g.items.find((s) => s.name.toLowerCase() === n.toLowerCase()) ?? { name: n, aliases: [] }) });
+  const addToGroup = (uid: string, ...names: string[]) =>
+    setForm((f) => ({ ...f, skillGroups: f.skillGroups.map((g) => (g.uid === uid ? { ...g, items: [...g.items, ...names.map((name) => ({ name, aliases: [] }))] } : g)) }));
   const setEdu = (uid: string, patch: Partial<EduRow>) =>
     setForm((f) => ({ ...f, education: f.education.map((r) => (r.uid === uid ? { ...r, ...patch } : r)) }));
+
+  // Everything used in a job (as edited right now) or a project, checked against the skill groups.
+  const skillIndex = useMemo(() => buildSkillIndex(form.skillGroups), [form.skillGroups]);
+  const usage = useMemo<SkillUsage[]>(
+    () => [...form.experience.flatMap((x) => x.stack.map((name) => ({ name, where: x.company || "A job" }))), ...projectStacks],
+    [form.experience, projectStacks],
+  );
+  const unassigned = useMemo(() => findUnassigned(usage, skillIndex), [usage, skillIndex]);
+  const variants = useMemo(() => findVariants(usage, skillIndex), [usage, skillIndex]);
 
   const dirty = JSON.stringify(toPayload(form)) !== JSON.stringify(toPayload(saved));
 
@@ -231,7 +254,7 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
       ...f,
       experience: [
         ...f.experience,
-        { uid, open: true, role: "", company: "", summary: "", location: "", current: false, startMonth: "", startYear: "", endMonth: "", endYear: "", createdAt: "" },
+        { uid, open: true, role: "", company: "", summary: "", location: "", stack: [], current: false, startMonth: "", startYear: "", endMonth: "", endYear: "", createdAt: "" },
       ],
     }));
   }
@@ -290,12 +313,9 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
           </Field>
         </FormCard>
 
-        <FormCard id="about" icon="about" title="About" description="Your story, skills and what you're up to.">
+        <FormCard id="about" icon="about" title="About" description="Your story and what you're up to.">
           <Field label="Bio" hint="Separate paragraphs with a blank line.">
             <AutoTextarea className={inputClass} rows={6} value={form.bio} onChange={(e) => set("bio", e.target.value)} />
-          </Field>
-          <Field label="Skills" group hint="Press Enter or comma to add.">
-            <ChipsInput ariaLabel="Skills" value={form.skills} onChange={(v) => set("skills", v)} placeholder="e.g. Kubernetes" max={40} />
           </Field>
           <div className="grid gap-5 sm:grid-cols-2">
             <Field label="Location">
@@ -308,6 +328,138 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
           <Field label="Now" counter={{ value: form.focus.length, max: 300 }} hint="What you're currently working on or learning.">
             <AutoTextarea className={inputClass} rows={2} value={form.focus} onChange={(e) => set("focus", e.target.value)} />
           </Field>
+        </FormCard>
+
+        <FormCard id="skills" icon="skills" title="Skills" description="Grouped like on your resume. Jobs and projects pick from these, so spellings stay consistent.">
+          {form.skillGroups.length === 0 && <p className="text-sm text-muted">No groups yet. Add one, for example &quot;DevOps Tools&quot;.</p>}
+
+          <div className="space-y-3">
+            {form.skillGroups.map((g, i) => (
+              <div key={g.uid} className="space-y-3 rounded-xl border border-border bg-background p-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    className={inputClass}
+                    aria-label={`Group ${i + 1} name`}
+                    placeholder="Group name, e.g. DevOps Tools"
+                    maxLength={40}
+                    value={g.name}
+                    onChange={(e) => setGroup(g.uid, { name: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    aria-label={`Remove group ${g.name || i + 1}`}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border text-muted transition-colors hover:border-red-500/50 hover:text-red-500"
+                    onClick={() => set("skillGroups", form.skillGroups.filter((x) => x.uid !== g.uid))}
+                  >
+                    <Icon d={CLOSE} />
+                  </button>
+                </div>
+                <ChipsInput
+                  ariaLabel={`${g.name || "Group"} skills`}
+                  value={g.items.map((s) => s.name)}
+                  onChange={(names) => setGroupNames(g, names)}
+                  placeholder="e.g. Kubernetes"
+                  max={40}
+                />
+                {g.items.length > 0 && (
+                  <details className="text-sm">
+                    <summary className="w-fit cursor-pointer text-muted transition-colors hover:text-foreground">
+                      Other spellings{g.items.some((s) => s.aliases.length > 0) && ` (${g.items.reduce((n, s) => n + s.aliases.length, 0)})`}
+                    </summary>
+                    <p className="mt-2 text-xs leading-5 text-muted">
+                      Only for real synonyms, like Go and Golang. Spellings such as React JS and ReactJS already match each other.
+                    </p>
+                    <div className="mt-3 space-y-3">
+                      {g.items.map((s) => (
+                        <div key={s.name} className="grid items-start gap-2 sm:grid-cols-[10rem_minmax(0,1fr)]">
+                          <span className="pt-2.5">{s.name}</span>
+                          <ChipsInput
+                            ariaLabel={`${s.name} other spellings`}
+                            value={s.aliases}
+                            onChange={(aliases) => setGroup(g.uid, { items: g.items.map((x) => (x.name === s.name ? { ...x, aliases } : x)) })}
+                            placeholder="e.g. Golang"
+                            max={8}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
+              </div>
+            ))}
+            <button type="button" className={ghostButtonClass} onClick={() => set("skillGroups", [...form.skillGroups, { uid: `n${++counter.current}`, name: "", items: [] }])}>
+              <Icon d={PLUS} /> Add group
+            </button>
+          </div>
+
+          <div aria-live="polite" className="space-y-4 rounded-xl border border-dashed border-border p-4">
+            <p className="text-sm font-medium">Used in jobs and projects</p>
+            {unassigned.length === 0 && variants.length === 0 && (
+              <p className="text-sm text-muted">Everything you use in your jobs and projects is in a group.</p>
+            )}
+
+            {unassigned.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs leading-5 text-muted">Not in a group yet. Add them so they can appear on your resume.</p>
+                  {unassigned.length > 1 && form.skillGroups.length > 0 && (
+                    <select
+                      aria-label={`Add all ${unassigned.length} to a group`}
+                      value=""
+                      onChange={(e) => e.target.value && addToGroup(e.target.value, ...unassigned.map((u) => u.name))}
+                      className={`${inputClass} sm:w-48`}
+                    >
+                      <option value="">Add all {unassigned.length} to…</option>
+                      {form.skillGroups.map((g, i) => (
+                        <option key={g.uid} value={g.uid}>
+                          {g.name || `Group ${i + 1}`}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+                <ul className="space-y-2">
+                  {unassigned.map((u) => (
+                    <li key={u.name} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <span className="min-w-0 flex-1 text-sm">
+                        <span className="rounded-full bg-accent/10 px-3 py-1 text-accent">{u.name}</span>
+                        <span className="ml-2 text-xs text-muted">{u.where.join(", ")}</span>
+                      </span>
+                      <select
+                        aria-label={`Add ${u.name} to a group`}
+                        disabled={form.skillGroups.length === 0}
+                        value=""
+                        onChange={(e) => e.target.value && addToGroup(e.target.value, u.name)}
+                        className={`${inputClass} sm:w-48`}
+                      >
+                        <option value="">{form.skillGroups.length === 0 ? "Add a group first" : "Add to group…"}</option>
+                        {form.skillGroups.map((g, i) => (
+                          <option key={g.uid} value={g.uid}>
+                            {g.name || `Group ${i + 1}`}
+                          </option>
+                        ))}
+                      </select>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {variants.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs leading-5 text-muted">Spelled differently from your groups. Saving rewrites them in your jobs and projects.</p>
+                <ul className="space-y-1.5 text-sm">
+                  {variants.map((v) => (
+                    <li key={`${v.from}>${v.to}`}>
+                      <span className="font-mono text-xs text-muted line-through">{v.from}</span> <span aria-label="becomes">→</span>{" "}
+                      <span className="font-medium">{v.to}</span>
+                      <span className="ml-2 text-xs text-muted">{v.where.join(", ")}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </FormCard>
 
         <FormCard id="contact" icon="contact" title="Contact & links" description="How people reach you.">
@@ -425,6 +577,18 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
                             <DateSelects label="End date" month={x.endMonth} year={x.endYear} onMonth={(v) => setRow(x.uid, { endMonth: v })} onYear={(v) => setRow(x.uid, { endYear: v })} />
                           )}
                         </div>
+
+                        <Field label="Tech stack" group hint="Shown as chips under the entry. Press Enter or comma to add.">
+                          <ChipsInput
+                            ariaLabel="Tech stack"
+                            value={x.stack}
+                            onChange={(v) => setRow(x.uid, { stack: v })}
+                            placeholder="e.g. Terraform"
+                            max={20}
+                            suggest={(q, taken) => suggestSkills(form.skillGroups, q, taken)}
+                            resolve={(n) => skillIndex.get(skillKey(n)) ?? n}
+                          />
+                        </Field>
 
                         <Field label="Summary" hint="One point per line. Start a line with • or - to make it a bullet.">
                           <AutoTextarea className={inputClass} rows={3} value={x.summary} onChange={(e) => setRow(x.uid, { summary: e.target.value })} />

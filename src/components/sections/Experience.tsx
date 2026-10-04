@@ -1,4 +1,5 @@
 import FormattedText from "@/components/FormattedText";
+import { ProjectChips } from "@/components/ProjectCardContent";
 import TimelineItem from "@/components/motion/TimelineItem";
 import { formatPeriod, sortExperienceNewestFirst } from "@/lib/format";
 import { getProfile } from "@/lib/settings";
@@ -27,6 +28,7 @@ export default async function Experience() {
                 {e.location && <span className="font-normal text-muted"> · {e.location}</span>}
               </p>
               {e.summary && <FormattedText text={e.summary} className="mt-3 text-muted" />}
+              <ProjectChips items={e.stack} className="mt-4" />
             </TimelineItem>
           ))}
         </ol>

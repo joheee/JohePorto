@@ -13,6 +13,12 @@ export const defaultProfile: Profile = {
     "Write two or three sentences about who you are and what you care about.",
     "Mention what you are working on now and what kind of work you are open to.",
   ],
+  skillGroups: [
+    {
+      name: "Skills",
+      items: ["TypeScript", "React", "Next.js", "Node.js", "Tailwind CSS", "Firebase"].map((name) => ({ name, aliases: [] })),
+    },
+  ],
   skills: ["TypeScript", "React", "Next.js", "Node.js", "Tailwind CSS", "Firebase"],
   socials: [
     { label: "GitHub", href: "https://github.com/joheee" },
@@ -24,6 +30,7 @@ export const defaultProfile: Profile = {
       company: "Company Name",
       summary: "What you built and the impact it had.",
       location: "",
+      stack: [],
       current: true,
       startMonth: 1,
       startYear: 2024,

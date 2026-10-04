@@ -4,6 +4,8 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { revalidatePath } from "next/cache";
 import { getAdmin } from "@/lib/auth";
 import { withCreatedAt } from "@/lib/format";
+import { buildSkillIndex, canonicalizeStack } from "@/lib/skills";
+import { getProfile } from "@/lib/settings";
 import { adminDb } from "@/lib/firebase-admin";
 import { SLUG_RE, ValidationError, assertHasLink, parseProfile, parseProject } from "@/lib/validation";
 
@@ -28,8 +30,23 @@ async function guard(fn: () => Promise<void>, { paths }: { paths?: string[] } = 
 
 export async function saveProfile(input: unknown): Promise<ActionResult> {
   return guard(async () => {
-    const profile = parseProfile(input);
-    await adminDb()
+    const parsed = parseProfile(input);
+    // Rewrite every technology to its spelling in the skill groups (ReactJS -> React JS, Golang -> Go).
+    const index = buildSkillIndex(parsed.skillGroups);
+    const profile = { ...parsed, experience: parsed.experience.map((e) => ({ ...e, stack: canonicalizeStack(e.stack, index) })) };
+    const db = adminDb();
+
+    // Same for the projects. updatedAt is left alone: older projects borrow it as their date.
+    const projects = await db.collection("projects").get();
+    const batch = db.batch();
+    for (const doc of projects.docs) {
+      const stack: unknown = doc.data().stack;
+      if (!Array.isArray(stack)) continue;
+      const fixed = canonicalizeStack(stack.filter((s): s is string => typeof s === "string"), index);
+      if (JSON.stringify(fixed) !== JSON.stringify(stack)) batch.update(doc.ref, { stack: fixed });
+    }
+
+    await db
       .doc("settings/profile")
       .set({
         ...profile,
@@ -40,12 +57,14 @@ export async function saveProfile(input: unknown): Promise<ActionResult> {
         })),
         updatedAt: FieldValue.serverTimestamp(),
       });
+    await batch.commit();
   });
 }
 
 export async function saveProject(input: unknown, isNew: boolean): Promise<ActionResult> {
   return guard(async () => {
-    const project = parseProject(input);
+    const parsed = parseProject(input);
+    const project = { ...parsed, stack: canonicalizeStack(parsed.stack, buildSkillIndex((await getProfile()).skillGroups)) };
     assertHasLink(project);
     const ref = adminDb().collection("projects").doc(project.slug);
     const { slug, ...data } = project; // the slug is the document ID

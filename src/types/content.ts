@@ -5,6 +5,7 @@ export type ExperienceItem = {
   company: string;
   summary: string;
   location: string; // e.g. "Remote" or "East Jakarta"; "" when unset
+  stack: string[]; // technologies used in this role
   current: boolean; // "I am currently working here"
   startMonth: number; // 1-12
   startYear: number;
@@ -25,6 +26,9 @@ export type EducationItem = {
   endYear: number | null;
 };
 
+export type Skill = { name: string; aliases: string[] }; // aliases: other spellings, e.g. Go / Golang
+export type SkillGroup = { name: string; items: Skill[] };
+
 // Stored in Firestore as the single document `settings/profile`.
 export type Profile = {
   name: string;
@@ -35,7 +39,8 @@ export type Profile = {
   status: string;
   focus: string;
   bio: string[]; // paragraphs
-  skills: string[];
+  skillGroups: SkillGroup[]; // the skill catalog you edit, e.g. "DevOps Tools" with its skills
+  skills: string[]; // every skill name in one flat list: derived from skillGroups, never edited
   socials: SocialLink[];
   experience: ExperienceItem[];
   education: EducationItem[];

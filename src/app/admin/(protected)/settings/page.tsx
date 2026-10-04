@@ -1,10 +1,12 @@
 import SettingsForm from "@/components/admin/SettingsForm";
 import { requireAdmin } from "@/lib/auth";
+import { getProjects } from "@/lib/projects";
 import { getProfile } from "@/lib/settings";
 
 export default async function SettingsPage() {
   await requireAdmin();
-  const profile = await getProfile();
+  const [profile, projects] = await Promise.all([getProfile(), getProjects()]);
+  const projectStacks = projects.flatMap((p) => p.stack.map((name) => ({ name, where: `Project: ${p.title}` })));
 
   return (
     <div>
@@ -24,7 +26,7 @@ export default async function SettingsPage() {
           View site ↗
         </a>
       </div>
-      <SettingsForm initial={profile} />
+      <SettingsForm initial={profile} projectStacks={projectStacks} />
     </div>
   );
 }

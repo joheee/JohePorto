@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { saveProject } from "@/app/admin/(protected)/actions";
 import AutoTextarea from "@/components/AutoTextarea";
-import type { Project, SocialLink } from "@/types/content";
+import { buildSkillIndex, skillKey, suggestSkills } from "@/lib/skills";
+import type { Project, SkillGroup, SocialLink } from "@/types/content";
 import ChipsInput from "./ChipsInput";
 import DateSelects from "./DateSelects";
 import { Field, SaveStatus, buttonClass, ghostButtonClass, inputClass } from "./fields";
@@ -56,7 +57,7 @@ const toPayload = (f: Form) => ({
   year: f.year === "" ? null : Number(f.year),
 });
 
-export default function ProjectForm({ initial }: { initial?: Project }) {
+export default function ProjectForm({ initial, skillGroups }: { initial?: Project; skillGroups: SkillGroup[] }) {
   const router = useRouter();
   const isNew = !initial;
 
@@ -69,6 +70,8 @@ export default function ProjectForm({ initial }: { initial?: Project }) {
   const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
   const setLink = (i: number, patch: Partial<SocialLink>) =>
     set("links", form.links.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
+
+  const skillIndex = useMemo(() => buildSkillIndex(skillGroups), [skillGroups]);
 
   const dirty = JSON.stringify(toPayload(form)) !== JSON.stringify(toPayload(saved));
 
@@ -162,8 +165,16 @@ export default function ProjectForm({ initial }: { initial?: Project }) {
           <AutoTextarea className={inputClass} rows={6} value={form.description} onChange={(e) => set("description", e.target.value)} />
         </Field>
 
-        <Field label="Stack" group hint="Press Enter or comma to add each technology.">
-          <ChipsInput ariaLabel="Stack" value={form.stack} onChange={(v) => set("stack", v)} placeholder="e.g. Kubernetes" max={20} />
+        <Field label="Stack" group hint="Press Enter or comma to add each technology. Your skills are suggested as you type.">
+          <ChipsInput
+            ariaLabel="Stack"
+            value={form.stack}
+            onChange={(v) => set("stack", v)}
+            placeholder="e.g. Kubernetes"
+            max={20}
+            suggest={(q, taken) => suggestSkills(skillGroups, q, taken)}
+            resolve={(n) => skillIndex.get(skillKey(n)) ?? n}
+          />
         </Field>
 
         <div className="max-w-md space-y-1.5">
