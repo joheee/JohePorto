@@ -4,6 +4,7 @@ export type ExperienceItem = {
   role: string;
   company: string;
   summary: string;
+  location: string; // e.g. "Remote" or "East Jakarta"; "" when unset
   current: boolean; // "I am currently working here"
   startMonth: number; // 1-12
   startYear: number;

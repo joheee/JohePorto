@@ -19,6 +19,7 @@ type Row = {
   role: string;
   company: string;
   summary: string;
+  location: string;
   current: boolean;
   startMonth: string;
   startYear: string;
@@ -104,6 +105,7 @@ function toForm(p: Profile): Form {
       role: x.role,
       company: x.company,
       summary: x.summary,
+      location: x.location,
       current: x.current,
       startMonth: String(x.startMonth),
       startYear: String(x.startYear),
@@ -144,6 +146,7 @@ function toPayload(f: Form) {
       role: x.role,
       company: x.company,
       summary: x.summary,
+      location: x.location,
       ...datesPayload(x),
       createdAt: x.createdAt,
     })),
@@ -228,7 +231,7 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
       ...f,
       experience: [
         ...f.experience,
-        { uid, open: true, role: "", company: "", summary: "", current: false, startMonth: "", startYear: "", endMonth: "", endYear: "", createdAt: "" },
+        { uid, open: true, role: "", company: "", summary: "", location: "", current: false, startMonth: "", startYear: "", endMonth: "", endYear: "", createdAt: "" },
       ],
     }));
   }
@@ -396,6 +399,10 @@ export default function SettingsForm({ initial }: { initial: Profile }) {
                             <AutoTextarea {...oneLine} className={inputClass} required placeholder="e.g. Acme Inc." value={x.company} onChange={(e) => setRow(x.uid, { company: flatten(e.target.value) })} />
                           </Field>
                         </div>
+
+                        <Field label="Location" hint="Shown next to the company, e.g. Remote or East Jakarta. Optional.">
+                          <AutoTextarea {...oneLine} className={inputClass} placeholder="e.g. Remote" value={x.location} onChange={(e) => setRow(x.uid, { location: flatten(e.target.value) })} />
+                        </Field>
 
                         <label className="flex w-fit cursor-pointer items-center gap-2.5 rounded-full border border-border px-4 py-2 text-sm transition-colors hover:bg-card">
                           <input

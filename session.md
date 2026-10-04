@@ -61,7 +61,7 @@ The navbar has **no Blog link** on purpose until the blog exists (it caused a 40
 
 **`settings/profile`** (single document, the whole public profile)
 `name`, `roles[]` (rotating hero line), `pitch`, `email`, `location`, `status`, `focus` ("Now" tile), `bio[]` (paragraphs), `skills[]`, `socials[{label,href}]`, `experience[]`, `education[]`, `updatedAt`.
-Each `experience` item: `role`, `company`, `summary` (lines starting with `•` or `-` render as bullets), `current` (bool), `startMonth`, `startYear`, `endMonth|null`, `endYear|null`, `createdAt` (Firestore **Timestamp**, kept on edit, stamped when an entry is first saved). Sorted on the site LinkedIn-style: current roles first, then by end date, then start date. Experience is a free-order array in the admin; sorting is display-only.
+Each `experience` item: `role`, `company`, `summary` (lines starting with `•` or `-` render as bullets), `location` (optional, shown after the company; older entries have none), `current` (bool), `startMonth`, `startYear`, `endMonth|null`, `endYear|null`, `createdAt` (Firestore **Timestamp**, kept on edit, stamped when an entry is first saved). Sorted on the site LinkedIn-style: current roles first, then by end date, then start date. Experience is a free-order array in the admin; sorting is display-only.
 Each `education` item: `school`, `degree`, `location` (optional), `summary` (same bullet formatting, e.g. GPA), `current`, start/end month+year like experience. Shown on the site as a second timeline under Experience (newest first, same sorter); edited in Settings > Education. Older profiles without the field load as `[]`.
 Fallback: if the document is missing/invalid the site shows placeholder content from `src/lib/content.ts` (`defaultProfile`).
 

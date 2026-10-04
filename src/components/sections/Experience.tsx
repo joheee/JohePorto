@@ -22,7 +22,10 @@ export default async function Experience() {
                 {formatPeriod(e)}
               </p>
               <h3 className="mt-3 text-lg font-semibold leading-snug tracking-tight">{e.role}</h3>
-              <p className="mt-0.5 text-sm font-medium text-accent">{e.company}</p>
+              <p className="mt-0.5 text-sm font-medium text-accent">
+                {e.company}
+                {e.location && <span className="font-normal text-muted"> · {e.location}</span>}
+              </p>
               {e.summary && <FormattedText text={e.summary} className="mt-3 text-muted" />}
             </TimelineItem>
           ))}

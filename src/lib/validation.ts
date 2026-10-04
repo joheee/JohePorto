@@ -106,6 +106,8 @@ export function parseProfile(input: unknown): Profile {
         role: line(e.role, "Experience role", 100, true),
         company: line(e.company, "Experience company", 100, true),
         summary: text(e.summary, "Experience summary", 2000),
+        // Entries saved before this field existed have none.
+        location: line(e.location ?? "", "Experience location", 100),
         ...period(e, "Experience"),
         createdAt: isoDateTime(e.createdAt, "Experience created at"),
       };

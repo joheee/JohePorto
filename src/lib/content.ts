@@ -23,6 +23,7 @@ export const defaultProfile: Profile = {
       role: "Software Engineer",
       company: "Company Name",
       summary: "What you built and the impact it had.",
+      location: "",
       current: true,
       startMonth: 1,
       startYear: 2024,
