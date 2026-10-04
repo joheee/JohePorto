@@ -74,12 +74,6 @@ summary:focus-visible {
      follows each element's own corners. */
 }
 
-/* A project card's clickable body fills the card, so a ring around the button would cut across the
-   card and ignore its rounded corners. The card draws a matching ring instead (see Projects.tsx). */
-.card-body:focus-visible {
-  outline: none;
-}
-
 /* Hero "scroll" cue: a small bar that slides down and fades. */
 @keyframes scroll-cue {
   0% {

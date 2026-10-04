@@ -1,5 +1,5 @@
 import FormattedText from "@/components/FormattedText";
-import { ProjectChips } from "@/components/ProjectCardContent";
+import { ProjectChips } from "@/components/ProjectCard";
 import TimelineItem from "@/components/motion/TimelineItem";
 import { formatPeriod, sortExperienceNewestFirst } from "@/lib/format";
 import { getProfile } from "@/lib/settings";

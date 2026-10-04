@@ -2,7 +2,7 @@ import Link from "next/link";
 import DeleteProjectButton from "@/components/admin/DeleteProjectButton";
 import Icon from "@/components/admin/Icons";
 import { buttonClass, ghostButtonClass } from "@/components/admin/fields";
-import ProjectCardContent, { ProjectLinks } from "@/components/ProjectCardContent";
+import ProjectCard from "@/components/ProjectCard";
 import { requireAdmin } from "@/lib/auth";
 import { getProjects } from "@/lib/projects";
 
@@ -36,20 +36,22 @@ export default async function AdminProjectsPage() {
           </Link>
         </div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="space-y-6">
           {projects.map((p) => (
             <li key={p.slug}>
-              {/* Same card as the public site (shared ProjectCardContent), plus the admin actions. */}
-              <div className="relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-6">
-                <ProjectCardContent project={p} />
-                <ProjectLinks links={p.links} emptyLabel="No links yet. Add one by editing the project." className="relative mt-5" />
-                <div className="relative mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-4">
-                  <Link href={`/admin/projects/${p.slug}`} className={ghostButtonClass}>
-                    <Icon name="edit" className="h-3.5 w-3.5" /> Edit
-                  </Link>
-                  <DeleteProjectButton slug={p.slug} title={p.title} />
-                </div>
-              </div>
+              {/* The same card as the public site, plus the admin actions. */}
+              <ProjectCard
+                project={p}
+                footer={
+                  <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-4">
+                    <Link href={`/admin/projects/${p.slug}`} className={ghostButtonClass}>
+                      <Icon name="edit" className="h-3.5 w-3.5" /> Edit
+                    </Link>
+                    <DeleteProjectButton slug={p.slug} title={p.title} />
+                    {p.links.length === 0 && <span className="text-sm text-muted">No links yet. Add one by editing the project.</span>}
+                  </div>
+                }
+              />
             </li>
           ))}
         </ul>

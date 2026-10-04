@@ -1,32 +1,9 @@
-"use client";
-
-import { motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
-import FormattedText from "@/components/FormattedText";
-import ProjectCardContent, { ProjectChips, ProjectLinks } from "@/components/ProjectCardContent";
-import { formatMonthYear } from "@/lib/format";
+import Reveal from "@/components/motion/Reveal";
+import ProjectCard from "@/components/ProjectCard";
 import type { Project } from "@/types/content";
 import Section from "./Section";
 
-function ArrowUpRight({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M7 17 17 7M8 7h9v9" />
-    </svg>
-  );
-}
-
 export default function Projects({ projects }: { projects: Project[] }) {
-  const [selected, setSelected] = useState<Project | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (selected && !dialog.open) dialog.showModal();
-    if (!selected && dialog.open) dialog.close();
-  }, [selected]);
-
   return (
     <Section id="projects" number="02" title="Projects">
       {projects.length === 0 ? (
@@ -40,101 +17,17 @@ export default function Projects({ projects }: { projects: Project[] }) {
           <p className="mt-1 text-sm text-muted">Nothing to show yet. Check back soon.</p>
         </div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        // One full-width card per project, stacked like the rest of the page.
+        <ul className="space-y-6">
           {projects.map((p) => (
-            <motion.li
-              key={p.slug}
-              whileHover={{ y: -6 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              <div
-                onMouseMove={(e) => {
-                  // Feed the cursor position to the spotlight layer (no re-render).
-                  const r = e.currentTarget.getBoundingClientRect();
-                  e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
-                  e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
-                }}
-                className="group relative flex h-full w-full flex-col rounded-2xl border border-border bg-card transition-colors hover:border-accent has-[.card-body:focus-visible]:border-accent has-[.card-body:focus-visible]:ring-2 has-[.card-body:focus-visible]:ring-accent/60 has-[.card-body:focus-visible]:ring-offset-2 has-[.card-body:focus-visible]:ring-offset-background"
-              >
-                {/* Decorative hover layers, clipped to the card's rounded corners. */}
-                <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
-                  <span
-                    className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    style={{
-                      background:
-                        "radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%)",
-                    }}
-                  />
-                  {/* accent line that draws across the top on hover */}
-                  <span className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-accent transition-transform duration-500 group-hover:scale-x-100" />
-                </span>
-
-                {/* The body opens the pop-up. The links sit below it, outside the button. */}
-                <button type="button" onClick={() => setSelected(p)} className="card-body relative flex flex-1 flex-col rounded-t-2xl p-6 pb-4 text-left">
-                  <ProjectCardContent
-                    project={p}
-                    trailing={<ArrowUpRight className="h-4 w-4 text-muted transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />}
-                  />
-                </button>
-                <ProjectLinks links={p.links} className="relative px-6 pb-6" />
-              </div>
-            </motion.li>
+            <li key={p.slug}>
+              <Reveal>
+                <ProjectCard project={p} />
+              </Reveal>
+            </li>
           ))}
         </ul>
       )}
-
-      <dialog
-        ref={dialogRef}
-        data-lenis-prevent
-        onClose={() => setSelected(null)}
-        onClick={(e) => {
-          // Clicking the backdrop (the dialog element itself) closes it.
-          if (e.target === dialogRef.current) setSelected(null);
-        }}
-        className="m-auto max-h-[85vh] w-[min(92vw,40rem)] overflow-y-auto rounded-2xl border border-border bg-background p-0 text-foreground backdrop:bg-black/50 backdrop:backdrop-blur-sm"
-      >
-        {selected && (
-          <div className="p-6 sm:p-8">
-            <div className="flex items-start justify-between gap-4">
-              <h3 className="text-2xl font-bold tracking-tight">{selected.title}</h3>
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                aria-label="Close"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-muted transition-colors hover:text-foreground"
-              >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                  <path d="M6 6l12 12M18 6L6 18" />
-                </svg>
-              </button>
-            </div>
-            <p className="mt-1 font-mono text-xs text-muted">{formatMonthYear(selected.month, selected.year)}</p>
-            {selected.summary && <p className="mt-3 text-muted">{selected.summary}</p>}
-            {selected.description && <FormattedText text={selected.description} className="mt-6 leading-7" />}
-            <ProjectChips items={selected.stack} className="mt-6" />
-            {selected.links.length > 0 && (
-              <ul className="mt-8 flex flex-wrap gap-3">
-                {selected.links.map((l, i) => (
-                  <li key={l.href}>
-                    <a
-                      href={l.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-medium transition ${
-                        i === 0 ? "bg-accent text-accent-foreground hover:opacity-90" : "border border-border hover:border-accent hover:text-accent"
-                      }`}
-                    >
-                      {l.label}
-                      <ArrowUpRight className="h-3.5 w-3.5" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </dialog>
     </Section>
   );
 }
