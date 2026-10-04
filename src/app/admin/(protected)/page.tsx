@@ -6,6 +6,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { timeAgo } from "@/lib/format";
 import { getMessages } from "@/lib/messages";
 import { getProjects } from "@/lib/projects";
+import { buildResume, resumeIssues } from "@/lib/resume";
 import { getProfile } from "@/lib/settings";
 
 function StatCard({
@@ -67,6 +68,7 @@ export default async function AdminDashboard() {
   const companies = new Set(profile.experience.map((e) => e.company.trim().toLowerCase())).size;
   const lastSaved = profileDoc.exists ? profileDoc.data()?.updatedAt?.toDate?.() : undefined;
   const firstName = profile.name.split(" ")[0];
+  const resumeProblems = resumeIssues(buildResume(profile, projects));
 
   // Setup checklist, derived from what is actually saved.
   const checklist: { done: boolean; label: string; hint: string; href: string }[] = [
@@ -169,52 +171,86 @@ export default async function AdminDashboard() {
           )}
         </section>
 
-        <section aria-labelledby="setup-title" className="rounded-2xl border border-border bg-card/60 p-6">
-          <div className="mb-1 flex items-baseline justify-between gap-3">
-            <h2 id="setup-title" className="text-lg font-semibold tracking-tight">
-              {doneCount === checklist.length ? "Your site is complete" : "Get your site ready"}
-            </h2>
-            <span className="font-mono text-sm text-muted">
-              {doneCount}/{checklist.length}
-            </span>
-          </div>
-          <div
-            role="progressbar"
-            aria-valuenow={percent}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Setup progress"
-            className="mb-5 mt-3 h-1.5 overflow-hidden rounded-full bg-border"
-          >
-            <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${percent}%` }} />
-          </div>
+        <div className="space-y-6">
+          <section aria-labelledby="setup-title" className="rounded-2xl border border-border bg-card/60 p-6">
+            <div className="mb-1 flex items-baseline justify-between gap-3">
+              <h2 id="setup-title" className="text-lg font-semibold tracking-tight">
+                {doneCount === checklist.length ? "Your site is complete" : "Get your site ready"}
+              </h2>
+              <span className="font-mono text-sm text-muted">
+                {doneCount}/{checklist.length}
+              </span>
+            </div>
+            <div
+              role="progressbar"
+              aria-valuenow={percent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Setup progress"
+              className="mb-5 mt-3 h-1.5 overflow-hidden rounded-full bg-border"
+            >
+              <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${percent}%` }} />
+            </div>
 
-          <ul className="space-y-1">
-            {checklist.map((c) => (
-              <li key={c.label}>
-                <Link
-                  href={c.href}
-                  className="group flex items-start gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-background"
-                >
-                  <span
-                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                      c.done ? "border-emerald-500 bg-emerald-500 text-white" : "border-border text-transparent"
-                    }`}
+            <ul className="space-y-1">
+              {checklist.map((c) => (
+                <li key={c.label}>
+                  <Link
+                    href={c.href}
+                    className="group flex items-start gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-background"
                   >
-                    <Icon name="check" className="h-3 w-3" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className={`block text-sm ${c.done ? "text-muted line-through decoration-border" : "font-medium"}`}>
-                      {c.label}
-                      <span className="sr-only">{c.done ? " (done)" : " (to do)"}</span>
+                    <span
+                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                        c.done ? "border-emerald-500 bg-emerald-500 text-white" : "border-border text-transparent"
+                      }`}
+                    >
+                      <Icon name="check" className="h-3 w-3" />
                     </span>
-                    {!c.done && <span className="block text-xs text-muted">{c.hint}</span>}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+                    <span className="min-w-0">
+                      <span className={`block text-sm ${c.done ? "text-muted line-through decoration-border" : "font-medium"}`}>
+                        {c.label}
+                        <span className="sr-only">{c.done ? " (done)" : " (to do)"}</span>
+                      </span>
+                      {!c.done && <span className="block text-xs text-muted">{c.hint}</span>}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section aria-labelledby="resume-title" className="rounded-2xl border border-border bg-card/60 p-6">
+            <div className="mb-1 flex items-baseline justify-between gap-3">
+              <h2 id="resume-title" className="text-lg font-semibold tracking-tight">
+                Resume
+              </h2>
+              <span className={`text-sm ${resumeProblems.length === 0 ? "text-emerald-500" : "text-muted"}`}>
+                {resumeProblems.length === 0 ? "Looks complete" : `${resumeProblems.length} to improve`}
+              </span>
+            </div>
+            <p className="text-sm text-muted">A text PDF built from your settings and projects, in a format applicant tracking systems can read. It updates when you save.</p>
+
+            {resumeProblems.length > 0 && (
+              <ul className="mt-4 space-y-1.5 text-sm text-muted">
+                {resumeProblems.map((p) => (
+                  <li key={p} className="flex gap-2">
+                    <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className={buttonClass}>
+                Preview PDF <Icon name="external" className="h-3.5 w-3.5" />
+              </a>
+              <a href="/resume.pdf" download className={ghostButtonClass}>
+                <Icon name="download" className="h-3.5 w-3.5" /> Download
+              </a>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );

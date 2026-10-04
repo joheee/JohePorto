@@ -153,9 +153,11 @@ There is no test suite in the repo. Verification is done with throwaway Node scr
 4. Check `/`, `/admin/login`, `/robots.txt`, `/sitemap.xml`, `/opengraph-image` on the live URL.
 5. One-time: add the site to Google Search Console and submit the sitemap; re-scrape the link preview (LinkedIn Post Inspector etc.).
 
+## Resume PDF
+`/resume.pdf` (`src/app/resume.pdf/route.tsx`) renders a text-based, ATS-friendly PDF with `@react-pdf/renderer`: Letter, one column, built-in Times (not embedded), hyphenation off, plain-text URLs, nothing in headers/footers, laid out like the owner's own `Resume_Johevin.pdf` (Jake's-Resume style). Data comes from `lib/resume.ts` (`buildResume`: profile + projects -> sections; every description line becomes a bullet; projects newest first; skill groups become the Technical Summary; phone is not included yet). `export const dynamic = "force-static"`: built once, and profile/project saves (`revalidatePath("/", "layout")`) rebuild it (verified on a production build). Download buttons: hero ("Download resume"), footer ("Resume"). The admin dashboard has a Resume card (Preview PDF / Download) with `resumeIssues()` hints. Check output with `pdftotext`, `pdffonts`, `pdftoppm`. Keep descriptions and summaries as one line per point: hard-wrapped lines become separate bullets.
+
 ## Next steps (suggested order)
 1. **Blog:** `lib/posts.ts` + validation, `/admin/posts` (list, editor with Markdown, tags via `ChipsInput`, draft/published, delete via `ConfirmDialog`), `/blog` (search + tag filter), `/blog/[slug]` (`generateMetadata`, `generateStaticParams`, JSON-LD `BlogPosting`), "Latest posts" section, dashboard Posts card + checklist step, nav link, sitemap entries. Decide: plain Markdown + image links first (image upload may need the Blaze plan).
-2. **ATS resume:** print-friendly `/resume` generated from the profile data (no separate CV file; the `cvUrl` field was removed on purpose).
 3. **Contact hardening:** per-IP rate limit (or App Check), optional email notification (e.g. Resend).
 4. **Housekeeping:** delete the leftover test documents, set the real date on the legacy project, turn off Auth sign-ups.
 5. **Later:** analytics (privacy-friendly), project images, automated tests + CI.

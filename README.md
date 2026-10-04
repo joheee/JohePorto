@@ -9,7 +9,8 @@ A personal portfolio site with a private admin. All public content (name, hero, 
 - **Public site:** hero, about, projects, experience timeline and a contact form, with dark and light themes, smooth scrolling and a mobile menu.
 - **Admin (`/admin`):** dashboard, site settings, projects, and an inbox for contact messages. Owner-only.
 - **SEO:** link-preview image, sitemap, robots.txt, structured data, custom 404.
-- **Planned:** blog, ATS-friendly resume page.
+- **Resume:** an ATS-friendly PDF generated from your data at `/resume.pdf`, with a download button.
+- **Planned:** blog.
 
 ## Tech stack
 

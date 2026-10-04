@@ -10,7 +10,7 @@ export default async function Footer() {
         <p>
           © {new Date().getFullYear()} {profile.name}
         </p>
-        <ul className="flex items-center gap-5">
+        <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
           {profile.socials.map((s) => (
             <li key={s.label}>
               <a
@@ -23,6 +23,11 @@ export default async function Footer() {
               </a>
             </li>
           ))}
+          <li>
+            <a href="/resume.pdf" download className="transition-colors hover:text-foreground">
+              Resume
+            </a>
+          </li>
           <li>
             <Link href="/#hero" className="inline-flex items-center gap-1 transition-colors hover:text-foreground">
               Back to top

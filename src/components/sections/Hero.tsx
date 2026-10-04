@@ -44,27 +44,45 @@ export default async function Hero() {
               <p className="mt-8 max-w-xl text-lg leading-8 text-muted sm:text-xl">{profile.pitch}</p>
             </div>
           )}
-          <div className="rise mt-10 flex flex-wrap items-center gap-3" style={rise(4)}>
-            <Link
-              href="/#contact"
-              className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground transition hover:opacity-90"
-            >
-              Get in touch
-              <svg viewBox="0 0 24 24" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </Link>
-            {profile.socials.map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:border-accent hover:text-accent"
+          {/* Phones: the two main actions side by side, the social links as an even row below.
+              From sm up the wrappers disappear (`contents`) and everything sits in one row. */}
+          <div className="rise mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center" style={rise(4)}>
+            <div className="grid grid-cols-2 gap-3 sm:contents">
+              <Link
+                href="/#contact"
+                className="group inline-flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-3 text-sm font-medium text-accent-foreground transition hover:opacity-90 sm:px-6"
               >
-                {s.label}
+                Get in touch
+                <svg viewBox="0 0 24 24" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </Link>
+              <a
+                href="/resume.pdf"
+                download
+                aria-label="Download resume"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-accent/60 px-4 py-3 text-sm font-medium text-accent transition-colors hover:bg-accent/10 sm:px-6"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />
+                </svg>
+                <span aria-hidden className="sm:hidden">Resume</span>
+                <span aria-hidden className="max-sm:hidden">Download resume</span>
               </a>
-            ))}
+            </div>
+            <div className="flex flex-wrap gap-2 sm:contents">
+              {profile.socials.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 rounded-full border border-border px-4 py-2.5 text-center text-sm font-medium transition-colors hover:border-accent hover:text-accent sm:flex-none sm:px-6 sm:py-3"
+                >
+                  {s.label}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
 

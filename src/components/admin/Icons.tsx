@@ -30,6 +30,7 @@ const paths = {
   edit: <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4zM13.5 6.5l4 4" />,
   plus: <path d="M12 5v14M5 12h14" />,
   settings: <path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4" />,
+  download: <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />,
   external: <path d="M7 17 17 7M8 7h9v9" />,
   check: <path d="m5 12 5 5 9-10" />,
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
