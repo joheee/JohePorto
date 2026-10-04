@@ -3,8 +3,9 @@
 import { useEffect, useRef } from "react";
 
 // A soft glow behind the whole page that follows the mouse. It is a fixed layer, so it stays with the
-// viewport while you scroll. Without a mouse (phones) or JavaScript it simply drifts slowly (CSS), and for
-// reduced-motion users it stays put. Only a compositor-friendly `transform` is animated.
+// viewport while you scroll. On touch devices (no hover) it is hidden entirely; without JavaScript it
+// drifts slowly (CSS), and for reduced-motion users it stays put. Only a compositor-friendly `transform`
+// is animated.
 export default function CursorGlow() {
   const glow = useRef<HTMLDivElement>(null);
 
@@ -44,7 +45,7 @@ export default function CursorGlow() {
   }, []);
 
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden [@media(hover:none)]:hidden">
       <div ref={glow} className="absolute left-[70%] top-[30%] size-[36rem] -translate-x-1/2 -translate-y-1/2 will-change-transform">
         <div className="cursor-glow size-full rounded-full" />
       </div>
