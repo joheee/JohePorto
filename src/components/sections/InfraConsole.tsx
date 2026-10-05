@@ -15,7 +15,7 @@ export default function InfraConsole({ lines }: { lines: ConsoleLine[] }) {
         <span className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
         <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
         <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-        <span className="ml-2 font-mono text-xs text-zinc-500">infra ~ zsh</span>
+        <span className="ml-2 font-mono text-xs text-zinc-400">infra ~ zsh</span>
       </div>
       <div className="space-y-0.5 px-4 py-4 font-mono text-[13px] leading-6 text-zinc-200">
         {lines.map((line, i) => {
