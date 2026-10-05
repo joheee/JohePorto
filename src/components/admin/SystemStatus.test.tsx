@@ -72,13 +72,14 @@ describe("SystemStatus", () => {
     vi.unstubAllGlobals();
   });
 
-  const show = async (props = { readAt: new Date().toISOString(), expiresAt: Date.now() + 134 * 60_000 }) => render(await SystemStatus(props));
+  // The expiry has half a minute of margin: a few milliseconds pass before the check reads the clock, and the time left is rounded down to whole minutes.
+const show = async (props = { readAt: new Date().toISOString(), expiresAt: Date.now() + 134 * 60_000 + 30_000 }) => render(await SystemStatus(props));
 
   it("runs all eight checks and reports everything fine", async () => {
     await show();
     for (const name of ["firestore", "site cache", "deploy", "config", "resume.pdf", "sitemap", "robots", "session"]) expect(line(name)).toBeInTheDocument();
     expect(screen.getByText("● all systems operational")).toBeInTheDocument();
-    expect(line("session")).toHaveTextContent("signed in · 2 h 13 m left");
+    expect(line("session")).toHaveTextContent("signed in · 2 h 14 m left");
     expect(line("config")).toHaveTextContent("8/8 variables set");
   });
 
@@ -102,7 +103,7 @@ describe("SystemStatus", () => {
 
   it("warns when the session is nearly over, and names what config is missing without values", async () => {
     vi.stubEnv("ADMIN_UID", "");
-    await show({ readAt: new Date().toISOString(), expiresAt: Date.now() + 5 * 60_000 });
+    await show({ readAt: new Date().toISOString(), expiresAt: Date.now() + 5 * 60_000 + 30_000 });
     expect(line("session")).toHaveTextContent(/5 m left/);
     expect(line("config")).toHaveTextContent("missing ADMIN_UID");
   });

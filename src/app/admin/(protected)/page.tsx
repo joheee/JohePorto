@@ -104,12 +104,6 @@ export default async function AdminDashboard() {
                 : "Clear the site's cached data so the next visit reads Firestore again."
             }
           />
-          <Link href="/admin/site" className={ghostButtonClass}>
-            <Icon name="layout" /> Edit site
-          </Link>
-          <a href="/" target="_blank" rel="noopener noreferrer" className={ghostButtonClass}>
-            View site <Icon name="external" className="h-3.5 w-3.5" />
-          </a>
         </div>
       </header>
 
