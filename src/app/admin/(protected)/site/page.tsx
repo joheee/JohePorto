@@ -2,6 +2,7 @@ import DeleteProjectButton from "@/components/admin/DeleteProjectButton";
 import { EditButton, ItemActions, ProjectButton, SiteEditor } from "@/components/admin/SiteEditor";
 import HomeSections, { type HomeSlots } from "@/components/sections/HomeSections";
 import { requireAdmin } from "@/lib/auth";
+import { entryLabel, entryName } from "@/lib/format";
 import { getProjects } from "@/lib/projects";
 import { getProfile } from "@/lib/settings";
 
@@ -24,9 +25,9 @@ export default async function AdminSitePage() {
       </div>
     ),
     experience: <EditButton section="experience" />,
-    experienceEntry: (e) => <ItemActions kind="experience" index={e.index} label={`${e.role}|${e.company}`} name={`${e.role} at ${e.company}`} />,
+    experienceEntry: (e) => <ItemActions kind="experience" index={e.index} label={entryLabel("experience", e)} name={entryName("experience", e)} />,
     education: <EditButton section="education" />,
-    educationEntry: (e) => <ItemActions kind="education" index={e.index} label={`${e.degree}|${e.school}`} name={`${e.degree}, ${e.school}`} />,
+    educationEntry: (e) => <ItemActions kind="education" index={e.index} label={entryLabel("education", e)} name={entryName("education", e)} />,
     contact: <EditButton section="contact" />,
   };
 

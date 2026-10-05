@@ -1,4 +1,4 @@
-import type { ExperienceItem } from "@/types/content";
+import type { EducationItem, ExperienceItem } from "@/types/content";
 
 export type TextBlock = { type: "p"; text: string } | { type: "ul"; items: string[] };
 
@@ -104,4 +104,17 @@ export function formatMonthYear(month: number, year: number): string {
 // Oldest first by month and year; projects from the same month are ordered by title.
 export function sortProjectsByDate<T extends { month: number; year: number; title: string }>(items: T[]): T[] {
   return [...items].sort((a, b) => a.year * 12 + a.month - (b.year * 12 + b.month) || a.title.localeCompare(b.title));
+}
+
+// How an experience or education entry is named when the editor asks the server to delete it. The page and
+// the server action both build the label with this, so a stale page can't remove a different entry.
+export type EntryKind = "experience" | "education";
+
+export function entryLabel(kind: EntryKind, item: ExperienceItem | EducationItem): string {
+  return kind === "experience" ? `${(item as ExperienceItem).role}|${(item as ExperienceItem).company}` : `${(item as EducationItem).degree}|${(item as EducationItem).school}`;
+}
+
+// The same entry in words, for the delete confirmation.
+export function entryName(kind: EntryKind, item: ExperienceItem | EducationItem): string {
+  return kind === "experience" ? `${(item as ExperienceItem).role} at ${(item as ExperienceItem).company}` : `${(item as EducationItem).degree}, ${(item as EducationItem).school}`;
 }

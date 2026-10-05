@@ -3,10 +3,11 @@
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { revalidatePath, updateTag } from "next/cache";
 import { getAdmin } from "@/lib/auth";
-import { withCreatedAt } from "@/lib/format";
+import { entryLabel, withCreatedAt } from "@/lib/format";
 import { buildSkillIndex, canonicalizeStack } from "@/lib/skills";
 import { getProfile, loadProfile } from "@/lib/settings";
 import { adminDb } from "@/lib/firebase-admin";
+import type { EducationItem, ExperienceItem } from "@/types/content";
 import { SLUG_RE, ValidationError, assertHasLink, parseProfile, parseProject } from "@/lib/validation";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -55,10 +56,9 @@ export async function deleteProfileItem(kind: string, index: number, label: stri
   return guard(async () => {
     if ((kind !== "experience" && kind !== "education") || !Number.isInteger(index) || index < 0) throw new ValidationError("Invalid entry");
     const current = await loadProfile();
-    const list = current[kind] as unknown as Record<string, string>[];
+    const list: (ExperienceItem | EducationItem)[] = current[kind];
     const item = list[index];
-    const stored = item ? (kind === "experience" ? `${item.role}|${item.company}` : `${item.degree}|${item.school}`) : "";
-    if (!item || stored !== label) throw new ValidationError("This entry changed. Refresh the page and try again.");
+    if (!item || entryLabel(kind, item) !== label) throw new ValidationError("This entry changed. Refresh the page and try again.");
     await writeProfile(parseProfile({ ...current, [kind]: list.filter((_, i) => i !== index) }));
   });
 }

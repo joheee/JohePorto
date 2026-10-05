@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SocialLinks from "@/components/SocialLinks";
 import { getProfile } from "@/lib/settings";
 
 export default async function Footer() {
@@ -10,19 +11,7 @@ export default async function Footer() {
         <p>
           © {new Date().getFullYear()} {profile.name}
         </p>
-        <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-          {profile.socials.map((s) => (
-            <li key={s.label}>
-              <a
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-foreground"
-              >
-                {s.label}
-              </a>
-            </li>
-          ))}
+        <SocialLinks socials={profile.socials} variant="footer">
           <li>
             <a href="/resume.pdf" download className="transition-colors hover:text-foreground">
               Resume
@@ -36,7 +25,7 @@ export default async function Footer() {
               </svg>
             </Link>
           </li>
-        </ul>
+        </SocialLinks>
       </div>
     </footer>
   );

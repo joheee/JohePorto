@@ -1,6 +1,4 @@
-import FormattedText from "@/components/FormattedText";
-import { ProjectChips } from "@/components/ProjectCard";
-import TimelineItem from "@/components/motion/TimelineItem";
+import Timeline from "@/components/Timeline";
 import { formatPeriod, sortExperienceNewestFirst } from "@/lib/format";
 import { getProfile } from "@/lib/settings";
 import type { EducationItem, ExperienceItem } from "@/types/content";
@@ -32,23 +30,18 @@ export default async function Experience({
       {experience.length === 0 ? (
         <p className="text-muted">Nothing here yet.</p>
       ) : (
-        <ol className="pl-6">
-          {experience.map((e, i) => (
-            <TimelineItem key={`${e.company}-${e.startYear}-${e.startMonth}-${i}`} last={i === experience.length - 1}>
-              <p className="inline-block rounded-full border border-border bg-card/60 px-3 py-0.5 font-mono text-xs text-muted">
-                {formatPeriod(e)}
-              </p>
-              <h3 className="mt-3 text-lg font-semibold leading-snug tracking-tight">{e.role}</h3>
-              <p className="mt-0.5 text-sm font-medium text-accent">
-                {e.company}
-                {e.location && <span className="font-normal text-muted"> · {e.location}</span>}
-              </p>
-              {e.summary && <FormattedText text={e.summary} className="mt-3 text-muted" />}
-              <ProjectChips items={e.stack} className="mt-4" />
-              {entryActions?.(e)}
-            </TimelineItem>
-          ))}
-        </ol>
+        <Timeline
+          entries={experience.map((e) => ({
+            key: `${e.company}-${e.startYear}-${e.startMonth}`,
+            period: formatPeriod(e),
+            title: e.role,
+            org: e.company,
+            location: e.location,
+            summary: e.summary,
+            stack: e.stack,
+            footer: entryActions?.(e),
+          }))}
+        />
       )}
 
       {education.length > 0 && (
@@ -57,22 +50,18 @@ export default async function Experience({
             <h3 className="font-mono text-xs uppercase tracking-widest text-muted">Education</h3>
             {educationAction}
           </div>
-          <ol className="pl-6">
-            {education.map((e, i) => (
-              <TimelineItem key={`${e.school}-${e.startYear}-${e.startMonth}-${i}`} last={i === education.length - 1}>
-                <p className="inline-block rounded-full border border-border bg-card/60 px-3 py-0.5 font-mono text-xs text-muted">
-                  {formatPeriod(e)}
-                </p>
-                <h4 className="mt-3 text-lg font-semibold leading-snug tracking-tight">{e.degree}</h4>
-                <p className="mt-0.5 text-sm font-medium text-accent">
-                  {e.school}
-                  {e.location && <span className="font-normal text-muted"> · {e.location}</span>}
-                </p>
-                {e.summary && <FormattedText text={e.summary} className="mt-3 text-muted" />}
-                {educationActions?.(e)}
-              </TimelineItem>
-            ))}
-          </ol>
+          <Timeline
+            headingLevel={4}
+            entries={education.map((e) => ({
+              key: `${e.school}-${e.startYear}-${e.startMonth}`,
+              period: formatPeriod(e),
+              title: e.degree,
+              org: e.school,
+              location: e.location,
+              summary: e.summary,
+              footer: educationActions?.(e),
+            }))}
+          />
         </div>
       )}
     </Section>

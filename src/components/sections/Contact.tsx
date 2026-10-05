@@ -1,5 +1,6 @@
 import CopyEmail from "@/components/CopyEmail";
 import PingDot from "@/components/PingDot";
+import SocialLinks from "@/components/SocialLinks";
 import { getProfile } from "@/lib/settings";
 import ContactForm from "./ContactForm";
 import Section from "./Section";
@@ -31,23 +32,7 @@ export default async function Contact({ action, inertForm = false }: { action?: 
           {profile.socials.length > 0 && (
             <div>
               <p className={label}>Elsewhere</p>
-              <ul className="space-y-2">
-                {profile.socials.map((s) => (
-                  <li key={s.label}>
-                    <a
-                      href={s.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group inline-flex items-center gap-1.5 text-foreground transition-colors hover:text-accent"
-                    >
-                      {s.label}
-                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-muted transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d="M7 17 17 7M8 7h9v9" />
-                      </svg>
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <SocialLinks socials={profile.socials} variant="contact" />
             </div>
           )}
 
