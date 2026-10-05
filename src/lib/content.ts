@@ -53,7 +53,6 @@ export const adminNavLinks = [
 
 // The page-section bar under the navbar on /admin/site (same sections as the public links).
 export const siteSectionLinks = [
-  { label: "Hero", href: "/admin/site#hero" },
   { label: "About", href: "/admin/site#about" },
   { label: "Projects", href: "/admin/site#projects" },
   { label: "Experience", href: "/admin/site#experience" },

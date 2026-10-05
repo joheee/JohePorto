@@ -4,14 +4,19 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import SignOutButton from "@/components/admin/SignOutButton";
-import { adminNavLinks, navLinks } from "@/lib/content";
-import { useAdminArea } from "./useNav";
+import { LiveWebLink } from "./AdminActions";
+import { adminNavLinks, navLinks, siteSectionLinks } from "@/lib/content";
+import { useActiveSection, useAdminArea } from "./useNav";
+
+const sectionIds = siteSectionLinks.map((l) => l.href.split("#")[1]);
 
 // Phone-width navigation: a button that opens a panel with every link.
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
-  const { admin } = useAdminArea();
-  const links = admin ? adminNavLinks : navLinks;
+  const { pathname, admin } = useAdminArea();
+  const onSite = pathname === "/admin/site";
+  const active = useActiveSection(sectionIds, onSite);
+  const links = admin ? adminNavLinks : navLinks; // inside /admin the menu lists the admin tabs
 
   useEffect(() => {
     if (!open) return;
@@ -73,8 +78,33 @@ export default function MobileMenu() {
                     </Link>
                   </li>
                 ))}
+                {onSite && (
+                  <li className="border-b border-border py-4" aria-label="On this page">
+                    <p className="mb-3 font-mono text-xs uppercase tracking-widest text-muted">On this page</p>
+                    <ul className="grid grid-cols-2 gap-2">
+                      {siteSectionLinks.map((l) => {
+                        const current = active === l.href.split("#")[1];
+                        return (
+                          <li key={l.href}>
+                            <Link
+                              href={l.href}
+                              onClick={() => setOpen(false)}
+                              aria-current={current ? "true" : undefined}
+                              className={`flex justify-center rounded-full px-4 py-2 text-sm transition-colors ${
+                                current ? "bg-accent/10 font-medium text-accent ring-1 ring-inset ring-accent/30" : "border border-border text-muted hover:text-foreground"
+                              }`}
+                            >
+                              {l.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </li>
+                )}
                 {admin && (
-                  <li className="py-4" onClick={() => setOpen(false)}>
+                  <li className="flex items-center gap-2 py-4" onClick={() => setOpen(false)}>
+                    <LiveWebLink />
                     <SignOutButton />
                   </li>
                 )}
