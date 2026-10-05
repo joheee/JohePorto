@@ -268,20 +268,8 @@ summary:focus-visible {
   }
 }
 
-/* Hero "scroll" cue: a small bar that slides down and fades. */
-@keyframes scroll-cue {
-  0% {
-    transform: translateY(-100%);
-  }
-  60%,
-  100% {
-    transform: translateY(100%);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .animate-ping,
-  .scroll-cue-bar {
+  .animate-ping {
     animation: none !important;
   }
 }

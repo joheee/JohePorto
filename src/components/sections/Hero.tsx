@@ -1,6 +1,5 @@
 import Link from "next/link";
-import PingDot from "@/components/PingDot";
-import RotatingText from "@/components/motion/RotatingText";
+import TypedText from "@/components/motion/TypedText";
 import { buildConsole } from "@/lib/console";
 import { experienceStats, sortExperienceNewestFirst } from "@/lib/format";
 import { getProfile } from "@/lib/settings";
@@ -50,46 +49,53 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
       {action && <div className="absolute right-6 top-4 z-10">{action}</div>}
       <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <div>
-          {profile.status && (
-            <div className="rise" style={rise(0)}>
-              <p className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-border bg-card/60 py-1.5 pl-3 pr-4 text-sm text-muted">
-                <PingDot />
-                {profile.status}
+          <div className="rise" style={rise(0)}>
+            {/* One terminal session: each command in muted mono, its output indented under it ("$ " is 2ch wide). */}
+            <div className="mb-8 font-mono text-base leading-7 sm:text-lg">
+              <p aria-hidden className="select-none text-muted">
+                <span className="text-emerald-700 dark:text-emerald-400">$</span> whoami --role
               </p>
+              <p className="pl-[2ch]">
+                <TypedText words={profile.roles} className="text-accent" />
+              </p>
+              {profile.pitch && (
+                <>
+                  <p aria-hidden className="mt-4 select-none text-muted">
+                    <span className="text-emerald-700 dark:text-emerald-400">$</span> cat pitch.txt
+                  </p>
+                  {/* The indent sits on a wrapper so "2ch" is measured in the same font size as the role line above */}
+                  <div className="pl-[2ch]">
+                    <p className="max-w-2xl text-sm leading-7 text-foreground/80 sm:text-base">{profile.pitch}</p>
+                  </div>
+                </>
+              )}
             </div>
-          )}
-          <div className="rise" style={rise(1)}>
-            <p className="mb-4 font-mono text-base text-accent sm:text-lg">
-              <RotatingText words={profile.roles} />
-            </p>
           </div>
-          <div className="rise" style={rise(2)}>
+          <div className="rise" style={rise(1)}>
             {/* w-fit: the gradient spans the name itself, not the whole row */}
             <h1 className="w-fit bg-linear-to-r from-foreground from-30% to-accent bg-clip-text pb-2 text-6xl font-bold leading-[0.95] tracking-tighter text-transparent sm:text-8xl">
               {profile.name}
             </h1>
           </div>
-          {profile.pitch && (
-            <div className="rise" style={rise(3)}>
-              <p className="mt-8 max-w-xl text-lg leading-8 text-muted sm:text-xl">{profile.pitch}</p>
-            </div>
-          )}
           {current && (
-            <div className="rise" style={rise(4)}>
+            <div className="rise" style={rise(2)}>
               <p className="mt-5 font-mono text-sm text-muted">
-                Currently <span className="text-foreground">{current.role}</span> at <span className="text-foreground">{current.company}</span>
+                <span aria-hidden className="mr-2 rounded bg-accent/10 px-1.5 py-0.5 text-xs text-accent">HEAD → main</span>
+                <span className="sr-only">Currently </span>
+                <span className="text-foreground">{current.role}</span> @ <span className="text-foreground">{current.company}</span>
               </p>
             </div>
           )}
           {/* Phones: the two main actions side by side, the social links as an even row below.
               From sm up the wrappers disappear (`contents`) and everything sits in one row. */}
-          <div className="rise mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center" style={rise(5)}>
+          <div className="rise mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center" style={rise(3)}>
             <div className="grid grid-cols-2 gap-3 sm:contents">
               <Link
                 href={`${anchorBase}#contact`}
-                className="group inline-flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-3 text-sm font-medium text-accent-foreground transition hover:opacity-90 sm:px-6"
+                className="group inline-flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-3 font-mono text-sm font-medium text-accent-foreground transition hover:opacity-90 sm:px-6"
               >
-                Get in touch
+                <span className="sr-only">Get in touch</span>
+                <span aria-hidden>./contact.sh</span>
                 <svg viewBox="0 0 24 24" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M5 12h14M13 6l6 6-6 6" />
                 </svg>
@@ -97,14 +103,14 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
               <a
                 href="/resume.pdf"
                 download
-                aria-label="Download resume"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-accent/60 px-4 py-3 text-sm font-medium text-accent transition-colors hover:bg-accent/10 sm:px-6"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-accent/60 px-4 py-3 font-mono text-sm font-medium text-accent transition-colors hover:bg-accent/10 sm:px-6"
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />
                 </svg>
-                <span aria-hidden className="sm:hidden">Resume</span>
-                <span aria-hidden className="max-sm:hidden">Download resume</span>
+                <span className="sr-only">Download resume</span>
+                <span aria-hidden className="sm:hidden">resume.pdf</span>
+                <span aria-hidden className="max-sm:hidden">curl -O resume.pdf</span>
               </a>
             </div>
             <div className="flex flex-wrap gap-2 sm:contents">
@@ -114,8 +120,9 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 rounded-full border border-border px-4 py-2.5 text-center text-sm font-medium transition-colors hover:border-accent hover:text-accent sm:flex-none sm:px-6 sm:py-3"
+                  className="flex-1 rounded-full border border-border px-4 py-2.5 text-center font-mono text-sm font-medium lowercase transition-colors hover:border-accent hover:text-accent sm:flex-none sm:px-6 sm:py-3"
                 >
+                  <span aria-hidden>./</span>
                   {s.label}
                 </a>
               ))}
@@ -125,7 +132,7 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
 
         {/* The console, and under it (desktop) the headline numbers as small tiles. On phones it sits below the buttons. */}
         {(consoleLines.length > 0 || stats.length > 0) && (
-          <div className="rise min-w-0" style={rise(5)}>
+          <div className="rise min-w-0" style={rise(3)}>
             <InfraConsole lines={consoleLines} />
             {stats.length > 0 && (
               <ul className="mt-4 hidden gap-3 lg:flex">
@@ -140,18 +147,6 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
           </div>
         )}
       </div>
-
-      {/* Scroll cue */}
-      <Link
-        href={`${anchorBase}#about`}
-        aria-label="Scroll to the About section"
-        className="absolute bottom-6 left-6 hidden items-center gap-3 text-xs uppercase tracking-widest text-muted transition-colors hover:text-foreground sm:flex"
-      >
-        <span aria-hidden className="relative block h-10 w-px overflow-hidden bg-border">
-          <span className="scroll-cue-bar absolute inset-0 block bg-accent [animation:scroll-cue_2s_ease-in-out_infinite]" />
-        </span>
-        Scroll
-      </Link>
     </section>
   );
 }
