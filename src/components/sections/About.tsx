@@ -1,6 +1,7 @@
 import Reveal from "@/components/motion/Reveal";
 import { getProfile } from "@/lib/settings";
 import Section from "./Section";
+import SkillsPipeline from "./SkillsPipeline";
 
 const tile =
   "h-full rounded-2xl border border-border bg-card p-6 transition-colors hover:border-accent";
@@ -58,30 +59,7 @@ export default async function About({ action }: { action?: React.ReactNode }) {
           <Reveal delay={0.1} className="max-md:order-1 md:col-span-4">
             <div className={tile}>
               <h3 className={label}>Skills</h3>
-              {/* One row per group: name on the left, its skills on the right, a divider between rows.
-                  A lone group is the old flat list: no name column, it would only repeat "Skills". */}
-              <dl className="divide-y divide-border">
-                {profile.skillGroups.map((g) => (
-                  <div
-                    key={g.name}
-                    className={`grid gap-3 py-5 first:pt-1 last:pb-0 ${profile.skillGroups.length > 1 ? "sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-8" : ""}`}
-                  >
-                    {profile.skillGroups.length > 1 && <dt className="text-sm font-medium text-muted sm:pt-1">{g.name}</dt>}
-                    <dd>
-                      <ul className="flex flex-wrap gap-2">
-                        {g.items.map((s) => (
-                          <li
-                            key={s.name}
-                            className="cursor-default rounded-full border border-border px-3 py-1 text-sm transition duration-200 hover:border-accent hover:bg-accent/10 hover:text-accent motion-safe:hover:-translate-y-0.5"
-                          >
-                            {s.name}
-                          </li>
-                        ))}
-                      </ul>
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+              <SkillsPipeline groups={profile.skillGroups} />
             </div>
           </Reveal>
         )}

@@ -237,6 +237,33 @@ summary:focus-visible {
   }
 }
 
+/* Skills pipeline (see PipelineStage.tsx): a soft light keeps running down each connecting line, the
+   stages' lights chasing one another (--i staggers them). Hidden with reduced motion. */
+.pipe-flow {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 45%;
+  background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+  animation: pipe-flow 2.8s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.5s);
+}
+
+@keyframes pipe-flow {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(230%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pipe-flow {
+    display: none;
+  }
+}
+
 /* Dialogs fade and rise in. The animation runs on the dialog itself, not on content inside its
    scroll area: a transformed child extends the scrollable area and flashes a scrollbar mid-animation. */
 dialog[open] {

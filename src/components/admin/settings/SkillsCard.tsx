@@ -53,7 +53,7 @@ export default function SkillsCard({
   const variants = useMemo(() => findVariants(usage, skillIndex), [usage, skillIndex]);
 
   return (
-    <FormCard id="skills" icon="skills" title="Skills" description="Grouped like on your resume, in the order shown here. Jobs and projects pick from these, so spellings stay consistent.">
+    <FormCard id="skills" icon="skills" title="Skills" description="Grouped like on your resume, in the order shown here: on your site each group is a stage of the skills pipeline, top to bottom. Jobs and projects pick from these, so spellings stay consistent.">
       {groups.length === 0 && <p className="text-sm text-muted">No groups yet. Add one, for example &quot;DevOps Tools&quot;.</p>}
 
       <div className="space-y-3">
