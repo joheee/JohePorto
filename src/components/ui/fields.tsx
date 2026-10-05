@@ -2,10 +2,10 @@ export const inputClass =
   "w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition placeholder:text-muted/60 focus:border-accent focus:ring-4 focus:ring-accent/15";
 
 export const buttonClass =
-  "inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-2.5 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50";
 
 export const ghostButtonClass =
-  "inline-flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-1.5 text-sm transition-colors hover:bg-card disabled:opacity-50";
+  "inline-flex items-center justify-center gap-1.5 rounded-lg border border-border px-4 py-1.5 text-sm transition-colors hover:bg-card disabled:opacity-50";
 
 export function Field({
   label,

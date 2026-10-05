@@ -128,7 +128,7 @@ export default function ContactForm({ origin }: { origin: string }) {
           <button
             type="button"
             onClick={reset}
-            className="mt-5 rounded-full border border-border px-5 py-2 text-sm transition-colors hover:border-accent hover:text-accent"
+            className="mt-5 rounded-lg border border-border px-5 py-2 text-sm transition-colors hover:border-accent hover:text-accent"
           >
             Send another
           </button>

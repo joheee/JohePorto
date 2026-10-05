@@ -2,56 +2,69 @@ import { describe, expect, it } from "vitest";
 import { buildConsole, timeConsole, type ConsoleInput } from "./console";
 
 const input: ConsoleInput = {
-  name: "Jo Doe",
-  roles: ["DevOps Engineer", "Cloud Engineer"],
-  current: { role: "DevOps Engineer", company: "Acme" },
-  skills: ["Terraform", "Kubernetes", "AWS", "GCP", "Go", "Python", "Bash", "Docker"],
-  stats: [
-    { value: "7+", label: "years of experience" },
-    { value: "4", label: "companies" },
-  ],
+  roles: ["Cloud Engineer", "DevOps Engineer"],
+  pitch: "I help teams ship faster.",
+  skills: ["Terraform", "Kubernetes", "AWS", "GCP", "Go"],
   status: "Open for projects",
 };
 
-const text = (lines: ReturnType<typeof buildConsole>) => lines.map((l) => (l.kind === "cmd" ? `$ ${l.text}` : l.text));
+const text = (lines: ReturnType<typeof buildConsole>) =>
+  lines.map((l) => (l.kind === "cmd" ? `$ ${l.text}` : l.kind === "role" ? `role: ${l.words.join("|")}` : l.text));
 
 describe("buildConsole", () => {
-  it("writes each command and its output from the profile", () => {
+  it("answers whoami with the roles and cat with the pitch, then plans the skills, then runs the status script", () => {
     expect(text(buildConsole(input))).toEqual([
-      "$ whoami",
-      "Jo Doe",
-      "$ cat now.txt",
-      "DevOps Engineer @ Acme",
-      "$ ls ~/stack",
-      "terraform  kubernetes  aws  gcp  go  python",
-      "$ uptime",
-      "up 7+ years of experience, 4 companies",
+      "$ whoami --role",
+      "role: Cloud Engineer|DevOps Engineer",
+      "$ cat pitch.txt",
+      "I help teams ship faster.",
+      "$ terraform plan",
+      "Terraform will perform these actions:",
+      '+ skill "Terraform"',
+      '+ skill "Kubernetes"',
+      '+ skill "AWS"',
+      "# ... 2 more",
+      "Plan: 5 to add, 0 to destroy.",
       "$ ./status.sh",
       "● Open for projects",
     ]);
   });
 
-  it("lists multi-word skills like file names, so each reads as one item", () => {
-    const lines = buildConsole({ ...input, skills: ["Bash Script", "Helm Chart", "Go"] });
-    expect(text(lines)).toContain("bash-script  helm-chart  go");
+  it("does not apply the plan", () => {
+    expect(text(buildConsole(input)).join("\n")).not.toContain("apply");
   });
 
-  it("marks the status line as ok", () => {
-    expect(buildConsole(input).at(-1)).toEqual({ kind: "out", text: "● Open for projects", tone: "ok" });
+  it("counts every skill in the plan, not only the ones listed", () => {
+    const skills = Array.from({ length: 50 }, (_, i) => `s${i}`);
+    expect(text(buildConsole({ ...input, skills }))).toContain("Plan: 50 to add, 0 to destroy.");
   });
 
-  it("falls back to the first role when no job is current", () => {
-    const lines = buildConsole({ ...input, current: undefined });
-    expect(text(lines)).toContain("DevOps Engineer");
+  it("has no 'more' line when every skill is listed", () => {
+    expect(text(buildConsole({ ...input, skills: ["A", "B"] })).some((t) => t.includes("more"))).toBe(false);
   });
 
-  it("leaves out a command whose output would be empty", () => {
-    const lines = buildConsole({ ...input, skills: [], stats: [], status: "", roles: [], current: undefined });
-    expect(text(lines)).toEqual(["$ whoami", "Jo Doe"]);
+  it("shows the role and the pitch at once as real content, and animates the rest", () => {
+    const lines = buildConsole(input);
+    const still = lines.filter((l) => l.still);
+    expect(still.map((l) => l.kind)).toEqual(["cmd", "role", "cmd", "out"]);
+    expect(lines.filter((l) => l.kind === "role" || (l.kind === "out" && l.real))).toHaveLength(2);
+    expect(lines.slice(4).some((l) => l.still)).toBe(false);
+  });
+
+  it("marks added resources, the plan and the status line as green", () => {
+    const lines = buildConsole(input);
+    expect(lines).toContainEqual({ kind: "out", text: '+ skill "Terraform"', tone: "add" });
+    expect(lines).toContainEqual({ kind: "out", text: "Plan: 5 to add, 0 to destroy.", tone: "ok" });
+    expect(lines.at(-1)).toEqual({ kind: "out", text: "● Open for projects", tone: "ok" });
+  });
+
+  it("leaves out each part that has no data", () => {
+    expect(text(buildConsole({ roles: [], pitch: "", skills: [], status: "Open" }))).toEqual(["$ ./status.sh", "● Open"]);
+    expect(text(buildConsole({ ...input, pitch: "  ", status: " " })).join("\n")).not.toMatch(/pitch|status/);
   });
 
   it("is empty for an empty profile", () => {
-    expect(buildConsole({ name: "", roles: [], skills: [], stats: [], status: "" })).toEqual([]);
+    expect(buildConsole({ roles: [], pitch: "", skills: [], status: "" })).toEqual([]);
   });
 });
 
@@ -59,19 +72,23 @@ describe("timeConsole", () => {
   const lines = buildConsole(input);
   const { timings, end } = timeConsole(lines);
 
-  it("starts lines in order, one after another", () => {
-    expect(timings).toHaveLength(lines.length);
-    for (let i = 1; i < timings.length; i++) expect(timings[i].start).toBeGreaterThan(timings[i - 1].start);
-    expect(end).toBeGreaterThan(timings.at(-1)!.start);
+  it("gives still lines no delay and no typing", () => {
+    lines.forEach((l, i) => {
+      if (l.still) expect(timings[i]).toEqual({ start: 0, typing: 0 });
+    });
+  });
+
+  it("starts the animated lines in order, one after another, after the given delay", () => {
+    const animated = timings.filter((_, i) => !lines[i].still);
+    expect(animated[0].start).toBe(0.6);
+    for (let i = 1; i < animated.length; i++) expect(animated[i].start).toBeGreaterThan(animated[i - 1].start);
+    expect(end).toBeGreaterThan(animated.at(-1)!.start);
+    expect(timeConsole(lines, 2).timings[4].start).toBe(2);
   });
 
   it("types commands (longer commands take longer), and prints output at once", () => {
-    const cmd = (text: string) => lines.findIndex((l) => l.kind === "cmd" && l.text === text);
-    expect(timings[cmd("./status.sh")].typing).toBeGreaterThan(timings[cmd("whoami")].typing);
-    expect(timings[cmd("whoami") + 1].typing).toBe(0);
-  });
-
-  it("starts after the given delay", () => {
-    expect(timeConsole(lines, 2).timings[0].start).toBe(2);
+    const cmd = (t: string) => lines.findIndex((l) => l.kind === "cmd" && l.text === t);
+    expect(timings[cmd("terraform plan")].typing).toBeGreaterThan(timings[cmd("./status.sh")].typing);
+    expect(timings[cmd("./status.sh") + 1].typing).toBe(0);
   });
 });

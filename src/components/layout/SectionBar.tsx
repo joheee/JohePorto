@@ -24,7 +24,7 @@ export default function SectionBar() {
               <Link
                 href={l.href}
                 aria-current={current ? "true" : undefined}
-                className={`inline-flex justify-center rounded-full px-3.5 py-1 transition-colors ${
+                className={`inline-flex justify-center rounded-lg px-3.5 py-1 transition-colors ${
                   current ? "bg-accent/10 font-medium text-accent ring-1 ring-inset ring-accent/30" : "text-muted hover:bg-card hover:text-foreground"
                 }`}
               >

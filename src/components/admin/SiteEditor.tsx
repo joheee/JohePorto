@@ -87,7 +87,7 @@ export function SiteEditor({ profile, projectStacks, children }: { profile: Prof
                 type="button"
                 aria-label="Close"
                 onClick={requestClose}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted transition-colors hover:bg-card hover:text-foreground"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:bg-card hover:text-foreground"
               >
                 <Icon name="close" />
               </button>

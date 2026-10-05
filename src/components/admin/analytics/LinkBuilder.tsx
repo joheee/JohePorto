@@ -27,7 +27,7 @@ export default function LinkBuilder({ siteUrl }: { siteUrl: string }) {
                 setSource(p.source);
                 setMedium(p.medium);
               }}
-              className={`rounded-full border px-3.5 py-1.5 text-sm transition-colors ${active ? "border-accent bg-accent/10 text-accent" : "border-border text-muted hover:border-accent hover:text-foreground"}`}
+              className={`rounded-lg border px-3.5 py-1.5 text-sm transition-colors ${active ? "border-accent bg-accent/10 text-accent" : "border-border text-muted hover:border-accent hover:text-foreground"}`}
             >
               {p.label}
             </button>

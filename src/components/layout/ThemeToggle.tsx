@@ -50,7 +50,7 @@ export default function ThemeToggle() {
         aria-label="Color theme"
         aria-haspopup="true"
         aria-expanded={open}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted transition-colors hover:text-foreground"
+        className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:text-foreground"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
           <circle cx="13.5" cy="6.5" r="1" />

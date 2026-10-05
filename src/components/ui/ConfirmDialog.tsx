@@ -58,7 +58,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={busy}
-            className="rounded-full bg-red-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50"
+            className="rounded-lg bg-red-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50"
           >
             {confirmLabel}
           </button>

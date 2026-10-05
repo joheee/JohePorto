@@ -45,7 +45,7 @@ export default function MessageList({ messages }: { messages: Message[] }) {
   }
 
   const tab = (active: boolean) =>
-    `rounded-full px-4 py-1.5 text-sm transition-colors ${
+    `rounded-lg px-4 py-1.5 text-sm transition-colors ${
       active ? "bg-accent text-accent-foreground" : "border border-border hover:bg-card"
     }`;
 

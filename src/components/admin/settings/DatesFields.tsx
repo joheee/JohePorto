@@ -6,7 +6,7 @@ import type { RowDates } from "./model";
 export default function DatesFields({ row, currentLabel, onChange }: { row: RowDates; currentLabel: string; onChange: (patch: Partial<RowDates>) => void }) {
   return (
     <>
-      <label className="flex w-fit cursor-pointer items-center gap-2.5 rounded-full border border-border px-4 py-2 text-sm transition-colors hover:bg-card">
+      <label className="flex w-fit cursor-pointer items-center gap-2.5 rounded-lg border border-border px-4 py-2 text-sm transition-colors hover:bg-card">
         <input
           type="checkbox"
           className="h-4 w-4 accent-[var(--accent)]"

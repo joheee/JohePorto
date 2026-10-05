@@ -47,7 +47,7 @@ export default function AnalyticsView({ summary: s, range, collecting, siteUrl, 
               key={r}
               href={`/admin/analytics?range=${r}`}
               aria-current={r === range ? "page" : undefined}
-              className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${r === range ? "border-accent bg-accent/10 text-accent" : "border-border text-muted hover:border-accent hover:text-foreground"}`}
+              className={`rounded-lg border px-4 py-1.5 text-sm transition-colors ${r === range ? "border-accent bg-accent/10 text-accent" : "border-border text-muted hover:border-accent hover:text-foreground"}`}
             >
               {r} days
             </Link>

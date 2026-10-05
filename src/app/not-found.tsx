@@ -11,10 +11,10 @@ export default function NotFound() {
         The page you&apos;re looking for doesn&apos;t exist, or it has moved.
       </p>
       <div className="mt-10 flex flex-wrap gap-3">
-        <Link href="/" className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground transition hover:opacity-90">
+        <Link href="/" className="rounded-lg bg-accent px-6 py-3 text-sm font-medium text-accent-foreground transition hover:opacity-90">
           Back home
         </Link>
-        <Link href="/#contact" className="rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:border-accent hover:text-accent">
+        <Link href="/#contact" className="rounded-lg border border-border px-6 py-3 text-sm font-medium transition-colors hover:border-accent hover:text-accent">
           Get in touch
         </Link>
       </div>

@@ -33,7 +33,7 @@ export default function MobileMenu({ publicLinks = navLinks }: { publicLinks?: {
         aria-expanded={open}
         aria-controls="mobile-menu"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted transition-colors hover:text-foreground"
+        className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted transition-colors hover:text-foreground"
       >
         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
           {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
@@ -90,7 +90,7 @@ export default function MobileMenu({ publicLinks = navLinks }: { publicLinks?: {
                               href={l.href}
                               onClick={() => setOpen(false)}
                               aria-current={current ? "true" : undefined}
-                              className={`flex justify-center rounded-full px-4 py-2 text-sm transition-colors ${
+                              className={`flex justify-center rounded-lg px-4 py-2 text-sm transition-colors ${
                                 current ? "bg-accent/10 font-medium text-accent ring-1 ring-inset ring-accent/30" : "border border-border text-muted hover:text-foreground"
                               }`}
                             >

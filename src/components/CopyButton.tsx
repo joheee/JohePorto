@@ -23,7 +23,7 @@ export default function CopyButton({ text, label, copiedLabel, track: event }: {
         onClick={copy}
         aria-label={copied ? copiedLabel : label}
         title={copied ? copiedLabel : label}
-        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors ${
+        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
           copied ? "border-emerald-600/50 text-emerald-700 dark:text-emerald-400" : "border-border text-muted hover:border-accent hover:text-accent"
         }`}
       >

@@ -20,7 +20,7 @@ export default function SignOutButton() {
     <button
       type="button"
       onClick={onClick}
-      className="whitespace-nowrap rounded-full border border-border px-3 py-1.5 text-sm sm:px-4 transition-colors hover:bg-card"
+      className="whitespace-nowrap rounded-lg border border-border px-3 py-1.5 text-sm sm:px-4 transition-colors hover:bg-card"
     >
       Sign out
     </button>

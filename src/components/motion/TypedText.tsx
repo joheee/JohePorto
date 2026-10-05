@@ -10,10 +10,10 @@ const PAUSE_MS = 250;
 type Phase = "hold" | "delete" | "type";
 
 // A terminal's output line: the current word stays, is deleted a letter at a time, and the next one is typed,
-// with a block cursor at the end. Same font and line height as the text around it, so it lines up with the
-// prompt above. The first word is complete in the server HTML (no JavaScript, no layout shift) and stays
+// with a block cursor at the end. It is a fixed-height line (the caller sets `h-* leading-*`), so it never moves
+// what is below it, and it lines up with the prompt above. The first word is complete in the server HTML (no JavaScript, no layout shift) and stays
 // still for people who ask for reduced motion or have a single word. Screen readers get all the words once.
-export default function TypedText({ words, className }: { words: string[]; className?: string }) {
+export default function TypedText({ words, className, cursorClassName = "bg-accent" }: { words: string[]; className?: string; cursorClassName?: string }) {
   const [i, setI] = useState(0);
   const [phase, setPhase] = useState<Phase>("hold");
   // The list can shrink while `i` points past its end (a role was deleted): wrap instead of showing nothing.
@@ -45,10 +45,10 @@ export default function TypedText({ words, className }: { words: string[]; class
   }, [animate, phase, shown, word.length]);
 
   return (
-    <span className={`flex h-7 items-center leading-7 ${className ?? ""}`}>
+    <span className={`flex items-center ${className ?? ""}`}>
       <span className="sr-only">{words.join(", ")}</span>
       <span aria-hidden>{word.slice(0, shown)}</span>
-      <span aria-hidden className="term-cursor ml-0.5 inline-block h-[1.1em] w-[0.55em] bg-accent" />
+      <span aria-hidden className={`term-cursor ml-0.5 inline-block h-[1.1em] w-[0.55em] ${cursorClassName}`} />
     </span>
   );
 }
