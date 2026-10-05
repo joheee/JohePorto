@@ -5,10 +5,14 @@ import { summarize } from "@/lib/analytics/summarize";
 
 const requireAdmin = vi.hoisted(() => vi.fn());
 const loadAnalytics = vi.hoisted(() => vi.fn());
+const loadRuns = vi.hoisted(() => vi.fn());
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/auth", () => ({ requireAdmin }));
 vi.mock("@/lib/firebase-admin", () => ({ adminDb: () => ({}) }));
 vi.mock("@/lib/analytics/read", () => ({ loadAnalytics }));
+vi.mock("@/lib/pagespeed/store", async (orig) => ({ ...(await orig<typeof import("@/lib/pagespeed/store")>()), loadRuns }));
+vi.mock("@/app/admin/(protected)/pagespeed-actions", () => ({ runSpeedTest: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("next/link", () => ({ default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => <a href={href} {...rest}>{children}</a> }));
 
 import AnalyticsPage from "./page";
@@ -18,6 +22,7 @@ const show = async (range?: string) => render(await AnalyticsPage({ searchParams
 beforeEach(() => {
   requireAdmin.mockReset().mockResolvedValue({ uid: "o" });
   loadAnalytics.mockReset().mockResolvedValue(summarize([], [], "2026-10-06", 30));
+  loadRuns.mockReset().mockResolvedValue([]);
 });
 
 describe("the Analytics page", () => {
@@ -40,6 +45,21 @@ describe("the Analytics page", () => {
     await show();
     expect(screen.getByRole("heading", { name: "Who visits, and what they do" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "No visits counted yet" })).toBeInTheDocument();
+  });
+
+  it("has a Site speed panel with the Run test button", async () => {
+    await show();
+    expect(screen.getByRole("heading", { name: "Site speed" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Run test" })).toBeInTheDocument();
+  });
+
+  it("still shows the page when the earlier speed runs cannot be read", async () => {
+    loadRuns.mockRejectedValue(new Error("unavailable"));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    await show();
+    expect(screen.getByRole("heading", { name: "Site speed" })).toBeInTheDocument();
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
   });
 
   it("says so plainly when the counters cannot be read, instead of failing", async () => {

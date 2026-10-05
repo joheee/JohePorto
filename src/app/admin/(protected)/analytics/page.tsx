@@ -1,12 +1,20 @@
+import SpeedPanel from "@/components/admin/analytics/SpeedPanel";
 import AnalyticsView from "@/components/admin/analytics/AnalyticsView";
 import { requireAdmin } from "@/lib/auth";
 import { analyticsEnabled } from "@/lib/analytics/collect";
 import { parseRange } from "@/lib/analytics/range";
 import { loadAnalytics, type ReadDb } from "@/lib/analytics/read";
 import { adminDb } from "@/lib/firebase-admin";
+import { loadRuns, type SpeedDb } from "@/lib/pagespeed/store";
 import { siteUrl } from "@/lib/site";
 
 export const metadata = { title: "Analytics" };
+
+// The "Run test" button on this page runs a PageSpeed test as a Server Action, which takes about half a minute
+// (the platform default is shorter). This sets the limit for every action used on the page.
+export const maxDuration = 60;
+
+const LOCAL = /^https?:\/\/(localhost|127\.|\[::1\])/;
 
 // Visits to the public home page: totals, where they come from, how far they get, what they click.
 export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<{ range?: string | string[] }> }) {
@@ -31,5 +39,12 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       </div>
     );
   }
-  return <AnalyticsView summary={summary} range={range} collecting={analyticsEnabled(process.env)} siteUrl={siteUrl} timeZone={timeZone} />;
+  let runs: Awaited<ReturnType<typeof loadRuns>> = [];
+  try {
+    runs = await loadRuns(adminDb() as unknown as SpeedDb);
+  } catch (e) {
+    console.error("pagespeed: could not read the earlier runs", e instanceof Error ? e.message : e);
+  }
+  const speed = <SpeedPanel runs={runs} testUrl={siteUrl} disabledReason={LOCAL.test(siteUrl) ? "Google can only test a public address, so this works on the live site, not on localhost." : undefined} />;
+  return <AnalyticsView summary={summary} range={range} collecting={analyticsEnabled(process.env)} siteUrl={siteUrl} timeZone={timeZone} speed={speed} />;
 }

@@ -9,7 +9,7 @@ const FUNNEL_LABELS: Record<string, string> = { visits: "Visited the page", star
 
 // Everything the Analytics page shows, for a summary of one period. Server-rendered: no script on the page
 // apart from the link builder.
-export default function AnalyticsView({ summary: s, range, collecting, siteUrl, timeZone }: { summary: Summary; range: Range; collecting: boolean; siteUrl: string; timeZone: string }) {
+export default function AnalyticsView({ summary: s, range, collecting, siteUrl, timeZone, speed }: { summary: Summary; range: Range; collecting: boolean; siteUrl: string; timeZone: string; speed?: React.ReactNode }) {
   const previous = `vs the ${range} days before`;
 
   const funnel: Ranked = [
@@ -132,6 +132,8 @@ export default function AnalyticsView({ summary: s, range, collecting, siteUrl, 
           </div>
         </>
       )}
+
+      {speed}
 
       <Panel id="links" title="Tracked links" hint="know which link works">
         <LinkBuilder siteUrl={siteUrl} />
