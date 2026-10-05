@@ -51,7 +51,7 @@ export function ProjectLinks({ links, className = "", emptyLabel }: { links: Pro
 export default function ProjectCard({ project, footer }: { project: Project; footer?: React.ReactNode }) {
   const clone = cloneCommand(project.links);
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-accent">
+    <article data-project={project.slug} className="overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-accent">
       <div className="flex items-center gap-2 border-b border-border bg-foreground/[0.03] px-4 py-2.5">
         <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full bg-red-400/70" />
         <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-400/70" />
@@ -74,7 +74,7 @@ export default function ProjectCard({ project, footer }: { project: Project; foo
             <code className="min-w-0 flex-1 break-all font-mono text-xs leading-5">
               <span className="text-emerald-700 dark:text-emerald-400">$</span> {clone}
             </code>
-            <CopyButton text={clone} label="Copy the git clone command" copiedLabel="Command copied" />
+            <CopyButton text={clone} label="Copy the git clone command" copiedLabel="Command copied" track="copy.clone" />
           </div>
         )}
         <ProjectLinks links={project.links} className="mt-6" />

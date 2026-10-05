@@ -2,6 +2,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { takeEvents } from "@/lib/track";
 import ContactForm from "./ContactForm";
 
 const reply = (status: number, body: unknown) => vi.fn().mockResolvedValue({ ok: status >= 200 && status < 300, status, text: async () => JSON.stringify(body) });
@@ -138,5 +139,30 @@ describe("sending", () => {
     await send(user);
     expect(await screen.findByText(/no response: the request could not be sent/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+  });
+});
+
+describe("what the analytics are told", () => {
+  it("that the form was started, once, when the first key is typed", async () => {
+    takeEvents();
+    const user = setup();
+    await user.type(screen.getByLabelText("Your name"), "Ada");
+    await user.type(screen.getByLabelText("Your email"), "a");
+    expect(takeEvents()).toEqual(["contact.started"]);
+  });
+
+  it("that a message was sent, only when the server accepted it", async () => {
+    takeEvents();
+    vi.stubGlobal("fetch", reply(400, { error: "Invalid input" }));
+    const user = setup();
+    await fill(user);
+    await send(user);
+    await screen.findByText("400 Bad Request");
+    expect(takeEvents()).toEqual(["contact.started"]); // refused: not sent
+
+    vi.stubGlobal("fetch", reply(200, { ok: true }));
+    await send(user);
+    await screen.findByText("✓ Message delivered");
+    expect(takeEvents()).toEqual(["contact.sent"]);
   });
 });

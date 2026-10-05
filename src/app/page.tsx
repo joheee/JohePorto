@@ -1,3 +1,4 @@
+import Analytics from "@/components/Analytics";
 import HomeSections from "@/components/sections/HomeSections";
 import { getProjects } from "@/lib/projects";
 import { getProfile } from "@/lib/settings";
@@ -31,6 +32,7 @@ export default async function Home() {
     <>
       {/* "<" is escaped so profile text can never close the script tag (see the Next.js JSON-LD guide). */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <Analytics />
       <HomeSections projects={projects} />
     </>
   );

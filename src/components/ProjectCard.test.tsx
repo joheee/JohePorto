@@ -46,4 +46,9 @@ describe("ProjectCard", () => {
     render(<ProjectCard project={project()} footer={<button>Edit</button>} />);
     expect(within(screen.getByRole("article")).getByRole("button", { name: "Edit" })).toBeInTheDocument();
   });
+
+  it("carries its slug, so a click on one of its links can be counted for this project", () => {
+    render(<ProjectCard project={project({ slug: "aws-base" })} />);
+    expect(screen.getByRole("article")).toHaveAttribute("data-project", "aws-base");
+  });
 });

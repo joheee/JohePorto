@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import { writeClipboard } from "@/lib/clipboard";
+import { track } from "@/lib/track";
 
 // A small icon button: copies `text`, then shows a check for two seconds. There is no visible word, so `label` is
 // its accessible name and tooltip ("Copy email address") and `copiedLabel` is announced once it has copied.
-export default function CopyButton({ text, label, copiedLabel }: { text: string; label: string; copiedLabel: string }) {
+export default function CopyButton({ text, label, copiedLabel, track: event }: { text: string; label: string; copiedLabel: string; track?: string }) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
     if (!(await writeClipboard(text))) return; // nothing to confirm when the browser refused
+    if (event) track(event); // counted by the analytics, if the site has them
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { track } from "@/lib/track";
 import AutoTextarea from "@/components/AutoTextarea";
 import CopyButton from "@/components/CopyButton";
 import { LIMITS, curlCommand, formatBytes, lintContact, previewValue, requestBody, statusText, type ContactValues } from "@/lib/contactRequest";
@@ -42,10 +43,15 @@ export default function ContactForm({ origin }: { origin: string }) {
   const [response, setResponse] = useState<Response | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const honeypot = useRef<HTMLInputElement>(null);
+  const started = useRef(false);
 
   const errors = attempted ? lintContact(values) : {};
   const set = (k: keyof ContactValues) => (e: { currentTarget: { value: string } }) => {
     const value = e.currentTarget.value; // read now: currentTarget is null once the event has finished
+    if (!started.current) {
+      started.current = true;
+      track("contact.started"); // counted once per visit, for the analytics funnel
+    }
     setValues((v) => ({ ...v, [k]: value }));
   };
   const locked = status === "sending" || status === "sent";
@@ -71,6 +77,7 @@ export default function ContactForm({ origin }: { origin: string }) {
       });
       const raw = await res.text();
       setResponse({ kind: "http", status: res.status, ms: Math.round(performance.now() - started), bytes: new TextEncoder().encode(raw).length, body: prettyBody(raw) });
+      if (res.ok) track("contact.sent");
       setStatus(res.ok ? "sent" : "idle"); // a refused request leaves the form open to fix and resend
     } catch {
       setResponse({ kind: "network" });
@@ -221,7 +228,7 @@ export default function ContactForm({ origin }: { origin: string }) {
           <code className="line-clamp-2 min-w-0 flex-1 break-all font-mono text-xs leading-5 text-muted">
             <span className="text-emerald-700 dark:text-emerald-400">$</span> {curl}
           </code>
-          <CopyButton text={curl} label="Copy the curl command" copiedLabel="Command copied" />
+          <CopyButton text={curl} label="Copy the curl command" copiedLabel="Command copied" track="copy.curl" />
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { takeEvents } from "@/lib/track";
 import CopyButton from "./CopyButton";
 
 afterEach(() => vi.useRealTimers());
@@ -40,5 +41,19 @@ describe("CopyButton", () => {
     await user.click(screen.getByRole("button", { name: "Copy" }));
     expect(screen.getByRole("button", { name: "Copy" })).toBeInTheDocument(); // still "Copy", not "Copied!"
     expect(screen.getByRole("status")).toBeEmptyDOMElement();
+  });
+
+  it("reports what was copied to the analytics, only when it was told to and only when the copy worked", async () => {
+    takeEvents();
+    const user = userEvent.setup();
+    Object.defineProperty(navigator, "clipboard", { value: { writeText: vi.fn().mockResolvedValue(undefined) }, configurable: true });
+    const { unmount } = render(<CopyButton text="x" label="Copy" copiedLabel="Copied" track="copy.clone" />);
+    await user.click(screen.getByRole("button", { name: "Copy" }));
+    expect(takeEvents()).toEqual(["copy.clone"]);
+    unmount();
+
+    render(<CopyButton text="x" label="Copy" copiedLabel="Copied" />); // no track prop
+    await user.click(screen.getByRole("button", { name: "Copy" }));
+    expect(takeEvents()).toEqual([]);
   });
 });
