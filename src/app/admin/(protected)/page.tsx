@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import Icon, { type IconName } from "@/components/ui/Icons";
 import { buttonClass, ghostButtonClass } from "@/components/ui/fields";
 import { requireAdmin } from "@/lib/auth";
@@ -9,6 +10,7 @@ import { getProjects } from "@/lib/projects";
 import { buildResume, resumeIssues } from "@/lib/resume";
 import { getProfile, getProfileReadAt } from "@/lib/settings";
 import RefreshCacheButton from "@/components/admin/RefreshCacheButton";
+import SystemStatus, { StatusSkeleton } from "@/components/admin/SystemStatus";
 
 function StatCard({
   href,
@@ -51,7 +53,7 @@ function StatCard({
 }
 
 export default async function AdminDashboard() {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const db = adminDb();
 
   const [profile, projects, recent, totalSnap, readSnap, profileDoc, readAt] = await Promise.all([
@@ -140,42 +142,49 @@ export default async function AdminDashboard() {
       {/* minmax(0, …): without it a grid column refuses to shrink below its longest unbreakable
           line, so one long message would stretch the whole page instead of being cut off. */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <section aria-labelledby="recent-title" className="rounded-2xl border border-border bg-card/60 p-6">
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <h2 id="recent-title" className="text-lg font-semibold tracking-tight">
-              Recent messages
-            </h2>
-            <Link href="/admin/messages" className="text-sm text-muted transition-colors hover:text-foreground">
-              View all →
-            </Link>
-          </div>
+        <div className="space-y-6">
+          <section aria-labelledby="recent-title" className="rounded-2xl border border-border bg-card/60 p-6">
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <h2 id="recent-title" className="text-lg font-semibold tracking-tight">
+                Recent messages
+              </h2>
+              <Link href="/admin/messages" className="text-sm text-muted transition-colors hover:text-foreground">
+                View all →
+              </Link>
+            </div>
 
-          {recent.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted">
-              No messages yet. When someone uses your contact form, it shows up here.
-            </p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {recent.map((m) => (
-                <li key={m.id} className="py-3.5 first:pt-0 last:pb-0">
-                  <Link href="/admin/messages" className="group flex items-start gap-3">
-                    <span aria-hidden className={`mt-2 h-2 w-2 shrink-0 rounded-full ${m.read ? "bg-transparent" : "bg-accent"}`} />
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-baseline justify-between gap-3">
-                        <span className={`truncate text-sm ${m.read ? "font-medium" : "font-semibold"}`}>
-                          {m.name}
-                          {!m.read && <span className="sr-only"> (unread)</span>}
+            {recent.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted">
+                No messages yet. When someone uses your contact form, it shows up here.
+              </p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {recent.map((m) => (
+                  <li key={m.id} className="py-3.5 first:pt-0 last:pb-0">
+                    <Link href="/admin/messages" className="group flex items-start gap-3">
+                      <span aria-hidden className={`mt-2 h-2 w-2 shrink-0 rounded-full ${m.read ? "bg-transparent" : "bg-accent"}`} />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-baseline justify-between gap-3">
+                          <span className={`truncate text-sm ${m.read ? "font-medium" : "font-semibold"}`}>
+                            {m.name}
+                            {!m.read && <span className="sr-only"> (unread)</span>}
+                          </span>
+                          <span className="shrink-0 font-mono text-xs text-muted">{timeAgo(m.createdAt)}</span>
                         </span>
-                        <span className="shrink-0 font-mono text-xs text-muted">{timeAgo(m.createdAt)}</span>
+                        <span className="mt-0.5 block truncate text-sm text-muted group-hover:text-foreground">{m.text}</span>
                       </span>
-                      <span className="mt-0.5 block truncate text-sm text-muted group-hover:text-foreground">{m.text}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {/* The checks ask Firestore and the site itself: show the page at once and let them fill in. */}
+          <Suspense fallback={<StatusSkeleton />}>
+            <SystemStatus readAt={readAt} expiresAt={admin.expiresAt} />
+          </Suspense>
+        </div>
 
         <div className="space-y-6">
           <section aria-labelledby="setup-title" className="rounded-2xl border border-border bg-card/60 p-6">

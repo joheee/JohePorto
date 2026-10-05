@@ -5,7 +5,8 @@ import { cache } from "react";
 import { adminAuth } from "./firebase-admin";
 import { SESSION_COOKIE } from "./session-cookie";
 
-export type AdminUser = { uid: string; email: string | null };
+// `expiresAt`: when the session cookie stops working (ms since 1970), signed into the cookie by Firebase.
+export type AdminUser = { uid: string; email: string | null; expiresAt: number };
 
 // Data access layer: the real admin check. Verifies the session cookie with Firebase
 // (including revocation) and that the user is the owner. Fails closed.
@@ -19,7 +20,7 @@ export const getAdmin = cache(async (): Promise<AdminUser | null> => {
   try {
     const decoded = await adminAuth().verifySessionCookie(value, true);
     if (decoded.uid !== adminUid) return null;
-    return { uid: decoded.uid, email: decoded.email ?? null };
+    return { uid: decoded.uid, email: decoded.email ?? null, expiresAt: decoded.exp * 1000 };
   } catch {
     return null;
   }
