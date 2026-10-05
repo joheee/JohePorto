@@ -2,6 +2,7 @@ import CopyEmail from "@/components/CopyEmail";
 import PingDot from "@/components/PingDot";
 import SocialLinks from "@/components/SocialLinks";
 import { getProfile } from "@/lib/settings";
+import { siteUrl } from "@/lib/site";
 import ContactForm from "./ContactForm";
 import Section from "./Section";
 
@@ -44,7 +45,7 @@ export default async function Contact({ action, inertForm = false }: { action?: 
           )}
         </div>
 
-        {inertForm ? <div inert className="opacity-70"><ContactForm /></div> : <ContactForm />}
+        {inertForm ? <div inert className="opacity-70"><ContactForm origin={siteUrl} /></div> : <ContactForm origin={siteUrl} />}
       </div>
     </Section>
   );
