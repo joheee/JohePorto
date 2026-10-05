@@ -1,15 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState } from "react";
 import { saveProject } from "@/app/admin/(protected)/actions";
 import AutoTextarea from "@/components/AutoTextarea";
 import { buildSkillIndex, skillKey, suggestSkills } from "@/lib/skills";
 import type { Project, SkillGroup, SocialLink } from "@/types/content";
 import ChipsInput from "./ChipsInput";
 import DateSelects from "./DateSelects";
-import { Field, SaveStatus, buttonClass, ghostButtonClass, inputClass } from "@/components/ui/fields";
+import { Field, ghostButtonClass, inputClass } from "@/components/ui/fields";
 import FormCard from "./FormCard";
+import SaveBar from "./SaveBar";
+import { useEditForm } from "./useEditForm";
 import Icon from "@/components/ui/Icons";
 
 type Form = {
@@ -71,57 +73,26 @@ export default function ProjectForm({
 }) {
   const router = useRouter();
   const isNew = !initial;
-
-  const [form, setForm] = useState<Form>(() => (initial ? toForm(initial) : empty));
-  const [saved, setSaved] = useState<Form>(form); // what "Discard" goes back to
   const [slugTouched, setSlugTouched] = useState(false);
-  const [pending, startTransition] = useTransition();
-  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
 
-  const set = <K extends keyof Form>(key: K, value: Form[K]) => setForm((f) => ({ ...f, [key]: value }));
+  const { form, setForm, set, dirty, pending, result, submit, discard } = useEditForm<Form>({
+    initial: () => (initial ? toForm(initial) : empty),
+    changes: toPayload,
+    save: (f) => saveProject(toPayload(f), isNew),
+    onSaved: () => {
+      onSaved?.();
+      router.refresh();
+    },
+    onDirtyChange,
+  });
+
   const setLink = (i: number, patch: Partial<SocialLink>) =>
     set("links", form.links.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
 
   const skillIndex = useMemo(() => buildSkillIndex(skillGroups), [skillGroups]);
 
-  const dirty = JSON.stringify(toPayload(form)) !== JSON.stringify(toPayload(saved));
-
-  useEffect(() => {
-    onDirtyChange?.(dirty);
-  }, [dirty, onDirtyChange]);
-
-  // Warn before leaving the page with unsaved changes.
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
-
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setResult(null);
-    const snapshot = form;
-    startTransition(async () => {
-      const res = await saveProject(toPayload(snapshot), isNew);
-      if (res.ok) {
-        setSaved(snapshot); // nothing is "unsaved" any more, so leaving doesn't warn
-        onSaved?.();
-        router.refresh();
-      } else {
-        setResult({ ok: false, message: res.error });
-      }
-    });
-  }
-
-  const status = dirty
-    ? { dot: "bg-amber-500", text: "Unsaved changes" }
-    : isNew
-      ? { dot: "bg-border", text: "Nothing entered yet" }
-      : { dot: "bg-emerald-500", text: "All changes saved" };
-
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={submit} className="space-y-6">
       <FormCard id="basics" icon="project" title="Basics" description="How the project is named and summarised on its card.">
         <Field label="Title">
           <input
@@ -220,36 +191,18 @@ export default function ProjectForm({
         </button>
       </FormCard>
 
-      {/* Floating save bar */}
-      <div className="sticky bottom-4 z-30 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-background/90 px-5 py-3 shadow-lg shadow-black/10 backdrop-blur">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex items-center gap-2 text-sm text-muted">
-            <span aria-hidden className={`h-2 w-2 rounded-full ${status.dot}`} />
-            <span className="sr-only sm:not-sr-only">{status.text}</span>
-          </span>
-          <SaveStatus status={result} />
-        </div>
-        <div className="flex items-center gap-2">
-          <button type="button" disabled={pending} className={ghostButtonClass} onClick={onCancel}>
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={!dirty || pending}
-            className={`${ghostButtonClass} whitespace-nowrap`}
-            onClick={() => {
-              setForm(saved);
-              setSlugTouched(false);
-              setResult(null);
-            }}
-          >
-            Discard
-          </button>
-          <button type="submit" disabled={pending} className={`${buttonClass} whitespace-nowrap`}>
-            {pending ? "Saving…" : isNew ? "Create project" : "Save changes"}
-          </button>
-        </div>
-      </div>
+      <SaveBar
+        dirty={dirty}
+        pending={pending}
+        result={result}
+        submitLabel={isNew ? "Create project" : "Save changes"}
+        emptyLabel={isNew ? "Nothing entered yet" : undefined}
+        onDiscard={() => {
+          discard();
+          setSlugTouched(false);
+        }}
+        onCancel={onCancel}
+      />
     </form>
   );
 }
