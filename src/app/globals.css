@@ -126,6 +126,39 @@
   --accent-foreground: #fdf6e3;
 }
 
+[data-theme="gruvbox-light"] {
+  color-scheme: light;
+  --background: #fbf1c7;
+  --foreground: #3c3836;
+  --muted: #665c54;
+  --border: #d5c4a1;
+  --card: #f2e5bc;
+  --accent: #af3a03;
+  --accent-foreground: #fbf1c7;
+}
+
+[data-theme="rose-pine-dawn"] {
+  color-scheme: light;
+  --background: #faf4ed;
+  --foreground: #575279;
+  --muted: #625d7c;
+  --border: #dfd6d0;
+  --card: #fffaf3;
+  --accent: #9a4f68;
+  --accent-foreground: #faf4ed;
+}
+
+[data-theme="everforest-light"] {
+  color-scheme: light;
+  --background: #f3ead3;
+  --foreground: #4b5a60;
+  --muted: #5a6a6f;
+  --border: #ddd3b5;
+  --card: #fffbef;
+  --accent: #4f7019;
+  --accent-foreground: #fffbef;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

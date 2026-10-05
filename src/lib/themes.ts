@@ -17,6 +17,9 @@ export const THEMES: Theme[] = [
   { id: "solarized-dark", label: "Solarized Dark", mode: "dark", themeColor: "#002b36" },
   { id: "light-plus", label: "Light+", mode: "light", themeColor: "#ffffff" },
   { id: "solarized-light", label: "Solarized Light", mode: "light", themeColor: "#fdf6e3" },
+  { id: "gruvbox-light", label: "Gruvbox Light", mode: "light", themeColor: "#fbf1c7" },
+  { id: "rose-pine-dawn", label: "Rosé Pine Dawn", mode: "light", themeColor: "#faf4ed" },
+  { id: "everforest-light", label: "Everforest Light", mode: "light", themeColor: "#f3ead3" },
 ];
 
 export function findTheme(id: string | null | undefined): Theme {
