@@ -17,9 +17,8 @@ const show = async (p: Profile) => {
 beforeEach(() => getProfile.mockReset());
 
 describe("Footer", () => {
-  it("shows your status, the copyright with the current year, and a way back to the top", async () => {
-    await show(profile({ name: "Jo Doe", status: "Open for projects" }));
-    expect(screen.getByText("Open for projects")).toBeInTheDocument();
+  it("shows the copyright with the current year and a way back to the top", async () => {
+    await show(profile({ name: "Jo Doe" }));
     expect(screen.getByText(`© ${new Date().getFullYear()} Jo Doe`)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Back to top" })).toHaveAttribute("href", "/#hero");
   });
@@ -35,9 +34,8 @@ describe("Footer", () => {
     expect(resume).toHaveAttribute("download");
   });
 
-  it("leaves out the status when there is none", async () => {
-    await show(profile({ status: "" }));
+  it("does not repeat your status (it is in the hero, About and Contact)", async () => {
+    await show(profile({ status: "Open for projects" }));
     expect(screen.queryByText("Open for projects")).toBeNull();
-    expect(screen.getByRole("link", { name: "GitHub" })).toBeInTheDocument();
   });
 });

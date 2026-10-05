@@ -311,6 +311,24 @@ summary:focus-visible {
   color: #34d399;
 }
 
+/* The navbar path (see NavPath.tsx): when the section changes, the new path slides in. */
+.path-in {
+  animation: path-in 0.25s ease-out both;
+}
+
+@keyframes path-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .path-in {
+    animation: none;
+  }
+}
+
 /* Dialogs fade and rise in. The animation runs on the dialog itself, not on content inside its
    scroll area: a transformed child extends the scrollable area and flashes a scrollbar mid-animation. */
 dialog[open] {
