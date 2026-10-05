@@ -39,6 +39,7 @@ const paths = {
   download: <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />,
   external: <path d="M7 17 17 7M8 7h9v9" />,
   check: <path d="m5 12 5 5 9-10" />,
+  refresh: <path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5" />,
   arrow: <path d="M5 12h14M13 6l6 6-6 6" />,
 };
 

@@ -12,8 +12,9 @@ import ContactCard from "./settings/ContactCard";
 import EducationCard from "./settings/EducationCard";
 import ExperienceCard from "./settings/ExperienceCard";
 import HeroCard from "./settings/HeroCard";
+import ReviewsCard from "./settings/ReviewsCard";
 import SkillsCard from "./settings/SkillsCard";
-import { blankEduRow, blankRow, scopedPayload, toForm, toPayload, type CardId, type EduRow, type Form, type Group, type Row } from "./settings/model";
+import { blankEduRow, blankReviewRow, blankRow, scopedPayload, toForm, toPayload, type CardId, type EduRow, type Form, type Group, type ReviewRow, type Row } from "./settings/model";
 import { useEditForm } from "./useEditForm";
 
 export type { CardId };
@@ -25,6 +26,7 @@ const SECTIONS: { id: CardId; label: string; icon: CardIcon }[] = [
   { id: "contact", label: "Contact & links", icon: "contact" },
   { id: "experience", label: "Experience", icon: "experience" },
   { id: "education", label: "Education", icon: "education" },
+  { id: "reviews", label: "Reviews", icon: "reviews" },
 ];
 
 // The profile editor. The whole settings page used to be this form; now the site editor opens it with only
@@ -52,7 +54,7 @@ export default function SettingsForm({
       const f = toForm(initial);
       if (!focusUid) return f;
       const open = <T extends { uid: string; open: boolean }>(rows: T[]) => rows.map((r) => ({ ...r, open: r.uid === focusUid }));
-      return { ...f, experience: open(f.experience), education: open(f.education) };
+      return { ...f, experience: open(f.experience), education: open(f.education), reviews: open(f.reviews) };
     },
     changes: (f) => scopedPayload(f, cards),
     save: (f) => (cards ? saveProfileSection(scopedPayload(f, cards)) : saveProfile(toPayload(f))),
@@ -66,10 +68,13 @@ export default function SettingsForm({
     setForm((f) => ({ ...f, experience: f.experience.map((r) => (r.uid === uid ? { ...r, ...patch } : r)) }));
   const setEdu = (uid: string, patch: Partial<EduRow>) =>
     setForm((f) => ({ ...f, education: f.education.map((r) => (r.uid === uid ? { ...r, ...patch } : r)) }));
+  const setReview = (uid: string, patch: Partial<ReviewRow>) =>
+    setForm((f) => ({ ...f, reviews: f.reviews.map((r) => (r.uid === uid ? { ...r, ...patch } : r)) }));
   const setGroups = (update: (groups: Group[]) => Group[]) => setForm((f) => ({ ...f, skillGroups: update(f.skillGroups) }));
 
   const removing = form.experience.find((r) => r.uid === toRemove);
   const removingEdu = form.education.find((r) => r.uid === toRemove);
+  const removingReview = form.reviews.find((r) => r.uid === toRemove);
 
   return (
     <form
@@ -80,6 +85,7 @@ export default function SettingsForm({
         if (uid) {
           setRow(uid, { open: true });
           setEdu(uid, { open: true });
+          setReview(uid, { open: true });
         }
       }}
       className={cards ? "" : "lg:grid lg:grid-cols-[11rem_minmax(0,1fr)] lg:gap-10"}
@@ -119,6 +125,10 @@ export default function SettingsForm({
           <EducationCard rows={form.education} setRow={setEdu} onAdd={() => set("education", [...form.education, blankEduRow()])} onRemove={setToRemove} />
         )}
 
+        {show("reviews") && (
+          <ReviewsCard rows={form.reviews} setRow={setReview} onAdd={() => set("reviews", [...form.reviews, blankReviewRow()])} onRemove={setToRemove} />
+        )}
+
         <SaveBar dirty={dirty} pending={pending} result={result} submitLabel="Save changes" onDiscard={discard} onCancel={onCancel} />
       </div>
 
@@ -130,14 +140,16 @@ export default function SettingsForm({
             ? `${[removing.role, removing.company].filter(Boolean).join(" · ") || "This entry"} will be removed when you save.`
             : removingEdu
               ? `${[removingEdu.degree, removingEdu.school].filter(Boolean).join(" · ") || "This entry"} will be removed when you save.`
-              : undefined
+              : removingReview
+                ? `${removingReview.name || "This review"} will be removed when you save.`
+                : undefined
         }
         confirmLabel="Remove"
         onCancel={() => setToRemove(null)}
         onConfirm={() => {
           const uid = toRemove;
           setToRemove(null);
-          if (uid) setForm((f) => ({ ...f, experience: f.experience.filter((r) => r.uid !== uid), education: f.education.filter((r) => r.uid !== uid) }));
+          if (uid) setForm((f) => ({ ...f, experience: f.experience.filter((r) => r.uid !== uid), education: f.education.filter((r) => r.uid !== uid), reviews: f.reviews.filter((r) => r.uid !== uid) }));
         }}
       />
     </form>

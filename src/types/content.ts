@@ -26,6 +26,14 @@ export type EducationItem = {
   endYear: number | null;
 };
 
+// What someone said about working with you, shown in the Reviews section as a pull-request review comment.
+export type ReviewItem = {
+  name: string; // who said it
+  role: string; // e.g. "CTO at Acme" or "Client on Upwork"; "" when unset
+  text: string; // the quote
+  link: string; // where it can be read or verified (a LinkedIn recommendation, an Upwork review); "" when unset
+};
+
 export type Skill = { name: string; aliases: string[] }; // aliases: other spellings, e.g. Go / Golang
 export type SkillGroup = { name: string; items: Skill[] };
 
@@ -44,6 +52,7 @@ export type Profile = {
   socials: SocialLink[];
   experience: ExperienceItem[];
   education: EducationItem[];
+  reviews: ReviewItem[]; // optional: the Reviews section only shows when there is at least one
 };
 
 // Stored in Firestore as `projects/{slug}`.

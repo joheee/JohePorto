@@ -7,7 +7,8 @@ import { timeAgo } from "@/lib/format";
 import { getMessages } from "@/lib/messages";
 import { getProjects } from "@/lib/projects";
 import { buildResume, resumeIssues } from "@/lib/resume";
-import { getProfile } from "@/lib/settings";
+import { getProfile, getProfileReadAt } from "@/lib/settings";
+import RefreshCacheButton from "@/components/admin/RefreshCacheButton";
 
 function StatCard({
   href,
@@ -53,13 +54,14 @@ export default async function AdminDashboard() {
   await requireAdmin();
   const db = adminDb();
 
-  const [profile, projects, recent, totalSnap, readSnap, profileDoc] = await Promise.all([
+  const [profile, projects, recent, totalSnap, readSnap, profileDoc, readAt] = await Promise.all([
     getProfile(),
     getProjects(),
     getMessages(5),
     db.collection("messages").count().get(),
     db.collection("messages").where("read", "==", true).count().get(),
     db.doc("settings/profile").get(),
+    getProfileReadAt(),
   ]);
 
   const totalMessages = totalSnap.data().count;
@@ -93,11 +95,15 @@ export default async function AdminDashboard() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <RefreshCacheButton
+            title={
+              readAt
+                ? `The public site's data was last read from Firestore ${timeAgo(readAt)}. It renews every hour, and when you save in the editor. Click to refresh it now.`
+                : "Clear the site's cached data so the next visit reads Firestore again."
+            }
+          />
           <Link href="/admin/site" className={ghostButtonClass}>
             <Icon name="layout" /> Edit site
-          </Link>
-          <Link href="/admin/site#projects" className={buttonClass}>
-            <Icon name="plus" /> New project
           </Link>
           <a href="/" target="_blank" rel="noopener noreferrer" className={ghostButtonClass}>
             View site <Icon name="external" className="h-3.5 w-3.5" />

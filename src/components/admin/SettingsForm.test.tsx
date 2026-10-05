@@ -2,7 +2,7 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { job, profile } from "@/test/fixtures";
+import { job, profile, review } from "@/test/fixtures";
 import SettingsForm, { type CardId } from "./SettingsForm";
 
 const saveProfile = vi.hoisted(() => vi.fn());
@@ -40,11 +40,12 @@ describe("which cards show, and which fields are saved", () => {
     [["about", "skills"], ["bio", "location", "status", "focus", "skillGroups"], ["About", "Skills"]],
     [["experience"], ["experience"], ["Experience"]],
     [["education"], ["education"], ["Education"]],
+    [["reviews"], ["reviews"], ["Reviews"]],
   ];
 
   it.each(cases)("%j saves exactly %j", async (cards, keys, headings) => {
     const { user } = setup({ cards });
-    for (const h of ["Hero", "About", "Skills", "Contact & links", "Experience", "Education"]) {
+    for (const h of ["Hero", "About", "Skills", "Contact & links", "Experience", "Education", "Reviews"]) {
       const heading = screen.queryByRole("heading", { name: h });
       if (headings.includes(h)) expect(heading).toBeInTheDocument();
       else expect(heading).toBeNull();
@@ -53,7 +54,8 @@ describe("which cards show, and which fields are saved", () => {
     if (cards.includes("hero")) await user.type(field("Name"), "!");
     else if (cards.includes("about")) await user.type(field("Location"), "!");
     else if (cards.includes("experience")) await user.click(screen.getByRole("button", { name: "Add experience" }));
-    else await user.click(screen.getByRole("button", { name: "Add education" }));
+    else if (cards.includes("education")) await user.click(screen.getByRole("button", { name: "Add education" }));
+    else await user.click(screen.getByRole("button", { name: "Add review" }));
     // A new empty entry fails the browser's `required` checks, so fill it in when there is one.
     if (cards.includes("experience")) {
       await user.type(lastField("Role"), "SRE");
@@ -69,6 +71,10 @@ describe("which cards show, and which fields are saved", () => {
         await user.selectOptions(screen.getAllByLabelText(label).at(-1)!, value);
       }
     }
+    if (cards.includes("reviews")) {
+      await user.type(lastField("Name"), "Jane Doe");
+      await user.type(lastField("Review"), "Great work.");
+    }
     await user.click(save());
     await waitFor(() => expect(saveProfileSection).toHaveBeenCalledTimes(1));
     expect(Object.keys(sentTo(saveProfileSection)).sort()).toEqual([...keys].sort());
@@ -77,7 +83,7 @@ describe("which cards show, and which fields are saved", () => {
 
   it("without `cards` it shows everything, with the side navigation, and saves the whole profile", async () => {
     const { user } = setup();
-    for (const h of ["Hero", "About", "Skills", "Contact & links", "Experience", "Education"]) {
+    for (const h of ["Hero", "About", "Skills", "Contact & links", "Experience", "Education", "Reviews"]) {
       expect(screen.getByRole("heading", { name: h })).toBeInTheDocument();
     }
     expect(sectionNav()).not.toHaveAttribute("hidden");
@@ -85,7 +91,7 @@ describe("which cards show, and which fields are saved", () => {
     await user.click(save());
     await waitFor(() => expect(saveProfile).toHaveBeenCalledTimes(1));
     expect(Object.keys(sentTo(saveProfile)).sort()).toEqual(
-      ["bio", "education", "email", "experience", "focus", "location", "name", "pitch", "roles", "skillGroups", "socials", "status"].sort(),
+      ["bio", "education", "email", "experience", "focus", "location", "name", "pitch", "reviews", "roles", "skillGroups", "socials", "status"].sort(),
     );
     expect(saveProfileSection).not.toHaveBeenCalled();
   });
@@ -311,5 +317,50 @@ describe("social links", () => {
       { label: "LinkedIn", href: "http://www.linkedin.com/in/jo/" },
       { label: "Blog", href: "https://blog.example.com" },
     ]);
+  });
+});
+
+describe("reviews", () => {
+  const two = () => profile({ reviews: [review({ name: "Jane Doe", role: "CTO at Acme" }), review({ name: "John Roe", role: "", link: "" })] });
+
+  it("lists the reviews, and opens only the one asked for (`focusUid`)", () => {
+    setup({ cards: ["reviews"], initial: two(), focusUid: "r1" });
+    const toggles = screen.getAllByRole("button").filter((b) => b.hasAttribute("aria-expanded"));
+    expect(toggles.map((b) => b.getAttribute("aria-expanded"))).toEqual(["false", "true"]);
+    expect(toggles[0]).toHaveTextContent("Jane Doe"); // the row header names the reviewer
+    expect(toggles[0]).toHaveTextContent("CTO at Acme");
+  });
+
+  it("sends name, role, text and link, and adds a new review", async () => {
+    const { user } = setup({ cards: ["reviews"], initial: profile({ reviews: [] }) });
+    expect(screen.getByText("No reviews yet.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add review" }));
+    await user.type(lastField("Name"), "Jane Doe");
+    await user.type(lastField("Role"), "CTO at Acme");
+    await user.type(lastField("Review"), "Great work.");
+    await user.type(lastField("Link"), "https://www.linkedin.com/in/jane/");
+    await user.click(save());
+    await waitFor(() => expect(saveProfileSection).toHaveBeenCalled());
+    expect(sentTo(saveProfileSection)).toEqual({
+      reviews: [{ name: "Jane Doe", role: "CTO at Acme", text: "Great work.", link: "https://www.linkedin.com/in/jane/" }],
+    });
+  });
+
+  it("removes a review only after confirming", async () => {
+    const { user } = setup({ cards: ["reviews"], initial: two() });
+    await user.click(screen.getByRole("button", { name: "Remove review 1" }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText(/Jane Doe will be removed when you save/)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: "Remove" }));
+    await user.click(save());
+    await waitFor(() => expect(saveProfileSection).toHaveBeenCalled());
+    expect((sentTo(saveProfileSection).reviews as { name: string }[]).map((r) => r.name)).toEqual(["John Roe"]);
+  });
+
+  it("refuses to save a review without a name or text", async () => {
+    const { user } = setup({ cards: ["reviews"], initial: profile({ reviews: [] }) });
+    await user.click(screen.getByRole("button", { name: "Add review" }));
+    await user.click(save());
+    expect(saveProfileSection).not.toHaveBeenCalled();
   });
 });

@@ -40,6 +40,7 @@ const icons = {
       <path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5M22 9v6" />
     </>
   ),
+  reviews: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM8 9h8M8 13h5" />,
 };
 
 export type CardIcon = keyof typeof icons;

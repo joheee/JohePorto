@@ -9,11 +9,11 @@ import Section from "./Section";
 const label = "mb-2 font-mono text-xs uppercase tracking-widest text-muted";
 
 // `inertForm`: show the form but disable it (the editor preview: it would send a real message).
-export default async function Contact({ action, inertForm = false }: { action?: React.ReactNode; inertForm?: boolean }) {
+export default async function Contact({ number = "04", action, inertForm = false }: { number?: string; action?: React.ReactNode; inertForm?: boolean }) {
   const profile = await getProfile();
 
   return (
-    <Section id="contact" number="04" title="Contact" actions={action}>
+    <Section id="contact" number={number} title="Contact" actions={action}>
       <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
         <div className="space-y-8">
           <p className="text-lg leading-8 text-muted">

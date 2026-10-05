@@ -13,7 +13,7 @@ const observed: string[] = [];
 beforeEach(() => {
   pathname.value = "/";
   observed.length = 0;
-  for (const id of ["hero", "about", "projects", "experience", "contact"]) {
+  for (const id of ["hero", "about", "projects", "experience", "reviews", "contact"]) {
     const el = document.createElement("section");
     el.id = id;
     document.body.appendChild(el);
@@ -46,7 +46,7 @@ describe("NavPath", () => {
 
   it("follows the section in view, and goes back to ~ at the top", () => {
     const { container } = render(<NavPath />);
-    expect(observed).toEqual(["hero", "about", "projects", "experience", "contact"]);
+    expect(observed).toEqual(["hero", "about", "projects", "experience", "reviews", "contact"]);
     act(() => notify("experience"));
     expect(text(container)).toBe(":~/experience");
     act(() => notify("contact"));
@@ -66,7 +66,7 @@ describe("NavPath", () => {
   it("follows the sections on /admin/site too, which has the same ones", () => {
     pathname.value = "/admin/site";
     const { container } = render(<NavPath />);
-    expect(observed).toEqual(["hero", "about", "projects", "experience", "contact"]);
+    expect(observed).toEqual(["hero", "about", "projects", "experience", "reviews", "contact"]);
     expect(text(container)).toBe(":~");
     act(() => notify("projects"));
     expect(text(container)).toBe(":~/projects");

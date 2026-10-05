@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { job, school } from "@/test/fixtures";
+import { job, review, school } from "@/test/fixtures";
 import {
   entryLabel,
   entryName,
@@ -128,9 +128,12 @@ describe("entryLabel and entryName", () => {
   it("builds the label the delete action compares against", () => {
     expect(entryLabel("experience", job({ role: "SRE", company: "Acme" }))).toBe("SRE|Acme");
     expect(entryLabel("education", school({ degree: "BSc", school: "BINUS" }))).toBe("BSc|BINUS");
+    expect(entryLabel("review", review({ name: "Jane Doe", role: "CTO at Acme" }))).toBe("Jane Doe|CTO at Acme");
   });
   it("builds the confirmation wording", () => {
     expect(entryName("experience", job({ role: "SRE", company: "Acme" }))).toBe("SRE at Acme");
     expect(entryName("education", school({ degree: "BSc", school: "BINUS" }))).toBe("BSc, BINUS");
+    expect(entryName("review", review({ name: "Jane Doe", role: "CTO at Acme" }))).toBe("Jane Doe, CTO at Acme");
+    expect(entryName("review", review({ name: "Jane Doe", role: "" }))).toBe("Jane Doe");
   });
 });

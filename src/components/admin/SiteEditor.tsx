@@ -13,7 +13,7 @@ import SettingsForm, { type CardId } from "./SettingsForm";
 
 // The public sections, as they appear on /admin/site, each with an Edit button. Every one opens the same
 // settings form, limited to the cards that belong to that section, and saves only those fields.
-export type EditSection = "hero" | "about" | "contact" | "experience" | "education";
+export type EditSection = "hero" | "about" | "contact" | "experience" | "education" | "reviews";
 
 const SECTIONS: Record<EditSection, { title: string; cards: CardId[] }> = {
   hero: { title: "Hero", cards: ["hero", "contact"] }, // the hero also shows your social links
@@ -21,6 +21,7 @@ const SECTIONS: Record<EditSection, { title: string; cards: CardId[] }> = {
   contact: { title: "Contact", cards: ["contact"] },
   experience: { title: "Experience", cards: ["experience"] },
   education: { title: "Education", cards: ["education"] },
+  reviews: { title: "Reviews", cards: ["reviews"] },
 };
 
 // What the modal is editing: a group of profile cards, or one project (none = a new project).
@@ -139,9 +140,18 @@ export function EditButton({ section, className = "" }: { section: EditSection; 
   );
 }
 
-// Edit and Delete for one experience or education entry. `index` is its position in the stored list;
-// `label` identifies it to the server ("role|company" or "degree|school") so a stale page can't remove the wrong one.
-export function ItemActions({ kind, index, label, name }: { kind: "experience" | "education"; index: number; label: string; name: string }) {
+// What each kind of entry is called in the confirmation, which editor section it belongs to, and the prefix of
+// its row in that section's form ("e0", "d1", "r2": see `toForm`).
+const ITEM_KINDS = {
+  experience: { noun: "job", section: "experience", prefix: "e", from: "your site and resume" },
+  education: { noun: "education entry", section: "education", prefix: "d", from: "your site and resume" },
+  review: { noun: "review", section: "reviews", prefix: "r", from: "your site" },
+} as const;
+
+// Edit and Delete for one experience, education or review entry. `index` is its position in the stored list;
+// `label` identifies it to the server ("role|company", "degree|school", "name|role") so a stale page can't remove the wrong one.
+export function ItemActions({ kind, index, label, name }: { kind: "experience" | "education" | "review"; index: number; label: string; name: string }) {
+  const meta = ITEM_KINDS[kind];
   const router = useRouter();
   const open = useOpen();
   const [confirm, setConfirm] = useState(false);
@@ -160,7 +170,7 @@ export function ItemActions({ kind, index, label, name }: { kind: "experience" |
 
   return (
     <div className="mt-4 flex flex-wrap items-center gap-2">
-      <button type="button" disabled={pending} onClick={() => open({ section: kind, uid: `${kind === "experience" ? "e" : "d"}${index}` })} className={chip}>
+      <button type="button" disabled={pending} onClick={() => open({ section: meta.section, uid: `${meta.prefix}${index}` })} className={chip}>
         <Icon name="edit" className="h-3.5 w-3.5" /> Edit
       </button>
       <button type="button" disabled={pending} onClick={() => setConfirm(true)} className={`${chip} text-red-500`}>
@@ -173,8 +183,8 @@ export function ItemActions({ kind, index, label, name }: { kind: "experience" |
       )}
       <ConfirmDialog
         open={confirm}
-        title={`Delete this ${kind === "experience" ? "job" : "education entry"}?`}
-        description={`"${name}" will be removed from your site and resume. This can't be undone.`}
+        title={`Delete this ${meta.noun}?`}
+        description={`"${name}" will be removed from ${meta.from}. This can't be undone.`}
         onConfirm={remove}
         onCancel={() => setConfirm(false)}
       />

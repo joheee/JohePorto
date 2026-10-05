@@ -11,12 +11,12 @@ import { useActiveSection, useAdminArea } from "./useNav";
 const sectionIds = siteSectionLinks.map((l) => l.href.split("#")[1]);
 
 // Phone-width navigation: a button that opens a panel with every link.
-export default function MobileMenu() {
+export default function MobileMenu({ publicLinks = navLinks }: { publicLinks?: { label: string; href: string }[] }) {
   const [open, setOpen] = useState(false);
   const { pathname, admin } = useAdminArea();
   const onSite = pathname === "/admin/site";
   const active = useActiveSection(sectionIds, onSite);
-  const links = admin ? adminNavLinks : navLinks; // inside /admin the menu lists the admin tabs
+  const links = admin ? adminNavLinks : publicLinks; // inside /admin the menu lists the admin tabs
 
   useEffect(() => {
     if (!open) return;

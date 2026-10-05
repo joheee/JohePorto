@@ -31,18 +31,42 @@ export async function loadProfile(): Promise<Profile> {
   return parseProfile({ ...defaultProfile, ...data, skillGroups, experience });
 }
 
+// The cached entry is the profile plus the moment it was read from Firestore (the dashboard shows that, next to
+// its "Refresh cache" button). The key has a version: change it whenever the cached shape changes, so
+// entries written by older code (which would be missing `readAt`) are never read.
 const readProfile = unstable_cache(
-  loadProfile,
-  ["profile", process.env.VERCEL_GIT_COMMIT_SHA ?? "local"],
+  async () => ({ profile: await loadProfile(), readAt: new Date().toISOString() }),
+  ["profile", "v2", process.env.VERCEL_GIT_COMMIT_SHA ?? "local"],
   { tags: ["site"], revalidate: 3600 },
 );
+
+// One cached read per request, shared by getProfile and getProfileReadAt.
+const readCached = cache(() => readProfile());
+
+// The cached value can be older than the code: an entry written before a field was added to the profile (the
+// data cache outlives a code change in dev, and an hour-old entry can outlive a deploy's first requests) has
+// no such field, and `profile.reviews.length` would take every page down. Fields that are missing get their
+// default, so a new field never needs the cache to be cleared first.
+export function withNewFields(cached: Profile): Profile {
+  return { ...cached, reviews: cached.reviews ?? [] };
+}
 
 // A failed read is never cached (the cached function throws), it just shows the placeholder this once.
 export const getProfile = cache(async (): Promise<Profile> => {
   try {
-    return await readProfile();
+    return withNewFields((await readCached()).profile);
   } catch (e) {
     console.error("getProfile failed, using defaults:", e);
     return defaultProfile;
   }
 });
+
+// When the cached copy of the site data was read from Firestore (ISO time), or null if it could not be read.
+// Right after a refresh it is "just now".
+export async function getProfileReadAt(): Promise<string | null> {
+  try {
+    return (await readCached()).readAt;
+  } catch {
+    return null;
+  }
+}

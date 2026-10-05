@@ -34,6 +34,15 @@ export type EduRow = {
   endYear: string;
 };
 
+export type ReviewRow = {
+  uid: string;
+  open: boolean;
+  name: string;
+  role: string;
+  text: string;
+  link: string;
+};
+
 export type Group = { uid: string; name: string; items: Skill[] };
 
 export type Form = {
@@ -49,10 +58,11 @@ export type Form = {
   socials: SocialLink[];
   experience: Row[];
   education: EduRow[];
+  reviews: ReviewRow[];
 };
 
 // The cards of this form. A scoped form (`cards`) shows only some of them and saves only their fields.
-export type CardId = "hero" | "about" | "skills" | "contact" | "experience" | "education";
+export type CardId = "hero" | "about" | "skills" | "contact" | "experience" | "education" | "reviews";
 
 export const CARD_FIELDS: Record<CardId, string[]> = {
   hero: ["name", "roles", "pitch"],
@@ -61,6 +71,7 @@ export const CARD_FIELDS: Record<CardId, string[]> = {
   contact: ["email", "socials"],
   experience: ["experience"],
   education: ["education"],
+  reviews: ["reviews"],
 };
 
 export type Setter = <K extends keyof Form>(key: K, value: Form[K]) => void;
@@ -115,6 +126,7 @@ export function toForm(p: Profile): Form {
       endYear: x.endYear === null ? "" : String(x.endYear),
       createdAt: x.createdAt,
     })),
+    reviews: p.reviews.map((x, i) => ({ uid: `r${i}`, open: false, name: x.name, role: x.role, text: x.text, link: x.link })),
     education: p.education.map((x, i) => ({
       uid: `d${i}`,
       open: false,
@@ -160,6 +172,7 @@ export function toPayload(f: Form) {
       summary: x.summary,
       ...datesPayload(x),
     })),
+    reviews: f.reviews.map((x) => ({ name: x.name, role: x.role, text: x.text, link: x.link })),
   };
 }
 
@@ -192,3 +205,4 @@ export const newUid = () => `n${++uidCounter}`;
 
 export const blankRow = (): Row => ({ uid: newUid(), open: true, role: "", company: "", summary: "", location: "", stack: [], current: false, startMonth: "", startYear: "", endMonth: "", endYear: "", createdAt: "" });
 export const blankEduRow = (): EduRow => ({ uid: newUid(), open: true, school: "", degree: "", location: "", summary: "", current: false, startMonth: "", startYear: "", endMonth: "", endYear: "" });
+export const blankReviewRow = (): ReviewRow => ({ uid: newUid(), open: true, name: "", role: "", text: "", link: "" });

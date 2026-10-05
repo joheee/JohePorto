@@ -1,4 +1,4 @@
-import type { EducationItem, ExperienceItem } from "@/types/content";
+import type { EducationItem, ExperienceItem, ReviewItem } from "@/types/content";
 
 export type TextBlock = { type: "p"; text: string } | { type: "ul"; items: string[] };
 
@@ -106,15 +106,21 @@ export function sortProjectsByDate<T extends { month: number; year: number; titl
   return [...items].sort((a, b) => a.year * 12 + a.month - (b.year * 12 + b.month) || a.title.localeCompare(b.title));
 }
 
-// How an experience or education entry is named when the editor asks the server to delete it. The page and
-// the server action both build the label with this, so a stale page can't remove a different entry.
-export type EntryKind = "experience" | "education";
+// How an entry of the profile is named when the editor asks the server to delete it. The page and the server
+// action both build the label with this, so a stale page can't remove a different entry.
+export type EntryKind = "experience" | "education" | "review";
+type Entry = ExperienceItem | EducationItem | ReviewItem;
 
-export function entryLabel(kind: EntryKind, item: ExperienceItem | EducationItem): string {
-  return kind === "experience" ? `${(item as ExperienceItem).role}|${(item as ExperienceItem).company}` : `${(item as EducationItem).degree}|${(item as EducationItem).school}`;
+export function entryLabel(kind: EntryKind, item: Entry): string {
+  if (kind === "experience") return `${(item as ExperienceItem).role}|${(item as ExperienceItem).company}`;
+  if (kind === "education") return `${(item as EducationItem).degree}|${(item as EducationItem).school}`;
+  return `${(item as ReviewItem).name}|${(item as ReviewItem).role}`;
 }
 
 // The same entry in words, for the delete confirmation.
-export function entryName(kind: EntryKind, item: ExperienceItem | EducationItem): string {
-  return kind === "experience" ? `${(item as ExperienceItem).role} at ${(item as ExperienceItem).company}` : `${(item as EducationItem).degree}, ${(item as EducationItem).school}`;
+export function entryName(kind: EntryKind, item: Entry): string {
+  if (kind === "experience") return `${(item as ExperienceItem).role} at ${(item as ExperienceItem).company}`;
+  if (kind === "education") return `${(item as EducationItem).degree}, ${(item as EducationItem).school}`;
+  const r = item as ReviewItem;
+  return r.role ? `${r.name}, ${r.role}` : r.name;
 }

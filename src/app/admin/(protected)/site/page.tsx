@@ -28,6 +28,8 @@ export default async function AdminSitePage() {
     experienceEntry: (e) => <ItemActions kind="experience" index={e.index} label={entryLabel("experience", e)} name={entryName("experience", e)} />,
     education: <EditButton section="education" />,
     educationEntry: (e) => <ItemActions kind="education" index={e.index} label={entryLabel("education", e)} name={entryName("education", e)} />,
+    reviews: <EditButton section="reviews" />,
+    reviewEntry: (r) => <ItemActions kind="review" index={r.index} label={entryLabel("review", r)} name={entryName("review", r)} />,
     contact: <EditButton section="contact" />,
   };
 

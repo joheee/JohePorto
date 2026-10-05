@@ -1,4 +1,4 @@
-import type { EducationItem, ExperienceItem, Profile, Project, SkillGroup, SocialLink } from "@/types/content";
+import type { EducationItem, ExperienceItem, Profile, Project, ReviewItem, SkillGroup, SocialLink } from "@/types/content";
 import { skillKey } from "./skills";
 
 export class ValidationError extends Error {}
@@ -162,6 +162,16 @@ export function parseProfile(input: unknown): Profile {
         location: line(e.location ?? "", "Education location", 100),
         summary: text(e.summary ?? "", "Education details", 1000),
         ...period(e, "Education"),
+      };
+    }),
+    // Profiles saved before reviews existed have no `reviews` field.
+    reviews: items(o.reviews ?? [], "Reviews", 12, (x): ReviewItem => {
+      const r = (x ?? {}) as Record<string, unknown>;
+      return {
+        name: line(r.name, "Reviewer name", 80, true),
+        role: line(r.role ?? "", "Reviewer role", 100),
+        text: text(r.text, "Review", 1500, true),
+        link: url(r.link ?? "", "Review link"),
       };
     }),
   };

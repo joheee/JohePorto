@@ -2,18 +2,18 @@
 
 import Link from "next/link";
 import { adminNavLinks, navLinks } from "@/lib/content";
+
+type NavItem = { label: string; href: string };
 import { isTabActive, useActiveSection, useAdminArea } from "./useNav";
 
-const sectionIds = navLinks
-  .filter((l) => l.href.startsWith("/#"))
-  .map((l) => l.href.slice(2));
-
-export default function NavLinks() {
+// `publicLinks`: the public links (they include Reviews only when that section exists).
+export default function NavLinks({ publicLinks = navLinks }: { publicLinks?: NavItem[] }) {
   const { pathname, admin } = useAdminArea();
   // On the home page, highlight the section that is currently in view.
+  const sectionIds = publicLinks.filter((l) => l.href.startsWith("/#")).map((l) => l.href.slice(2));
   const active = useActiveSection(sectionIds, pathname === "/");
 
-  const links = admin ? adminNavLinks : navLinks;
+  const links = admin ? adminNavLinks : publicLinks;
   const isActive = (href: string) =>
     admin
       ? isTabActive(pathname, href)

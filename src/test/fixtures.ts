@@ -1,4 +1,4 @@
-import type { EducationItem, ExperienceItem, Profile, Project } from "@/types/content";
+import type { EducationItem, ExperienceItem, Profile, Project, ReviewItem } from "@/types/content";
 
 // Small, valid sample data for tests. Override what a test cares about: `job({ current: true })`.
 export const job = (o: Partial<ExperienceItem> = {}): ExperienceItem => ({
@@ -26,6 +26,14 @@ export const school = (o: Partial<EducationItem> = {}): EducationItem => ({
   startYear: 2016,
   endMonth: 7,
   endYear: 2020,
+  ...o,
+});
+
+export const review = (o: Partial<ReviewItem> = {}): ReviewItem => ({
+  name: "Jane Doe",
+  role: "CTO at Acme",
+  text: "Johe automated our whole deployment pipeline and it has run without a hitch since.",
+  link: "https://www.linkedin.com/in/jane-doe/",
   ...o,
 });
 
@@ -61,5 +69,6 @@ export const profile = (o: Partial<Profile> = {}): Profile => ({
   ],
   experience: [job()],
   education: [school()],
+  reviews: [],
   ...o,
 });

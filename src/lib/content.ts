@@ -40,6 +40,7 @@ export const defaultProfile: Profile = {
     },
   ],
   education: [],
+  reviews: [],
 };
 
 // Add { label: "Blog", href: "/blog" } here once the blog exists: a link to a missing page is a 404
@@ -56,6 +57,7 @@ export const siteSectionLinks = [
   { label: "About", href: "/admin/site#about" },
   { label: "Projects", href: "/admin/site#projects" },
   { label: "Experience", href: "/admin/site#experience" },
+  { label: "Reviews", href: "/admin/site#reviews" },
   { label: "Contact", href: "/admin/site#contact" },
 ];
 
@@ -65,3 +67,8 @@ export const navLinks = [
   { label: "Experience", href: "/#experience" },
   { label: "Contact", href: "/#contact" },
 ];
+
+// The public links, with Reviews before Contact when the Reviews section exists (a link to a missing section
+// would scroll nowhere).
+export const publicNavLinks = (hasReviews: boolean) =>
+  hasReviews ? [...navLinks.slice(0, 3), { label: "Reviews", href: "/#reviews" }, ...navLinks.slice(3)] : navLinks;

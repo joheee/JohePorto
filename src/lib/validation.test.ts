@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { profile, project } from "@/test/fixtures";
+import { profile, project, review } from "@/test/fixtures";
 import { ValidationError, assertHasLink, parseProfile, parseProject } from "./validation";
 
 const bad = (fn: () => unknown, message: RegExp) => {
@@ -92,6 +92,43 @@ describe("parseProfile", () => {
     it("accepts a skill given as a plain string", () => {
       expect(groups([{ name: "A", items: ["Go"] }])[0].items).toEqual([{ name: "Go", aliases: [] }]);
     });
+  });
+});
+
+describe("parseProfile reviews", () => {
+  it("accepts a valid review and trims it", () => {
+    const p = parseProfile(profile({ reviews: [review({ name: "  Jane Doe ", text: " Great work. " })] }));
+    expect(p.reviews).toEqual([review({ name: "Jane Doe", text: "Great work." })]);
+  });
+
+  it("needs a name and a text, but the role and the link are optional", () => {
+    bad(() => parseProfile(profile({ reviews: [review({ name: " " })] })), /Reviewer name is required/);
+    bad(() => parseProfile(profile({ reviews: [review({ text: " " })] })), /Review is required/);
+    expect(parseProfile(profile({ reviews: [review({ role: "", link: "" })] })).reviews[0]).toMatchObject({ role: "", link: "" });
+  });
+
+  it("only takes a link that starts with http:// or https://", () => {
+    bad(() => parseProfile(profile({ reviews: [review({ link: "javascript:alert(1)" })] })), /Review link must start with http/);
+  });
+
+  it("limits the length of every field and the number of reviews", () => {
+    bad(() => parseProfile(profile({ reviews: [review({ name: "x".repeat(81) })] })), /Reviewer name is too long/);
+    bad(() => parseProfile(profile({ reviews: [review({ role: "x".repeat(101) })] })), /Reviewer role is too long/);
+    bad(() => parseProfile(profile({ reviews: [review({ text: "x".repeat(1501) })] })), /Review is too long/);
+    bad(() => parseProfile(profile({ reviews: Array(13).fill(review()) })), /Reviews has too many items/);
+  });
+
+  it("collapses line breaks in the name and role, but keeps them in the text", () => {
+    const r = parseProfile(profile({ reviews: [review({ name: "Jane\nDoe", role: "CTO\n at Acme", text: "Line one.\nLine two." })] })).reviews[0];
+    expect(r.name).toBe("Jane Doe");
+    expect(r.role).toBe("CTO at Acme");
+    expect(r.text).toBe("Line one.\nLine two.");
+  });
+
+  it("treats a profile saved before reviews existed as having none", () => {
+    const old: Record<string, unknown> = { ...profile() };
+    delete old.reviews;
+    expect(parseProfile(old).reviews).toEqual([]);
   });
 });
 

@@ -3,7 +3,7 @@
 import { adminPath, sectionPath } from "@/lib/navPath";
 import { useActiveSection, useAdminArea } from "./useNav";
 
-const SECTIONS = ["hero", "about", "projects", "experience", "contact"];
+const SECTIONS = ["hero", "about", "projects", "experience", "reviews", "contact"];
 
 // The rest of the prompt after the brand (johevin-blesstowi@portfolio): the path of the section in view, like
 // :~/projects, with a blinking cursor. The home page and /admin/site have the same sections, so both follow

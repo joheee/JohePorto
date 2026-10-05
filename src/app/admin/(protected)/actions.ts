@@ -7,7 +7,7 @@ import { entryLabel, withCreatedAt } from "@/lib/format";
 import { buildSkillIndex, canonicalizeStack } from "@/lib/skills";
 import { getProfile, loadProfile } from "@/lib/settings";
 import { adminDb } from "@/lib/firebase-admin";
-import type { EducationItem, ExperienceItem } from "@/types/content";
+import type { EducationItem, ExperienceItem, ReviewItem } from "@/types/content";
 import { SLUG_RE, ValidationError, assertHasLink, parseProfile, parseProject } from "@/lib/validation";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -32,12 +32,19 @@ async function guard(fn: () => Promise<void>, { paths }: { paths?: string[] } = 
   }
 }
 
+// Clears the cached copy of the site data (profile and projects) and rebuilds the pages, so the next visit reads
+// Firestore again. Saves in the editor already do this; this is for changes made anywhere else (the Firebase
+// console, a script, local development) and for a page that looks out of date.
+export async function refreshSiteCache(): Promise<ActionResult> {
+  return guard(async () => {});
+}
+
 export async function saveProfile(input: unknown): Promise<ActionResult> {
   return guard(() => writeProfile(parseProfile(input)));
 }
 
 // The profile fields an editor can send on their own (see SettingsForm `cards`).
-const PROFILE_FIELDS = ["name", "roles", "pitch", "bio", "location", "status", "focus", "skillGroups", "email", "socials", "experience", "education"];
+const PROFILE_FIELDS = ["name", "roles", "pitch", "bio", "location", "status", "focus", "skillGroups", "email", "socials", "experience", "education", "reviews"];
 
 // Saves some sections only: the fields sent replace the stored ones, everything else is kept as it is now.
 // The merged profile goes through the same validation and stack rewrite as a full save.
@@ -50,16 +57,17 @@ export async function saveProfileSection(input: unknown): Promise<ActionResult> 
   });
 }
 
-// Removes one experience or education entry. `label` must match the stored entry, so a stale page can't
+// Removes one experience, education or review entry. `label` must match the stored entry, so a stale page can't
 // delete the wrong one after the list changed.
 export async function deleteProfileItem(kind: string, index: number, label: string): Promise<ActionResult> {
   return guard(async () => {
-    if ((kind !== "experience" && kind !== "education") || !Number.isInteger(index) || index < 0) throw new ValidationError("Invalid entry");
+    if ((kind !== "experience" && kind !== "education" && kind !== "review") || !Number.isInteger(index) || index < 0) throw new ValidationError("Invalid entry");
     const current = await loadProfile();
-    const list: (ExperienceItem | EducationItem)[] = current[kind];
+    const field = kind === "review" ? "reviews" : kind;
+    const list: (ExperienceItem | EducationItem | ReviewItem)[] = current[field];
     const item = list[index];
     if (!item || entryLabel(kind, item) !== label) throw new ValidationError("This entry changed. Refresh the page and try again.");
-    await writeProfile(parseProfile({ ...current, [kind]: list.filter((_, i) => i !== index) }));
+    await writeProfile(parseProfile({ ...current, [field]: list.filter((_, i) => i !== index) }));
   });
 }
 
