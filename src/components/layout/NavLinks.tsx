@@ -22,9 +22,9 @@ export default function NavLinks({ publicLinks = navLinks }: { publicLinks?: Nav
         : pathname.startsWith(href);
 
   return (
-    <ul className="flex items-center gap-4 text-sm text-muted sm:gap-6">
+    <ul className="flex items-center gap-4 text-sm text-muted lg:gap-6">
       {links.map((l) => (
-        <li key={l.href} className="hidden sm:block">
+        <li key={l.href} className="hidden lg:block">
           <Link
             href={l.href}
             aria-current={isActive(l.href) ? "true" : undefined}

@@ -10,10 +10,10 @@ const SECTIONS = ["hero", "about", "projects", "experience", "reviews", "contact
 // the scroll; the other admin pages show their own path (:~/admin/messages). Decoration (the navbar links
 // already say where you are, so it is hidden from screen readers).
 // Phones: a second, smaller line under the brand (there is no room beside it), without the colon.
-// Tablet and up: on the same line, after the brand. In the admin that line also holds the tabs and the Live web
-// and Sign out buttons, so there the path waits for laptop width and is left out in between.
+// Tablet and up: on the same line, after the brand. The tabs and buttons move into the menu below laptop
+// width (1024px), so there is room for it in the admin too.
 export default function NavPath() {
-  const { pathname, admin } = useAdminArea();
+  const { pathname } = useAdminArea();
   const follows = pathname === "/" || pathname === "/admin/site";
   const active = useActiveSection(SECTIONS, follows);
 
@@ -21,7 +21,7 @@ export default function NavPath() {
   if (!path) return null;
 
   return (
-    <p aria-hidden className={`min-w-0 items-center whitespace-nowrap font-mono text-xs md:text-sm ${admin ? "flex md:hidden lg:flex" : "flex"}`}>
+    <p aria-hidden className="flex min-w-0 items-center whitespace-nowrap font-mono text-xs md:text-sm">
       <span className="text-muted max-md:hidden">:</span>
       <span key={path} className="path-in text-accent">
         {path}

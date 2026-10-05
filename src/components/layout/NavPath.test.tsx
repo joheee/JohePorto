@@ -82,11 +82,10 @@ describe("NavPath", () => {
     expect(text(again.container)).toBe(":~/admin");
   });
 
-  it("in the admin, waits for laptop width on the tablet range where the navbar is crowded", () => {
+  it("in the admin, is never hidden by width (the tabs move into the menu below laptop width)", () => {
     pathname.value = "/admin/site";
     const cls = render(<NavPath />).container.querySelector("p")!.className;
-    expect(cls).toContain("md:hidden");
-    expect(cls).toContain("lg:flex");
+    expect(cls).not.toContain("hidden");
   });
 
   it("shows nothing on the login page or any other page", () => {

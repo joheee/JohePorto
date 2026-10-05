@@ -18,7 +18,7 @@ export function LiveWebLink({ className = "" }: { className?: string }) {
 export default function AdminActions() {
   const { admin } = useAdminArea();
   return admin ? (
-    <div className="flex items-center gap-2 max-sm:hidden">
+    <div className="flex items-center gap-2 max-lg:hidden">
       <LiveWebLink />
       <SignOutButton />
     </div>

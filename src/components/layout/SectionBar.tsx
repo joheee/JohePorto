@@ -15,8 +15,8 @@ export default function SectionBar() {
   if (!onSite) return null;
 
   return (
-    <nav aria-label="Sections" className="border-t border-border max-sm:hidden">
-      <ul className="mx-auto grid max-w-5xl grid-cols-4 gap-1 px-4 py-2 text-[13px] sm:flex sm:gap-1.5 sm:px-6 sm:text-sm">
+    <nav aria-label="Sections" className="border-t border-border max-lg:hidden">
+      <ul className="mx-auto flex max-w-5xl gap-1.5 px-6 py-2 text-sm">
         {siteSectionLinks.map((l) => {
           const current = active === l.href.split("#")[1];
           return (
@@ -24,7 +24,7 @@ export default function SectionBar() {
               <Link
                 href={l.href}
                 aria-current={current ? "true" : undefined}
-                className={`flex justify-center rounded-full px-2 py-1 transition-colors sm:inline-flex sm:px-3.5 ${
+                className={`inline-flex justify-center rounded-full px-3.5 py-1 transition-colors ${
                   current ? "bg-accent/10 font-medium text-accent ring-1 ring-inset ring-accent/30" : "text-muted hover:bg-card hover:text-foreground"
                 }`}
               >
