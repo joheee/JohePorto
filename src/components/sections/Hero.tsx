@@ -1,8 +1,10 @@
 import Link from "next/link";
 import PingDot from "@/components/PingDot";
 import RotatingText from "@/components/motion/RotatingText";
+import { buildConsole } from "@/lib/console";
 import { experienceStats, sortExperienceNewestFirst } from "@/lib/format";
 import { getProfile } from "@/lib/settings";
+import InfraConsole from "./InfraConsole";
 
 // Staggered entrance in plain CSS (see .rise in globals.css): it starts on first paint, so the text is
 // visible before JavaScript has loaded. That keeps Largest Contentful Paint fast.
@@ -12,9 +14,9 @@ const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
 // digits are drawn by CSS (see .count in globals.css).
 function StatValue({ value }: { value: string }) {
   const m = /^(\d+)(.*)$/.exec(value);
-  if (!m) return <p className="text-4xl font-bold tracking-tight">{value}</p>;
+  if (!m) return <p className="text-3xl font-bold tracking-tight">{value}</p>;
   return (
-    <p className="text-4xl font-bold tracking-tight">
+    <p className="text-3xl font-bold tracking-tight">
       <span className="sr-only">{value}</span>
       <span aria-hidden>
         <span className="count" style={{ "--to": m[1] } as React.CSSProperties} />
@@ -31,6 +33,14 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
   const stats = experienceStats(profile.experience, profile.skills.length);
   // The newest role you are still in (nothing to maintain: it follows Settings > Experience).
   const current = sortExperienceNewestFirst(profile.experience).find((e) => e.current);
+  const consoleLines = buildConsole({
+    name: profile.name,
+    roles: profile.roles,
+    current: current && { role: current.role, company: current.company },
+    skills: profile.skills,
+    stats,
+    status: profile.status,
+  });
 
   return (
     <section
@@ -38,7 +48,7 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
       className="relative mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-5xl flex-col justify-center px-6 py-20"
     >
       {action && <div className="absolute right-6 top-4 z-10">{action}</div>}
-      <div className="grid items-end gap-12 lg:grid-cols-[minmax(0,1fr)_14rem]">
+      <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <div>
           {profile.status && (
             <div className="rise" style={rise(0)}>
@@ -55,7 +65,7 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
           </div>
           <div className="rise" style={rise(2)}>
             {/* w-fit: the gradient spans the name itself, not the whole row */}
-            <h1 className="w-fit bg-linear-to-r from-foreground from-30% to-accent bg-clip-text pb-2 text-6xl font-bold leading-[0.95] tracking-tighter text-transparent sm:text-8xl lg:text-9xl">
+            <h1 className="w-fit bg-linear-to-r from-foreground from-30% to-accent bg-clip-text pb-2 text-6xl font-bold leading-[0.95] tracking-tighter text-transparent sm:text-8xl">
               {profile.name}
             </h1>
           </div>
@@ -113,16 +123,20 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
           </div>
         </div>
 
-        {stats.length > 0 && (
-          <div className="rise hidden lg:block" style={rise(5)}>
-            <ul className="space-y-3">
-              {stats.map((s) => (
-                <li key={s.label} className="rounded-2xl border border-border bg-card/60 px-5 py-4 transition-colors hover:border-accent">
-                  <StatValue value={s.value} />
-                  <p className="mt-1 text-sm text-muted">{s.label}</p>
-                </li>
-              ))}
-            </ul>
+        {/* The console, and under it (desktop) the headline numbers as small tiles. On phones it sits below the buttons. */}
+        {(consoleLines.length > 0 || stats.length > 0) && (
+          <div className="rise min-w-0" style={rise(5)}>
+            <InfraConsole lines={consoleLines} />
+            {stats.length > 0 && (
+              <ul className="mt-4 hidden gap-3 lg:flex">
+                {stats.map((s) => (
+                  <li key={s.label} className="min-w-0 flex-1 rounded-xl border border-border bg-card/60 px-4 py-3 transition-colors hover:border-accent">
+                    <StatValue value={s.value} />
+                    <p className="mt-1 text-xs leading-4 text-muted">{s.label}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
       </div>

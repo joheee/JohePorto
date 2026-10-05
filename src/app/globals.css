@@ -182,6 +182,61 @@ summary:focus-visible {
   }
 }
 
+/* Hero "infra console" (see InfraConsole.tsx): each line appears at its own time (--s), commands are
+   typed one character at a time (--n characters over --d). Pure CSS. With reduced motion everything is
+   just shown. */
+.term-line {
+  opacity: 0;
+  animation: term-show 0.01s linear both;
+  animation-delay: var(--s, 0s);
+}
+
+@keyframes term-show {
+  to {
+    opacity: 1;
+  }
+}
+
+.term-type {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  width: calc(var(--n) * 1ch);
+  /* jump-start, not the default jump-end: a long delay plus the duration can leave the animation at
+     progress 0.9999999999999994 instead of 1 (floating point), and with jump-end that holds the last
+     letter back for good ("uptim"). With jump-start the final step is reached just before the end. */
+  animation: term-type var(--d, 0.5s) steps(var(--n), jump-start) both;
+  animation-delay: var(--s, 0s);
+}
+
+@keyframes term-type {
+  from {
+    width: 0;
+  }
+}
+
+.term-cursor {
+  animation: term-blink 1.1s steps(1) infinite;
+}
+
+@keyframes term-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .term-line {
+    opacity: 1;
+    animation: none;
+  }
+
+  .term-type,
+  .term-cursor {
+    animation: none;
+  }
+}
+
 /* Dialogs fade and rise in. The animation runs on the dialog itself, not on content inside its
    scroll area: a transformed child extends the scrollable area and flashes a scrollbar mid-animation. */
 dialog[open] {
