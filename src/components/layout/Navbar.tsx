@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getProfile } from "@/lib/settings";
 import MobileMenu from "./MobileMenu";
 import NavLinks from "./NavLinks";
+import SectionBar from "./SectionBar";
+import SignOutDesktop from "./SignOutDesktop";
 import ThemeToggle from "./ThemeToggle";
 
 export default async function Navbar() {
@@ -16,9 +18,11 @@ export default async function Navbar() {
         <div className="flex items-center gap-4 sm:gap-6">
           <NavLinks />
           <ThemeToggle />
+          <SignOutDesktop />
           <MobileMenu />
         </div>
       </nav>
+      <SectionBar />
     </header>
   );
 }

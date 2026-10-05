@@ -3,11 +3,15 @@
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { navLinks } from "@/lib/content";
+import SignOutButton from "@/components/admin/SignOutButton";
+import { adminNavLinks, navLinks } from "@/lib/content";
+import { useAdminArea } from "./useNav";
 
 // Phone-width navigation: a button that opens a panel with every link.
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
+  const { admin } = useAdminArea();
+  const links = admin ? adminNavLinks : navLinks;
 
   useEffect(() => {
     if (!open) return;
@@ -55,7 +59,7 @@ export default function MobileMenu() {
               transition={{ duration: 0.2, ease: "easeOut" }}
             >
               <ul className="mx-auto max-w-5xl px-6 py-3">
-                {navLinks.map((l) => (
+                {links.map((l) => (
                   <li key={l.href} className="border-b border-border last:border-0">
                     <Link
                       href={l.href}
@@ -69,6 +73,11 @@ export default function MobileMenu() {
                     </Link>
                   </li>
                 ))}
+                {admin && (
+                  <li className="py-4" onClick={() => setOpen(false)}>
+                    <SignOutButton />
+                  </li>
+                )}
               </ul>
             </motion.nav>
           </>

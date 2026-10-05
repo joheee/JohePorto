@@ -44,6 +44,22 @@ export const defaultProfile: Profile = {
 
 // Add { label: "Blog", href: "/blog" } here once the blog exists: a link to a missing page is a 404
 // for visitors, a console error, and a broken internal link for search engines.
+// The admin area's tabs, shown in the same navbar instead of the public links.
+export const adminNavLinks = [
+  { label: "Dashboard", href: "/admin" },
+  { label: "Site", href: "/admin/site" },
+  { label: "Messages", href: "/admin/messages" },
+];
+
+// The page-section bar under the navbar on /admin/site (same sections as the public links).
+export const siteSectionLinks = [
+  { label: "Hero", href: "/admin/site#hero" },
+  { label: "About", href: "/admin/site#about" },
+  { label: "Projects", href: "/admin/site#projects" },
+  { label: "Experience", href: "/admin/site#experience" },
+  { label: "Contact", href: "/admin/site#contact" },
+];
+
 export const navLinks = [
   { label: "About", href: "/#about" },
   { label: "Projects", href: "/#projects" },
