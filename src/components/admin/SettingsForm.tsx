@@ -7,9 +7,9 @@ import { buildSkillIndex, findUnassigned, findVariants, skillKey, suggestSkills,
 import type { Profile, Skill, SocialLink } from "@/types/content";
 import AutoTextarea from "@/components/AutoTextarea";
 import ChipsInput from "./ChipsInput";
-import ConfirmDialog from "./ConfirmDialog";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import DateSelects from "./DateSelects";
-import { Field, SaveStatus, buttonClass, ghostButtonClass, inputClass } from "./fields";
+import { Field, SaveStatus, buttonClass, ghostButtonClass, inputClass } from "@/components/ui/fields";
 import FormCard, { SectionIcon, type CardIcon } from "./FormCard";
 
 // ---------- form-side shapes (selects hold strings; converted to numbers on save) ----------

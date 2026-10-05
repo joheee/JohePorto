@@ -16,7 +16,7 @@ All public content (name, hero, bio, skills, experience, education, projects) li
 |---|---|
 | Scaffold, Firebase (Firestore, Auth), env vars | Done |
 | Public home page (hero, about, projects, experience, contact) | Done, data-driven from Firestore |
-| Admin: login, dashboard, settings, projects, messages inbox | Done |
+| Admin: login, dashboard, **visual site editor (`/admin/site`)**, messages inbox | Done. `/admin/settings` and `/admin/projects` were deleted: everything is edited in modals on `/admin/site` |
 | SEO (meta, OG image, robots, sitemap, JSON-LD, icons, 404/error pages) | Done (Lighthouse 100 SEO / 100 a11y) |
 | **Blog** (`/blog`, `/blog/[slug]`, `/admin/posts`, "Latest posts") | **Not started** (the main open item) |
 | ATS-friendly resume PDF (`/resume.pdf`), hero/footer download buttons, admin Resume card | Done (see "Resume PDF") |
@@ -55,8 +55,8 @@ The navbar has **no Blog link** on purpose until the blog exists (it caused a 40
 |---|---|
 | `/admin/login` | Email + password (Firebase Auth), show/hide password |
 | `/admin` | Dashboard: stat cards, recent messages, setup checklist, **Resume card** (Preview PDF, Download, what to improve), quick actions |
-| `/admin/settings` | One form for the whole profile: Hero, About, **Skills** (grouped catalog, aliases, up/down reorder, "used but not grouped" tray), Contact & links, Experience (location, tech stack), **Education** |
-| `/admin/projects`, `/new`, `/[slug]` | List, create, edit, delete projects. The list uses the **same full-width vertical cards as the public site** (shared `ProjectCard`, stacked in one column) with Edit and Delete (confirm modal) in the card's `footer` slot. The form mirrors Settings: Basics / Details / Links cards, chip input for the stack, counters, floating save bar with unsaved-changes tracking. The slug is auto-filled from the title on new projects and locked (with a lock icon) on edit. |
+| `/admin/site` | **The only editor.** Renders the real home page (`HomeSections`, `preview`) with Edit / New / Delete controls injected through slots. Each Edit opens one modal (`SiteEditor`) with `SettingsForm` limited to that section's cards (`cards` prop, saved with `saveProfileSection`; Hero also shows the social links, About includes Skills) or `ProjectForm`. Experience/education entries have Edit + Delete (`deleteProfileItem`, label-checked). The navbar has a section bar here (menu on phones). The old Settings form fields were: Hero, About, **Skills** (grouped catalog, aliases, up/down reorder, "used but not grouped" tray), Contact & links, Experience (location, tech stack), **Education** |
+| (projects, now in `/admin/site`) | New project button + Edit/Delete in each card's `footer` slot (shared `ProjectCard`). `ProjectForm` (modal) mirrors Settings: Basics / Details / Links cards, chip input for the stack, counters, floating save bar with unsaved-changes tracking. The slug is auto-filled from the title on new projects and locked (with a lock icon) on edit. |
 | `/admin/messages` | Inbox: read/unread, reply (mailto), delete |
 | `/admin/posts` | **Planned** (dashboard shows "Posts: Blog coming soon") |
 
@@ -116,11 +116,11 @@ src/
     robots.ts, sitemap.ts, opengraph-image.tsx, twitter-image.tsx, icon.tsx, apple-icon.tsx
     admin/
       layout.tsx (noindex metadata)  login/page.tsx
-      (protected)/  layout.tsx (auth + nav) page.tsx (dashboard) actions.ts
-                    settings/  projects/ (+ new, [slug])  messages/
+      (protected)/  layout.tsx (auth only) page.tsx (dashboard) actions.ts
+                    site/ (the editor)  messages/
     api/ auth/session/route.ts  contact/route.ts
     resume.pdf/route.tsx  (PDF route handler, force-static)
-  components/  admin/  layout/  motion/  resume/ (ResumeDocument, react-pdf)  sections/  (+ AutoTextarea, CopyEmail, FormattedText, PingDot)
+  components/  admin/ (forms, SiteEditor, MessageList; admin-only)  ui/ (fields + button/input classes, Icons, ConfirmDialog: shared)  layout/  motion/  resume/ (ResumeDocument, react-pdf)  sections/  (+ AutoTextarea, CopyEmail, FormattedText, PingDot)
   lib/  auth, content (defaults + navLinks), csp, firebase, firebase-admin, format, messages, og, projects, resume (buildResume, resumeIssues),
         session-cookie, settings, site, skills (catalog matching), validation
   types/content.ts
@@ -211,3 +211,12 @@ Verified in a browser on production builds and in dev: zero CSP violations on th
 5. Blog list and post pages: **pending**
 6. Contact form, security rules, deploy to Vercel: **form, rules, deploy done; rate limiting pending**
 7. ~~SEO~~ done (added to the plan)
+
+
+## Shared-code rules (2026-10-05 refactor, phases 1 and 2 of the plan)
+- **Public/shared components never import `components/admin/`.** `Hero`, `About`, `Projects`, `Experience`, `Contact` take optional slots (`action`, `cardFooter`, `entryActions`, `educationAction`, `educationActions`, `inertForm`, `anchorBase`); `HomeSections` (used by `/` and `/admin/site`) forwards a `slots: HomeSlots` object and a `preview` flag. Only `admin/(protected)/site/page.tsx` imports the admin controls and builds the slots. Leftover: the navbar (`AdminActions`, `MobileMenu`) imports `SignOutButton` from admin.
+- `components/ui/` holds what both sides use: `fields.tsx` (`inputClass`, `buttonClass`, `ghostButtonClass`, `Field`, `SaveStatus`), `Icons.tsx`, `ConfirmDialog.tsx`.
+- **Navbar:** one navbar for both. `layout/useNav.ts` (`useAdminArea`, `useActiveSection`, `isTabActive`) decides by path (`/admin/*` except login) which links to show: public section links, or admin tabs (`adminNavLinks`) with `AdminActions` (Live web, Sign out) and on `/admin/site` a `SectionBar` (desktop) / "On this page" group in the phone menu (`siteSectionLinks`). Cosmetic only: pages and actions still check the owner. The name links to `/admin/site#hero` inside admin.
+- Not done yet from the plan: phase 3 (shared `Timeline`, `SocialLinks`, one `entryLabel()` for the `role|company` delete label that is built in both `site/page.tsx` and `actions.ts`), phase 4 (`useEditForm` hook + `SaveBar`, split `SettingsForm` per card), phase 5 (one `useNavModel`).
+- Testing the admin UI without signing in: a temporary route outside `/admin` (the proxy redirects `/admin*`), e.g. a copy of `site/page.tsx` without `requireAdmin()` and a temporary path check in `useAdminArea`; remove afterwards.
+- Fixed: `RotatingText` showed nothing after a role was deleted (index past the end); it now wraps.

@@ -1,17 +1,16 @@
-import DeleteProjectButton from "@/components/admin/DeleteProjectButton";
-import { ProjectButton } from "@/components/admin/SiteEditor";
 import Reveal from "@/components/motion/Reveal";
 import ProjectCard from "@/components/ProjectCard";
 import type { Project } from "@/types/content";
 import Section from "./Section";
 
-export default function Projects({ projects, admin = false }: { projects: Project[]; admin?: boolean }) {
+// `action`: next to the heading. `cardFooter`: under each card (the editor adds Edit and Delete there).
+export default function Projects({ projects, action, cardFooter }: { projects: Project[]; action?: React.ReactNode; cardFooter?: (p: Project) => React.ReactNode }) {
   return (
     <Section
       id="projects"
       number="02"
       title="Projects"
-      actions={admin && <ProjectButton />}
+      actions={action}
     >
       {projects.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-card/40 px-6 py-16 text-center">
@@ -31,14 +30,7 @@ export default function Projects({ projects, admin = false }: { projects: Projec
               <Reveal>
                 <ProjectCard
                   project={p}
-                  footer={
-                    admin && (
-                      <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-4">
-                        <ProjectButton project={p} />
-                        <DeleteProjectButton slug={p.slug} title={p.title} />
-                      </div>
-                    )
-                  }
+                  footer={cardFooter?.(p)}
                 />
               </Reveal>
             </li>

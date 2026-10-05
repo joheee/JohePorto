@@ -3,8 +3,8 @@
 import { useOptimistic, useState, useTransition } from "react";
 import { deleteMessage, setMessageRead } from "@/app/admin/(protected)/actions";
 import type { Message } from "@/types/content";
-import ConfirmDialog from "./ConfirmDialog";
-import { ghostButtonClass } from "./fields";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { ghostButtonClass } from "@/components/ui/fields";
 
 // Rendered in the viewer's own timezone. suppressHydrationWarning: the server's timezone differs.
 function Time({ iso }: { iso: string }) {

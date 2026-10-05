@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteProject } from "@/app/admin/(protected)/actions";
-import ConfirmDialog from "./ConfirmDialog";
-import { ghostButtonClass } from "./fields";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { ghostButtonClass } from "@/components/ui/fields";
 
 export default function DeleteProjectButton({ slug, title }: { slug: string; title: string }) {
   const router = useRouter();

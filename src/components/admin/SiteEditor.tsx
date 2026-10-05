@@ -5,9 +5,9 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, us
 import { deleteProfileItem } from "@/app/admin/(protected)/actions";
 import type { SkillUsage } from "@/lib/skills";
 import type { Profile, Project } from "@/types/content";
-import ConfirmDialog from "./ConfirmDialog";
-import { buttonClass, ghostButtonClass } from "./fields";
-import Icon from "./Icons";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { buttonClass, ghostButtonClass } from "@/components/ui/fields";
+import Icon from "@/components/ui/Icons";
 import ProjectForm from "./ProjectForm";
 import SettingsForm, { type CardId } from "./SettingsForm";
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Icon, { type IconName } from "@/components/admin/Icons";
-import { buttonClass, ghostButtonClass } from "@/components/admin/fields";
+import Icon, { type IconName } from "@/components/ui/Icons";
+import { buttonClass, ghostButtonClass } from "@/components/ui/fields";
 import { requireAdmin } from "@/lib/auth";
 import { adminDb } from "@/lib/firebase-admin";
 import { timeAgo } from "@/lib/format";

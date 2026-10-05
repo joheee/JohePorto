@@ -1,8 +1,8 @@
 "use client";
 
-import Icon from "@/components/admin/Icons";
+import Icon from "@/components/ui/Icons";
 import SignOutButton from "@/components/admin/SignOutButton";
-import { ghostButtonClass } from "@/components/admin/fields";
+import { ghostButtonClass } from "@/components/ui/fields";
 import { useAdminArea } from "./useNav";
 
 // "Live web" opens the public site in a new tab.

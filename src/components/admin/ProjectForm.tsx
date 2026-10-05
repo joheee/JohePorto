@@ -8,9 +8,9 @@ import { buildSkillIndex, skillKey, suggestSkills } from "@/lib/skills";
 import type { Project, SkillGroup, SocialLink } from "@/types/content";
 import ChipsInput from "./ChipsInput";
 import DateSelects from "./DateSelects";
-import { Field, SaveStatus, buttonClass, ghostButtonClass, inputClass } from "./fields";
+import { Field, SaveStatus, buttonClass, ghostButtonClass, inputClass } from "@/components/ui/fields";
 import FormCard from "./FormCard";
-import Icon from "./Icons";
+import Icon from "@/components/ui/Icons";
 
 type Form = {
   title: string;
