@@ -36,7 +36,7 @@ export default function Analytics() {
         kind: "view",
         ref: document.referrer,
         utm: { source: params.get("utm_source"), medium: params.get("utm_medium"), campaign: params.get("utm_campaign") },
-        theme: document.documentElement.dataset.theme === "light" ? "light" : "dark",
+        theme: document.documentElement.dataset.mode === "light" ? "light" : "dark",
         width: window.innerWidth,
       });
     };

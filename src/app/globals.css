@@ -1,28 +1,129 @@
 @import "tailwindcss";
 
-/* Theme is driven by data-theme on <html> (set by the inline script in layout.tsx). */
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* Themes are driven by data-theme (the id) and data-mode (dark or light) on <html>, set by the inline
+   script in lib/themes.ts. Add a theme here and in the list in lib/themes.ts. :root is the fallback
+   (Aura Soft Dark) for the moment before the script runs. */
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
 :root {
+  color-scheme: dark;
+  --background: #21202e;
+  --foreground: #edecee;
+  --muted: #a29fb7;
+  --border: #3d375e;
+  --card: #29263c;
+  --accent: #a277ff;
+  --accent-foreground: #15141b;
+}
+
+[data-theme="aura-soft-dark"] {
+  color-scheme: dark;
+  --background: #21202e;
+  --foreground: #edecee;
+  --muted: #a29fb7;
+  --border: #3d375e;
+  --card: #29263c;
+  --accent: #a277ff;
+  --accent-foreground: #15141b;
+}
+
+[data-theme="dark-plus"] {
+  color-scheme: dark;
+  --background: #1f1f1f;
+  --foreground: #cccccc;
+  --muted: #9d9d9d;
+  --border: #2b2b2b;
+  --card: #181818;
+  --accent: #4daafc;
+  --accent-foreground: #1f1f1f;
+}
+
+[data-theme="one-dark-pro"] {
+  color-scheme: dark;
+  --background: #282c34;
+  --foreground: #abb2bf;
+  --muted: #8b93a1;
+  --border: #3e4451;
+  --card: #21252b;
+  --accent: #61afef;
+  --accent-foreground: #21252b;
+}
+
+[data-theme="dracula"] {
+  color-scheme: dark;
+  --background: #282a36;
+  --foreground: #f8f8f2;
+  --muted: #9ea8d0;
+  --border: #44475a;
+  --card: #21222c;
+  --accent: #bd93f9;
+  --accent-foreground: #282a36;
+}
+
+[data-theme="tokyo-night"] {
+  color-scheme: dark;
+  --background: #1a1b26;
+  --foreground: #c0caf5;
+  --muted: #8089b3;
+  --border: #2f334d;
+  --card: #16161e;
+  --accent: #7aa2f7;
+  --accent-foreground: #16161e;
+}
+
+[data-theme="nord"] {
+  color-scheme: dark;
+  --background: #2e3440;
+  --foreground: #eceff4;
+  --muted: #b4bdd0;
+  --border: #434c5e;
+  --card: #3b4252;
+  --accent: #88c0d0;
+  --accent-foreground: #2e3440;
+}
+
+[data-theme="github-dark"] {
+  color-scheme: dark;
+  --background: #0d1117;
+  --foreground: #e6edf3;
+  --muted: #8b949e;
+  --border: #30363d;
+  --card: #161b22;
+  --accent: #58a6ff;
+  --accent-foreground: #0d1117;
+}
+
+[data-theme="solarized-dark"] {
+  color-scheme: dark;
+  --background: #002b36;
+  --foreground: #eee8d5;
+  --muted: #93a1a1;
+  --border: #164b59;
+  --card: #073642;
+  --accent: #3ab5ab;
+  --accent-foreground: #002b36;
+}
+
+[data-theme="light-plus"] {
   color-scheme: light;
   --background: #ffffff;
-  --foreground: #171717;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --card: #fafafa;
-  --accent: #4f46e5;
+  --foreground: #3b3b3b;
+  --muted: #616161;
+  --border: #e5e5e5;
+  --card: #f8f8f8;
+  --accent: #005fb8;
   --accent-foreground: #ffffff;
 }
 
-[data-theme="dark"] {
-  color-scheme: dark; /* native controls (selects, date pickers, scrollbars) follow the theme */
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --muted: #9ca3af;
-  --border: #262626;
-  --card: #111111;
-  --accent: #818cf8;
-  --accent-foreground: #0a0a0a;
+[data-theme="solarized-light"] {
+  color-scheme: light;
+  --background: #fdf6e3;
+  --foreground: #073642;
+  --muted: #4f656c;
+  --border: #d9d2bd;
+  --card: #eee8d5;
+  --accent: #1a6aa8;
+  --accent-foreground: #fdf6e3;
 }
 
 @theme inline {
@@ -81,7 +182,7 @@ summary:focus-visible {
   animation: glow-drift 16s ease-in-out infinite alternate;
 }
 
-[data-theme="dark"] .cursor-glow {
+[data-mode="dark"] .cursor-glow {
   background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent);
 }
 
@@ -307,7 +408,7 @@ summary:focus-visible {
   color: #047857;
 }
 
-[data-theme="dark"] .diff-add::before {
+[data-mode="dark"] .diff-add::before {
   color: #34d399;
 }
 

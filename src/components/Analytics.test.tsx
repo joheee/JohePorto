@@ -18,7 +18,7 @@ beforeEach(() => {
     <section id="hero"></section><section id="about"></section><section id="projects"><article data-project="aws-base"><a id="repo" href="https://github.com/joheee/AwsBaseInfra">repo</a></article></section>
     <section id="reviews"><a id="rev" href="https://www.linkedin.com/in/jane/">view</a></section>
     <section id="contact"><a id="gh" href="https://github.com/joheee">GitHub</a><a id="cv" href="/resume.pdf">cv</a><a id="in" href="/#about">in</a></section>`;
-  document.documentElement.dataset.theme = "light";
+  document.documentElement.dataset.mode = "light";
   vi.stubGlobal("requestIdleCallback", (cb: () => void) => { cb(); return 1; });
   vi.stubGlobal("cancelIdleCallback", () => {});
   vi.stubGlobal(
