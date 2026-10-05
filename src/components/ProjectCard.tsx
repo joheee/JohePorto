@@ -45,7 +45,7 @@ export function ProjectLinks({ links, className = "", emptyLabel }: { links: Pro
 
 // One project, shown in full as a file in an editor-style window: its name (slug + an extension from the
 // stack) and date in the title bar, then title, summary, the description as added lines of a diff, the
-// stack, a `git clone` line when a link is a repository, and the links. Shared by the public Projects
+// stack as chips, a `git clone` line when a link is a repository, and the links. Shared by the public Projects
 // section and the admin list so the two always look the same. `footer` is extra content at the bottom
 // (the admin list puts Edit and Delete there).
 export default function ProjectCard({ project, footer }: { project: Project; footer?: React.ReactNode }) {
@@ -68,12 +68,7 @@ export default function ProjectCard({ project, footer }: { project: Project; foo
         <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">{project.title}</h3>
         {project.summary && <p className="mt-3 max-w-3xl text-muted">{project.summary}</p>}
         {project.description && <FormattedText text={project.description} variant="diff" className="mt-5 max-w-3xl leading-7" />}
-        {project.stack.length > 0 && (
-          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span className="font-mono text-xs text-muted">stack</span>
-            <ProjectChips items={project.stack} />
-          </div>
-        )}
+        <ProjectChips items={project.stack} className="mt-6" />
         {clone && (
           <div className="mt-6 flex max-w-3xl items-center gap-3 rounded-xl border border-border bg-background/60 py-2 pl-4 pr-2">
             <code className="min-w-0 flex-1 break-all font-mono text-xs leading-5">

@@ -32,12 +32,14 @@ describe("ProjectCard", () => {
     expect(screen.getByRole("link", { name: /Demo/ })).toBeInTheDocument();
   });
 
-  it("shows the stack row only when there is a stack, and a README for an unknown one", () => {
-    const { rerender } = render(<ProjectCard project={project({ stack: ["Zabbix"] })} />);
-    expect(screen.getByText("stack")).toBeInTheDocument();
+  it("shows the stack as chips with no label, and a README file for an unknown stack", () => {
+    const { rerender } = render(<ProjectCard project={project({ stack: ["Zabbix", "Debian"] })} />);
+    expect(screen.getByText("Zabbix")).toBeInTheDocument();
+    expect(screen.getByText("Debian")).toBeInTheDocument();
+    expect(screen.queryByText("stack")).toBeNull();
     expect(screen.getByText("aws-base.md")).toBeInTheDocument();
     rerender(<ProjectCard project={project({ stack: [] })} />);
-    expect(screen.queryByText("stack")).toBeNull();
+    expect(screen.queryByText("Zabbix")).toBeNull();
   });
 
   it("puts the admin footer (Edit and Delete) inside the card", () => {
