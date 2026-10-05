@@ -5,6 +5,7 @@ import { analyticsEnabled } from "@/lib/analytics/collect";
 import { parseRange } from "@/lib/analytics/range";
 import { loadAnalytics, type ReadDb } from "@/lib/analytics/read";
 import { adminDb } from "@/lib/firebase-admin";
+import { pruneLimits } from "@/lib/limiter";
 import { loadRuns, type SpeedDb } from "@/lib/pagespeed/store";
 import { siteUrl } from "@/lib/site";
 
@@ -39,6 +40,9 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       </div>
     );
   }
+  // Housekeeping, like the visitor hashes: rate-limit counts that went quiet for two days are deleted.
+  await pruneLimits(adminDb() as never, 2 * 24 * 3_600_000).catch(() => {});
+
   let runs: Awaited<ReturnType<typeof loadRuns>> = [];
   try {
     runs = await loadRuns(adminDb() as unknown as SpeedDb);

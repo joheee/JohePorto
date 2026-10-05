@@ -1,12 +1,24 @@
 "use client";
 
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { auth } from "@/lib/firebase";
 
 const field =
   "w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-accent";
+
+// What to tell the person for each answer. A wrong email and a wrong password get the same message, so it does
+// not reveal which one was wrong; a lock-out says when to try again.
+export async function loginError(res: Response): Promise<string> {
+  if (res.status === 429) {
+    const seconds = Number(res.headers.get("Retry-After")) || 0;
+    const minutes = Math.max(1, Math.ceil(seconds / 60));
+    return `Too many failed attempts. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`;
+  }
+  if (res.status === 401) return "Invalid email or password.";
+  if (res.status === 403) return "This account is not authorized.";
+  if (res.status >= 500) return "Sign-in is temporarily unavailable. Try again in a minute.";
+  return "Sign-in failed. Try again.";
+}
 
 export default function LoginForm() {
   const router = useRouter();
@@ -20,27 +32,19 @@ export default function LoginForm() {
     setError("");
     setBusy(true);
     try {
-      const cred = await signInWithEmailAndPassword(
-        auth,
-        String(data.get("email")),
-        String(data.get("password")),
-      );
-      const idToken = await cred.user.getIdToken();
-      const res = await fetch("/api/auth/session", {
+      const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ email: String(data.get("email")), password: String(data.get("password")) }),
       });
       if (!res.ok) {
-        await signOut(auth);
-        setError(res.status === 403 ? "This account is not authorized." : "Sign-in failed. Try again.");
+        setError(await loginError(res));
         return;
       }
       router.replace("/admin");
       router.refresh();
     } catch {
-      // Same message for wrong email/password so it doesn't reveal which one failed.
-      setError("Invalid email or password.");
+      setError("Could not reach the server. Check your connection and try again.");
     } finally {
       setBusy(false);
     }

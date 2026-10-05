@@ -11,7 +11,7 @@ import { LIMITS, curlCommand, formatBytes, lintContact, previewValue, requestBod
 // time, size and body after Send. What is sent is exactly what the preview shows (plus a hidden honeypot).
 // When the server accepts the message the whole form is replaced by the response; "Send another" brings it back.
 type Status = "idle" | "sending" | "sent";
-type Response = { kind: "http"; status: number; ms: number; bytes: number; body: string } | { kind: "network" };
+type Response = { kind: "http"; status: number; ms: number; bytes: number; body: string; retryAfter: number | null } | { kind: "network" };
 
 const row = "grid border-t border-border sm:grid-cols-[7rem_minmax(0,1fr)]";
 const key = "flex items-start gap-2 px-4 pt-3 font-mono text-sm text-accent sm:pb-3";
@@ -76,7 +76,7 @@ export default function ContactForm({ origin }: { origin: string }) {
         body: JSON.stringify({ ...requestBody(values), website: honeypot.current?.value ?? "" }),
       });
       const raw = await res.text();
-      setResponse({ kind: "http", status: res.status, ms: Math.round(performance.now() - started), bytes: new TextEncoder().encode(raw).length, body: prettyBody(raw) });
+      setResponse({ kind: "http", status: res.status, ms: Math.round(performance.now() - started), bytes: new TextEncoder().encode(raw).length, body: prettyBody(raw), retryAfter: Number(res.headers.get("Retry-After")) || null });
       if (res.ok) track("contact.sent");
       setStatus(res.ok ? "sent" : "idle"); // a refused request leaves the form open to fix and resend
     } catch {
@@ -253,7 +253,11 @@ export default function ContactForm({ origin }: { origin: string }) {
           {response?.kind === "http" && (
             <>
               <pre className="whitespace-pre-wrap break-words">{response.body}</pre>
-              <p className="mt-2 text-red-600 dark:text-red-400">✗ the message was not accepted. Check the fields above and send again, or email me directly.</p>
+              <p className="mt-2 text-red-600 dark:text-red-400">
+                {response.status === 429
+                  ? `✗ too many messages from here. Try again in ${response.retryAfter ? `about ${Math.max(1, Math.ceil(response.retryAfter / 60))} min` : "a while"}, or email me directly.`
+                  : "✗ the message was not accepted. Check the fields above and send again, or email me directly."}
+              </p>
             </>
           )}
           {response?.kind === "network" && <p className="text-red-600 dark:text-red-400">✗ no response: the request could not be sent. Try again, or email me directly.</p>}

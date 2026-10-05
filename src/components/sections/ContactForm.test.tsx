@@ -5,7 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { takeEvents } from "@/lib/track";
 import ContactForm from "./ContactForm";
 
-const reply = (status: number, body: unknown) => vi.fn().mockResolvedValue({ ok: status >= 200 && status < 300, status, text: async () => JSON.stringify(body) });
+const reply = (status: number, body: unknown, headers: Record<string, string> = {}) =>
+  vi.fn().mockResolvedValue({ ok: status >= 200 && status < 300, status, headers: new Headers(headers), text: async () => JSON.stringify(body) });
 
 beforeEach(() => vi.stubGlobal("fetch", reply(200, { ok: true })));
 afterEach(() => vi.unstubAllGlobals());
@@ -164,5 +165,26 @@ describe("what the analytics are told", () => {
     await send(user);
     await screen.findByText("✓ Message delivered");
     expect(takeEvents()).toEqual(["contact.sent"]);
+  });
+});
+
+describe("when too many messages were sent", () => {
+  it("says how long to wait, keeps the form open and keeps what was typed", async () => {
+    vi.stubGlobal("fetch", reply(429, { error: "Too many messages.", retryAfter: 540 }, { "Retry-After": "540" }));
+    const user = setup();
+    await fill(user);
+    await send(user);
+    expect(await screen.findByText("429 Too Many Requests")).toBeInTheDocument();
+    expect(screen.getByText(/too many messages from here. Try again in about 9 min/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Your name")).toHaveValue("Ada");
+    expect(screen.queryByText(/message was not accepted/)).not.toBeInTheDocument();
+  });
+
+  it("still gives a plain message when no wait time came with it", async () => {
+    vi.stubGlobal("fetch", reply(429, { error: "Too many" }));
+    const user = setup();
+    await fill(user);
+    await send(user);
+    expect(await screen.findByText(/Try again in a while/)).toBeInTheDocument();
   });
 });
