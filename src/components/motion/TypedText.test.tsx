@@ -3,9 +3,14 @@ import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TypedText from "./TypedText";
 
+// Only what the component reads; "unknown" because a full MediaQueryList is not needed.
+const mockMatchMedia = (matches: boolean) => {
+  window.matchMedia = ((media: string) => ({ matches, media, addEventListener() {}, removeEventListener() {} })) as unknown as typeof matchMedia;
+};
+
 beforeEach(() => {
   vi.useFakeTimers();
-  window.matchMedia = ((q: string) => ({ matches: false, media: q, addEventListener() {}, removeEventListener() {} })) as typeof matchMedia;
+  mockMatchMedia(false);
 });
 afterEach(() => vi.useRealTimers());
 
@@ -55,7 +60,7 @@ describe("TypedText", () => {
   });
 
   it("stays still for reduced motion", () => {
-    window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as typeof matchMedia;
+    mockMatchMedia(true);
     const { container } = render(<TypedText words={["A1", "B2"]} />);
     tick(20_000);
     expect(visible(container)).toBe("A1");
