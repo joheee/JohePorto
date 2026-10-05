@@ -31,11 +31,22 @@ export default function AutoTextarea({
   // Re-measure on mount and whenever a controlled value changes (paste, programmatic updates).
   useLayoutEffect(resize, [props.value, maxHeight]);
 
-  // Line wrapping changes with the width, so re-measure when the window resizes.
+  // Re-measure whenever the box's width changes: line wrapping depends on it. This also covers the box
+  // appearing (width 0 -> real) when it was mounted inside something hidden, such as the closed <dialog> of
+  // the site editor, where scrollHeight reads 0 and the box would stay collapsed until you typed.
   useEffect(() => {
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
-  });
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    let width = el.offsetWidth;
+    const observer = new ResizeObserver(() => {
+      if (el.offsetWidth === width) return; // our own height changes land here too
+      width = el.offsetWidth;
+      resize();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- resize only reads the ref and maxHeight
+  }, [maxHeight]);
 
   return (
     <textarea
