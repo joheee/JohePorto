@@ -290,6 +290,27 @@ summary:focus-visible {
   user-select: none;
 }
 
+/* A bullet drawn as an added line of a diff: a green "+" (see FormattedText variant="diff"). The "/ ''"
+   alternative text keeps screen readers from reading it as "plus". */
+.diff-add {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.diff-add::before {
+  content: "+";
+  content: "+" / "";
+  position: absolute;
+  left: 0.25rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 600;
+  color: #047857;
+}
+
+[data-theme="dark"] .diff-add::before {
+  color: #34d399;
+}
+
 /* Dialogs fade and rise in. The animation runs on the dialog itself, not on content inside its
    scroll area: a transformed child extends the scrollable area and flashes a scrollbar mid-animation. */
 dialog[open] {

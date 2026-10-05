@@ -58,7 +58,7 @@ export default async function About({ action }: { action?: React.ReactNode }) {
                   {profile.location && <Fact name="location">{profile.location}</Fact>}
                   {profile.status && (
                     <Fact name="status">
-                      <span className="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                      <span className="inline-flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
                         <PingDot />
                         {profile.status}
                       </span>
