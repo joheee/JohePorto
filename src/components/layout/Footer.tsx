@@ -2,30 +2,38 @@ import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
 import { getProfile } from "@/lib/settings";
 
+// A status bar, like the one at the bottom of a code editor: your status on the left, the links as paths
+// (./github, ./resume) in the middle, the copyright and a way back to the top on the right.
 export default async function Footer() {
   const profile = await getProfile();
 
   return (
-    <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-2 px-6 py-8 text-sm text-muted sm:flex-row">
-        <p>
-          © {new Date().getFullYear()} {profile.name}
-        </p>
+    <footer className="border-t border-border bg-foreground/[0.02]">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-6 py-6 font-mono text-xs text-muted md:flex-row md:justify-between">
+        {profile.status ? (
+          <p className="inline-flex items-center gap-2.5">
+            <span aria-hidden className="h-2 w-2 rounded-full bg-emerald-500" />
+            {profile.status}
+          </p>
+        ) : (
+          <span aria-hidden className="hidden md:block" />
+        )}
         <SocialLinks socials={profile.socials} variant="footer">
           <li>
             <a href="/resume.pdf" download className="transition-colors hover:text-foreground">
-              Resume
+              <span aria-hidden>./</span>
+              <span className="lowercase">Resume</span>
             </a>
           </li>
-          <li>
-            <Link href="/#hero" className="inline-flex items-center gap-1 transition-colors hover:text-foreground">
-              Back to top
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <path d="M12 19V5M6 11l6-6 6 6" />
-              </svg>
-            </Link>
-          </li>
         </SocialLinks>
+        <p className="inline-flex items-center gap-3">
+          <span>
+            © {new Date().getFullYear()} {profile.name}
+          </span>
+          <Link href="/#hero" aria-label="Back to top" className="inline-flex items-center gap-1 transition-colors hover:text-foreground">
+            <span aria-hidden>↑ top</span>
+          </Link>
+        </p>
       </div>
     </footer>
   );

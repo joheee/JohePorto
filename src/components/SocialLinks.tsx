@@ -1,7 +1,7 @@
 import type { SocialLink } from "@/types/content";
 
 // The profile's social links, opened in a new tab. `contact`: a stacked list with an arrow (Contact
-// section). `footer`: a wrapping row, with `children` as extra items at the end (Footer).
+// section). `footer`: a wrapping row of path-style links (./github), with `children` as extra items at the end (Footer).
 export default function SocialLinks({ socials, variant, children }: { socials: SocialLink[]; variant: "contact" | "footer"; children?: React.ReactNode }) {
   if (variant === "footer") {
     return (
@@ -9,7 +9,8 @@ export default function SocialLinks({ socials, variant, children }: { socials: S
         {socials.map((s) => (
           <li key={s.label}>
             <a href={s.href} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-foreground">
-              {s.label}
+              <span aria-hidden>./</span>
+              <span className="lowercase">{s.label}</span>
             </a>
           </li>
         ))}
