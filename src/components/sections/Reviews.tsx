@@ -28,7 +28,7 @@ function ReviewCard({ review, footer }: { review: ReviewItem; footer?: React.Rea
         </span>
       </header>
       <blockquote className="flex-1 whitespace-pre-line px-5 py-5 leading-7 sm:px-8 sm:py-6">
-        <p className="max-w-3xl">{review.text}</p>
+        <p>{review.text}</p>
       </blockquote>
       {review.link && (
         <footer className="border-t border-border px-4 py-2.5 font-mono text-xs">

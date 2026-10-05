@@ -66,11 +66,11 @@ export default function ProjectCard({ project, footer }: { project: Project; foo
       </div>
       <div className="p-5 sm:p-8">
         <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">{project.title}</h3>
-        {project.summary && <p className="mt-3 max-w-3xl text-muted">{project.summary}</p>}
-        {project.description && <FormattedText text={project.description} variant="diff" className="mt-5 max-w-3xl leading-7" />}
+        {project.summary && <p className="mt-3 text-muted">{project.summary}</p>}
+        {project.description && <FormattedText text={project.description} variant="diff" className="mt-5 leading-7" />}
         <ProjectChips items={project.stack} className="mt-6" />
         {clone && (
-          <div className="mt-6 flex max-w-3xl items-center gap-3 rounded-xl border border-border bg-background/60 py-2 pl-4 pr-2">
+          <div className="mt-6 flex items-center gap-3 rounded-xl border border-border bg-background/60 py-2 pl-4 pr-2">
             <code className="min-w-0 flex-1 break-all font-mono text-xs leading-5">
               <span className="text-emerald-700 dark:text-emerald-400">$</span> {clone}
             </code>

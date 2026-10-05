@@ -42,7 +42,7 @@ export default async function About({ action }: { action?: React.ReactNode }) {
                 <Fragment key={p}>
                   {i > 0 && <EditorLine />}
                   <EditorLine>
-                    <p className="max-w-3xl text-[17px] leading-7">{p}</p>
+                    <p className="text-[17px] leading-7">{p}</p>
                   </EditorLine>
                 </Fragment>
               ))}
