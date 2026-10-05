@@ -8,8 +8,11 @@ export default async function AdminMessagesPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-3xl font-bold tracking-tight">Messages</h1>
-      <p className="mb-8 text-sm text-muted">Sent through the contact form on your site, newest first.</p>
+      <header className="mb-8">
+        <p className="font-mono text-xs uppercase tracking-widest text-muted">Inbox</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight">Messages</h1>
+        <p className="mt-2 text-sm text-muted">Sent through the contact form on your site, newest first.</p>
+      </header>
       <MessageList messages={messages} />
     </div>
   );

@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import Icon, { type IconName } from "@/components/ui/Icons";
-import { buttonClass, ghostButtonClass } from "@/components/ui/fields";
 import { requireAdmin } from "@/lib/auth";
 import { adminDb } from "@/lib/firebase-admin";
 import { timeAgo } from "@/lib/format";
 import { getMessages } from "@/lib/messages";
 import { getProjects } from "@/lib/projects";
-import { buildResume, resumeIssues } from "@/lib/resume";
 import { getProfile, getProfileReadAt } from "@/lib/settings";
+import RecentMessages from "@/components/admin/RecentMessages";
 import RefreshCacheButton from "@/components/admin/RefreshCacheButton";
 import SystemStatus, { StatusSkeleton } from "@/components/admin/SystemStatus";
 
@@ -72,18 +71,6 @@ export default async function AdminDashboard() {
   const companies = new Set(profile.experience.map((e) => e.company.trim().toLowerCase())).size;
   const lastSaved = profileDoc.exists ? profileDoc.data()?.updatedAt?.toDate?.() : undefined;
   const firstName = profile.name.split(" ")[0];
-  const resumeProblems = resumeIssues(buildResume(profile, projects));
-
-  // Setup checklist, derived from what is actually saved.
-  const checklist: { done: boolean; label: string; hint: string; href: string }[] = [
-    { done: !!profile.pitch && profile.bio.length > 0, label: "Write your pitch and bio", hint: "The first thing visitors read.", href: "/admin/site#hero" },
-    { done: profile.skills.length > 0, label: "Add your skills", hint: "Grouped on your site and resume.", href: "/admin/site#about" },
-    { done: profile.socials.length > 0, label: "Add your social links", hint: "GitHub, LinkedIn and so on.", href: "/admin/site#contact" },
-    { done: profile.experience.length > 0, label: "Add your work experience", hint: "Appears as the timeline.", href: "/admin/site#experience" },
-    { done: projects.length > 0, label: "Add your first project", hint: "The Projects section is empty until you do.", href: "/admin/site#projects" },
-  ];
-  const doneCount = checklist.filter((c) => c.done).length;
-  const percent = Math.round((doneCount / checklist.length) * 100);
 
   return (
     <div className="space-y-10">
@@ -133,133 +120,33 @@ export default async function AdminDashboard() {
         <StatCard icon="post" label="Posts" value="–" note="Blog coming soon" />
       </section>
 
-      {/* minmax(0, …): without it a grid column refuses to shrink below its longest unbreakable
-          line, so one long message would stretch the whole page instead of being cut off. */}
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <div className="space-y-6">
-          <section aria-labelledby="recent-title" className="rounded-2xl border border-border bg-card/60 p-6">
-            <div className="mb-5 flex items-center justify-between gap-3">
-              <h2 id="recent-title" className="text-lg font-semibold tracking-tight">
-                Recent messages
-              </h2>
-              <Link href="/admin/messages" className="text-sm text-muted transition-colors hover:text-foreground">
-                View all →
-              </Link>
-            </div>
+      {/* Recent messages and the system status side by side from lg, stacked below it. minmax(0, …): without it
+          a grid column refuses to shrink below its longest unbreakable line, so one long message would stretch
+          the whole page instead of being cut off. */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <section aria-labelledby="recent-title" className="rounded-2xl border border-border bg-card/60 p-6">
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <h2 id="recent-title" className="text-lg font-semibold tracking-tight">
+              Recent messages
+            </h2>
+            <Link href="/admin/messages" className="text-sm text-muted transition-colors hover:text-foreground">
+              View all →
+            </Link>
+          </div>
 
-            {recent.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted">
-                No messages yet. When someone uses your contact form, it shows up here.
-              </p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {recent.map((m) => (
-                  <li key={m.id} className="py-3.5 first:pt-0 last:pb-0">
-                    <Link href="/admin/messages" className="group flex items-start gap-3">
-                      <span aria-hidden className={`mt-2 h-2 w-2 shrink-0 rounded-full ${m.read ? "bg-transparent" : "bg-accent"}`} />
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-baseline justify-between gap-3">
-                          <span className={`truncate text-sm ${m.read ? "font-medium" : "font-semibold"}`}>
-                            {m.name}
-                            {!m.read && <span className="sr-only"> (unread)</span>}
-                          </span>
-                          <span className="shrink-0 font-mono text-xs text-muted">{timeAgo(m.createdAt)}</span>
-                        </span>
-                        <span className="mt-0.5 block truncate text-sm text-muted group-hover:text-foreground">{m.text}</span>
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+          {recent.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted">
+              No messages yet. When someone uses your contact form, it shows up here.
+            </p>
+          ) : (
+            <RecentMessages messages={recent} />
+          )}
+        </section>
 
-          {/* The checks ask Firestore and the site itself: show the page at once and let them fill in. */}
-          <Suspense fallback={<StatusSkeleton />}>
-            <SystemStatus readAt={readAt} expiresAt={admin.expiresAt} />
-          </Suspense>
-        </div>
-
-        <div className="space-y-6">
-          <section aria-labelledby="setup-title" className="rounded-2xl border border-border bg-card/60 p-6">
-            <div className="mb-1 flex items-baseline justify-between gap-3">
-              <h2 id="setup-title" className="text-lg font-semibold tracking-tight">
-                {doneCount === checklist.length ? "Your site is complete" : "Get your site ready"}
-              </h2>
-              <span className="font-mono text-sm text-muted">
-                {doneCount}/{checklist.length}
-              </span>
-            </div>
-            <div
-              role="progressbar"
-              aria-valuenow={percent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label="Setup progress"
-              className="mb-5 mt-3 h-1.5 overflow-hidden rounded-full bg-border"
-            >
-              <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${percent}%` }} />
-            </div>
-
-            <ul className="space-y-1">
-              {checklist.map((c) => (
-                <li key={c.label}>
-                  <Link
-                    href={c.href}
-                    className="group flex items-start gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-background"
-                  >
-                    <span
-                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                        c.done ? "border-emerald-500 bg-emerald-500 text-white" : "border-border text-transparent"
-                      }`}
-                    >
-                      <Icon name="check" className="h-3 w-3" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className={`block text-sm ${c.done ? "text-muted line-through decoration-border" : "font-medium"}`}>
-                        {c.label}
-                        <span className="sr-only">{c.done ? " (done)" : " (to do)"}</span>
-                      </span>
-                      {!c.done && <span className="block text-xs text-muted">{c.hint}</span>}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section aria-labelledby="resume-title" className="rounded-2xl border border-border bg-card/60 p-6">
-            <div className="mb-1 flex items-baseline justify-between gap-3">
-              <h2 id="resume-title" className="text-lg font-semibold tracking-tight">
-                Resume
-              </h2>
-              <span className={`text-sm ${resumeProblems.length === 0 ? "text-emerald-500" : "text-muted"}`}>
-                {resumeProblems.length === 0 ? "Looks complete" : `${resumeProblems.length} to improve`}
-              </span>
-            </div>
-            <p className="text-sm text-muted">A text PDF built from your settings and projects, in a format applicant tracking systems can read. It updates when you save.</p>
-
-            {resumeProblems.length > 0 && (
-              <ul className="mt-4 space-y-1.5 text-sm text-muted">
-                {resumeProblems.map((p) => (
-                  <li key={p} className="flex gap-2">
-                    <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
-                    {p}
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className={buttonClass}>
-                Preview PDF <Icon name="external" className="h-3.5 w-3.5" />
-              </a>
-              <a href="/resume.pdf" download className={ghostButtonClass}>
-                <Icon name="download" className="h-3.5 w-3.5" /> Download
-              </a>
-            </div>
-          </section>
-        </div>
+        {/* The checks ask Firestore and the site itself: show the page at once and let them fill in. */}
+        <Suspense fallback={<StatusSkeleton />}>
+          <SystemStatus readAt={readAt} expiresAt={admin.expiresAt} />
+        </Suspense>
       </div>
     </div>
   );

@@ -98,23 +98,6 @@ export function buildResume(profile: Profile, projects: Project[]): ResumeData {
   };
 }
 
-// What would make the resume thinner than it should be. Shown on the admin dashboard.
-export function resumeIssues(data: ResumeData): string[] {
-  const issues: string[] = [];
-  if (data.contact.length < 3) issues.push("Add your LinkedIn and GitHub links under Contact & links.");
-  if (data.experience.length === 0) issues.push("Add your work experience.");
-  const noStack = data.experience.filter((e) => !e.detail).length;
-  if (noStack) issues.push(`${noStack} ${noStack === 1 ? "job has" : "jobs have"} no tech stack.`);
-  const noPlace = data.experience.filter((e) => !e.org.includes(",")).length;
-  if (noPlace) issues.push(`${noPlace} ${noPlace === 1 ? "job has" : "jobs have"} no location.`);
-  if (data.education.length === 0) issues.push("Add your education.");
-  if (data.projects.length === 0) issues.push("Add at least one project.");
-  const thin = data.projects.filter((p) => p.bullets.length < 2);
-  if (thin.length) issues.push(`${thin.length} ${thin.length === 1 ? "project has" : "projects have"} fewer than 2 description lines (they become bullets).`);
-  if (data.skills.length === 0) issues.push("Add skill groups.");
-  return issues;
-}
-
 // "Johevin Blesstowi" -> "Johevin-Blesstowi-Resume.pdf"
 export function resumeFilename(name: string): string {
   const base = name.trim().replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "");

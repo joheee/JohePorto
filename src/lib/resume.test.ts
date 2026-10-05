@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { job, profile, project, school } from "@/test/fixtures";
-import { buildResume, displayUrl, resumeFilename, resumeIssues, toBullets } from "./resume";
+import { buildResume, displayUrl, resumeFilename, toBullets } from "./resume";
 
 describe("toBullets", () => {
   it("makes every non-empty line a bullet, with or without a bullet character", () => {
@@ -55,34 +55,5 @@ describe("buildResume", () => {
 
   it("turns skill groups into the technical summary", () => {
     expect(data.skills[0]).toEqual({ name: "Languages", items: ["Go"] });
-  });
-});
-
-describe("resumeIssues", () => {
-  it("is empty for a complete resume", () => {
-    const full = buildResume(
-      profile({ socials: [{ label: "L", href: "https://linkedin.com/in/jo" }, { label: "G", href: "https://github.com/jo" }] }),
-      [project()],
-    );
-    expect(resumeIssues(full)).toEqual([]);
-  });
-
-  it("reports what is thin", () => {
-    const thin = buildResume(profile({ socials: [], experience: [job({ stack: [], location: "" })], education: [] }), [project({ description: "one line" })]);
-    const issues = resumeIssues(thin);
-    expect(issues).toEqual(
-      expect.arrayContaining([
-        expect.stringMatching(/LinkedIn and GitHub/),
-        expect.stringMatching(/1 job has no tech stack/),
-        expect.stringMatching(/1 job has no location/),
-        expect.stringMatching(/education/),
-        expect.stringMatching(/1 project has fewer than 2/),
-      ]),
-    );
-  });
-
-  it("asks for projects, experience and skills when they are missing", () => {
-    const empty = buildResume(profile({ experience: [], skillGroups: [], skills: [] }), []);
-    expect(resumeIssues(empty)).toEqual(expect.arrayContaining([expect.stringMatching(/work experience/), expect.stringMatching(/at least one project/), expect.stringMatching(/skill groups/)]));
   });
 });
