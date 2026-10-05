@@ -1,23 +1,24 @@
 # johePorto
 
-A personal portfolio site with a private admin. All public content (name, hero, bio, skills, experience, projects) is stored in Firestore and edited from `/admin`, so no code change is needed to update the site.
+A personal portfolio for a DevOps and cloud engineer, with a private admin. All public content lives in Firestore and is edited visually from `/admin/site`, so updating the site needs no code change.
 
-**Live:** https://johe.my.id
+**Live:** https://www.johe.my.id
 
 ## Features
 
-- **Public site:** hero, about, projects, experience timeline and a contact form, with dark and light themes, smooth scrolling and a mobile menu.
-- **Admin (`/admin`):** dashboard, site settings, projects, and an inbox for contact messages. Owner-only.
-- **SEO:** link-preview image, sitemap, robots.txt, structured data, custom 404.
-- **Resume:** an ATS-friendly PDF generated from your data at `/resume.pdf`, with a download button.
+- **Public site, styled as an infra console:** a hero terminal (typed role, pitch, `terraform plan` of your skills), career-uptime strip, skills as a CI pipeline, projects as files, experience as GitHub-style releases, reviews as PR approvals, and a contact form drawn as an API request builder.
+- **Themes:** ten VS Code-style colour themes (Aura Soft Dark by default, Dracula, Nord, Tokyo Night, Gruvbox Light and more), picked from the navbar.
+- **Admin (owner-only):**
+  - Dashboard with cache refresh, system status and resume check; site editor; message inbox.
+  - **Analytics:** cookie-free, first-party visit counts (sources, funnel, clicks, countries, tracked links).
+  - **Site speed:** a button that runs Google PageSpeed Insights on the live site and keeps the history.
+- **SEO and resume:** link previews, sitemap, structured data, and an ATS-friendly PDF at `/resume.pdf` built from your data.
+- **Security:** nonce-based CSP, security headers, 3-hour admin sessions.
 - **Planned:** blog.
 
 ## Tech stack
 
-- Next.js 16 (App Router), React 19, TypeScript
-- Tailwind CSS 4, Motion, Lenis
-- Firebase: Firestore (data) and Authentication (admin login)
-- Hosted on Vercel
+Next.js 16, React 19, TypeScript, Tailwind CSS 4, Motion, Firebase (Firestore and Auth), `@react-pdf/renderer`, Vitest. Hosted on Vercel.
 
 ## Getting started
 
@@ -35,33 +36,37 @@ npm run dev              # http://localhost:3000
 | `FIREBASE_SERVICE_ACCOUNT_KEY` | Service-account JSON on one line (server only) |
 | `ADMIN_UID` | Firebase Auth UID of the one allowed admin |
 | `NEXT_PUBLIC_SITE_URL` | Optional: your custom domain |
+| `PAGESPEED_API_KEY` | Free Google API key for the speed test (restrict to the PageSpeed Insights API only) |
+| `ANALYTICS_*` | Optional analytics settings |
 
-Then create your admin user in Firebase Authentication, put its UID in `ADMIN_UID` and in `firestore.rules`, and publish the rules in the console. Sign in at `/admin/login` and fill in your details under Settings.
+Create the admin user in Firebase Authentication, put its UID in `ADMIN_UID` and in `firestore.rules`, and publish the rules in the console. Sign in at `/admin/login` and fill in your details on `/admin/site`.
 
 ## Scripts
 
 | Command | Does |
 |---|---|
 | `npm run dev` | Development server |
-| `npm run build` | Production build |
+| `npm run build` | Production build (also type-checks tests) |
 | `npm start` | Serve the production build |
 | `npm run lint` | ESLint |
+| `npm test` | Vitest tests |
+
+Also run `npx tsc --noEmit` before pushing: Vercel type-checks test files, Vitest does not.
 
 ## Project structure
 
 ```
 src/
-  app/          pages, admin, API routes, SEO files (robots, sitemap, icons)
-  components/   admin forms, layout, motion helpers, page sections
-  lib/          Firestore access, auth, validation, formatting
-  types/        shared types
-firestore.rules security rules (publish in the Firebase console)
-session.md      detailed project notes and status
+  app/          pages, admin, API routes
+  components/   sections, admin, layout, motion
+  lib/          data access, auth, themes, analytics, pagespeed
+firestore.rules security rules (publish in the console)
+session.md      detailed notes and status
 ```
 
 ## Deploying
 
-Push to `main` and Vercel builds it. Add the same environment variables in Vercel, and redeploy after changing any `NEXT_PUBLIC_*` value.
+Push to `main` and Vercel builds it. Set the same environment variables in Vercel and redeploy after changing them.
 
 ## More
 
