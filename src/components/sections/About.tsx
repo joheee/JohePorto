@@ -1,66 +1,80 @@
+import { Fragment } from "react";
+import PingDot from "@/components/PingDot";
 import Reveal from "@/components/motion/Reveal";
 import { getProfile } from "@/lib/settings";
+import EditorWindow, { EditorLine } from "./EditorWindow";
 import Section from "./Section";
 import SkillsPipeline from "./SkillsPipeline";
 
-const tile =
-  "h-full rounded-2xl border border-border bg-card p-6 transition-colors hover:border-accent";
+const label = "mb-6 font-mono text-xs uppercase tracking-widest text-muted";
 
-const label = "mb-3 font-mono text-xs uppercase tracking-widest text-muted";
+// A key: value line like front matter. Mono, the key in the accent colour.
+function Fact({ name, children }: { name: string; children: React.ReactNode }) {
+  return (
+    <EditorLine>
+      <div className="flex gap-3 font-mono text-sm leading-7">
+        <span className="w-[9ch] shrink-0 text-accent">{name}:</span>
+        <span className="min-w-0 break-words">{children}</span>
+      </div>
+    </EditorLine>
+  );
+}
 
 export default async function About({ action }: { action?: React.ReactNode }) {
   const profile = await getProfile();
+  const hasFacts = !!(profile.location || profile.status || profile.focus);
 
   return (
     <Section id="about" number="01" title="About" actions={action}>
-      {/* Bento grid: bio on the left, location / status / now stacked on the right, skills as a full-width row below. On phones skills come right after the bio. Empty fields hide their tile. */}
-      <div className="grid gap-4 md:grid-cols-4">
-        {profile.bio.length > 0 && (
-          <Reveal delay={0} className="md:col-span-2 md:row-span-2">
-            <div className={`${tile} space-y-4 text-lg leading-8`}>
-              {profile.bio.map((p) => (
-                <p key={p}>{p}</p>
+      <div className="space-y-12">
+        {/* One window instead of a card each for the bio, location, status and now. */}
+        {(profile.bio.length > 0 || hasFacts) && (
+          <Reveal>
+            <EditorWindow filename="README.md">
+              <EditorLine>
+                <span className="font-mono text-sm leading-7">
+                  <span className="text-muted"># </span>
+                  <span className="font-medium">About me</span>
+                </span>
+              </EditorLine>
+              <EditorLine />
+              {profile.bio.map((p, i) => (
+                <Fragment key={p}>
+                  {i > 0 && <EditorLine />}
+                  <EditorLine>
+                    <p className="max-w-3xl text-[17px] leading-7">{p}</p>
+                  </EditorLine>
+                </Fragment>
               ))}
-            </div>
-          </Reveal>
-        )}
-
-        {profile.location && (
-          <Reveal delay={0.2} className="max-md:order-2">
-            <div className={tile}>
-              <h3 className={label}>Location</h3>
-              <p className="font-medium">{profile.location}</p>
-            </div>
-          </Reveal>
-        )}
-
-        {profile.status && (
-          <Reveal delay={0.3} className="max-md:order-2">
-            <div className={tile}>
-              <h3 className={label}>Status</h3>
-              <p className="flex items-center gap-2 font-medium">
-                <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-                {profile.status}
-              </p>
-            </div>
-          </Reveal>
-        )}
-
-        {profile.focus && (
-          <Reveal delay={0.4} className="max-md:order-2 md:col-span-2">
-            <div className={tile}>
-              <h3 className={label}>Now</h3>
-              <p className="text-muted">{profile.focus}</p>
-            </div>
+              {hasFacts && (
+                <>
+                  <EditorLine />
+                  <EditorLine>
+                    <span className="font-mono text-sm leading-7">
+                      <span className="text-muted">## </span>
+                      <span className="font-medium">At a glance</span>
+                    </span>
+                  </EditorLine>
+                  {profile.location && <Fact name="location">{profile.location}</Fact>}
+                  {profile.status && (
+                    <Fact name="status">
+                      <span className="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                        <PingDot />
+                        {profile.status}
+                      </span>
+                    </Fact>
+                  )}
+                  {profile.focus && <Fact name="now">{profile.focus}</Fact>}
+                </>
+              )}
+            </EditorWindow>
           </Reveal>
         )}
 
         {profile.skillGroups.length > 0 && (
-          <Reveal delay={0.1} className="max-md:order-1 md:col-span-4">
-            <div className={tile}>
-              <h3 className={label}>Skills</h3>
-              <SkillsPipeline groups={profile.skillGroups} />
-            </div>
+          <Reveal delay={0.1}>
+            <h3 className={label}>Skills</h3>
+            <SkillsPipeline groups={profile.skillGroups} />
           </Reveal>
         )}
       </div>

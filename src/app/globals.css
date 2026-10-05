@@ -264,6 +264,32 @@ summary:focus-visible {
   }
 }
 
+/* The About "editor window" (see EditorWindow.tsx): each .ed-line is a numbered row. The number is drawn
+   by a CSS counter; the "/ ''" alternative text keeps screen readers from reading the numbers out. */
+.editor {
+  counter-reset: line;
+}
+
+.ed-line {
+  counter-increment: line;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  column-gap: 0.75rem;
+  min-height: 1.75rem;
+}
+
+.ed-line::before {
+  content: counter(line);
+  content: counter(line) / "";
+  text-align: right;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  line-height: 1.75rem;
+  color: var(--muted);
+  opacity: 0.7;
+  user-select: none;
+}
+
 /* Dialogs fade and rise in. The animation runs on the dialog itself, not on content inside its
    scroll area: a transformed child extends the scrollable area and flashes a scrollbar mid-animation. */
 dialog[open] {
