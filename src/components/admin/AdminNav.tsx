@@ -6,13 +6,11 @@ import Icon, { type IconName } from "./Icons";
 
 const items: { href: string; label: string; icon: IconName }[] = [
   { href: "/admin", label: "Dashboard", icon: "home" },
-  { href: "/admin/settings", label: "Settings", icon: "settings" },
-  { href: "/admin/projects", label: "Projects", icon: "folder" },
+  { href: "/admin/site", label: "Site", icon: "layout" },
   { href: "/admin/messages", label: "Messages", icon: "mail" },
 ];
 
-// The Dashboard tab is only active on /admin itself; the others stay active on their sub-pages
-// (e.g. Projects on /admin/projects/new and on a project's edit page).
+// The Dashboard tab is only active on /admin itself; the others stay active on their sub-pages.
 function isActive(pathname: string, href: string) {
   return href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`);
 }

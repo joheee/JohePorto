@@ -18,6 +18,12 @@ const paths = {
       <path d="M14 3v5h5M9 13h6M9 17h6" />
     </>
   ),
+  layout: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18M9 21V9" />
+    </>
+  ),
   home: <path d="M3 11.5 12 4l9 7.5M5 10v10h5v-6h4v6h5V10" />,
   close: <path d="M6 6l12 12M18 6L6 18" />,
   lock: (

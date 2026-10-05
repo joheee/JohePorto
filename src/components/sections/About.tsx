@@ -1,3 +1,4 @@
+import { EditButton } from "@/components/admin/SiteEditor";
 import Reveal from "@/components/motion/Reveal";
 import { getProfile } from "@/lib/settings";
 import Section from "./Section";
@@ -7,11 +8,11 @@ const tile =
 
 const label = "mb-3 font-mono text-xs uppercase tracking-widest text-muted";
 
-export default async function About() {
+export default async function About({ admin = false }: { admin?: boolean }) {
   const profile = await getProfile();
 
   return (
-    <Section id="about" number="01" title="About">
+    <Section id="about" number="01" title="About" actions={admin && <EditButton section="about" />}>
       {/* Bento grid: bio on the left, location / status / now stacked on the right, skills as a full-width row below. On phones skills come right after the bio. Empty fields hide their tile. */}
       <div className="grid gap-4 md:grid-cols-4">
         {profile.bio.length > 0 && (

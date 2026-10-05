@@ -58,14 +58,17 @@ export default function FormCard({
   icon,
   title,
   description,
+  hidden = false,
   children,
 }: {
   id: string;
   icon: CardIcon;
   title: string;
   description: string;
+  hidden?: boolean; // renders nothing (a form that edits only some sections)
   children: React.ReactNode;
 }) {
+  if (hidden) return null;
   return (
     <section id={id} className="scroll-mt-24 rounded-2xl border border-border bg-card/60 p-6 sm:p-8">
       <header className="mb-6 flex items-start gap-4">

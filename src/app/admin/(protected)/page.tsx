@@ -72,11 +72,11 @@ export default async function AdminDashboard() {
 
   // Setup checklist, derived from what is actually saved.
   const checklist: { done: boolean; label: string; hint: string; href: string }[] = [
-    { done: !!profile.pitch && profile.bio.length > 0, label: "Write your pitch and bio", hint: "The first thing visitors read.", href: "/admin/settings#hero" },
-    { done: profile.skills.length > 0, label: "Add your skills", hint: "Grouped on your site and resume.", href: "/admin/settings#skills" },
-    { done: profile.socials.length > 0, label: "Add your social links", hint: "GitHub, LinkedIn and so on.", href: "/admin/settings#contact" },
-    { done: profile.experience.length > 0, label: "Add your work experience", hint: "Appears as the timeline.", href: "/admin/settings#experience" },
-    { done: projects.length > 0, label: "Add your first project", hint: "The Projects section is empty until you do.", href: "/admin/projects/new" },
+    { done: !!profile.pitch && profile.bio.length > 0, label: "Write your pitch and bio", hint: "The first thing visitors read.", href: "/admin/site#hero" },
+    { done: profile.skills.length > 0, label: "Add your skills", hint: "Grouped on your site and resume.", href: "/admin/site#about" },
+    { done: profile.socials.length > 0, label: "Add your social links", hint: "GitHub, LinkedIn and so on.", href: "/admin/site#contact" },
+    { done: profile.experience.length > 0, label: "Add your work experience", hint: "Appears as the timeline.", href: "/admin/site#experience" },
+    { done: projects.length > 0, label: "Add your first project", hint: "The Projects section is empty until you do.", href: "/admin/site#projects" },
   ];
   const doneCount = checklist.filter((c) => c.done).length;
   const percent = Math.round((doneCount / checklist.length) * 100);
@@ -93,10 +93,10 @@ export default async function AdminDashboard() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/admin/settings" className={ghostButtonClass}>
-            <Icon name="settings" /> Edit settings
+          <Link href="/admin/site" className={ghostButtonClass}>
+            <Icon name="layout" /> Edit site
           </Link>
-          <Link href="/admin/projects/new" className={buttonClass}>
+          <Link href="/admin/site#projects" className={buttonClass}>
             <Icon name="plus" /> New project
           </Link>
           <a href="/" target="_blank" rel="noopener noreferrer" className={ghostButtonClass}>
@@ -115,14 +115,14 @@ export default async function AdminDashboard() {
           highlight={unread > 0}
         />
         <StatCard
-          href="/admin/projects"
+          href="/admin/site#projects"
           icon="folder"
           label="Projects"
           value={String(projects.length)}
           note={projects.length === 0 ? "Add your first one" : "Shown on your site"}
         />
         <StatCard
-          href="/admin/settings#experience"
+          href="/admin/site#experience"
           icon="briefcase"
           label="Experience"
           value={String(profile.experience.length)}

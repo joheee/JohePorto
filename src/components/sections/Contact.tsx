@@ -1,3 +1,4 @@
+import { EditButton } from "@/components/admin/SiteEditor";
 import CopyEmail from "@/components/CopyEmail";
 import PingDot from "@/components/PingDot";
 import { getProfile } from "@/lib/settings";
@@ -6,11 +7,11 @@ import Section from "./Section";
 
 const label = "mb-2 font-mono text-xs uppercase tracking-widest text-muted";
 
-export default async function Contact() {
+export default async function Contact({ admin = false }: { admin?: boolean }) {
   const profile = await getProfile();
 
   return (
-    <Section id="contact" number="04" title="Contact">
+    <Section id="contact" number="04" title="Contact" actions={admin && <EditButton section="contact" />}>
       <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
         <div className="space-y-8">
           <p className="text-lg leading-8 text-muted">
@@ -58,7 +59,8 @@ export default async function Contact() {
           )}
         </div>
 
-        <ContactForm />
+        {/* On /admin/site the form is only for show: it would send a real message. */}
+        {admin ? <div inert className="opacity-70"><ContactForm /></div> : <ContactForm />}
       </div>
     </Section>
   );

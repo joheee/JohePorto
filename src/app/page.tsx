@@ -1,9 +1,4 @@
-import CursorGlow from "@/components/motion/CursorGlow";
-import About from "@/components/sections/About";
-import Contact from "@/components/sections/Contact";
-import Experience from "@/components/sections/Experience";
-import Hero from "@/components/sections/Hero";
-import Projects from "@/components/sections/Projects";
+import HomeSections from "@/components/sections/HomeSections";
 import { getProjects } from "@/lib/projects";
 import { getProfile } from "@/lib/settings";
 import { siteUrl } from "@/lib/site";
@@ -36,13 +31,7 @@ export default async function Home() {
     <>
       {/* "<" is escaped so profile text can never close the script tag (see the Next.js JSON-LD guide). */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <CursorGlow />
-      <Hero />
-      <About />
-      <Projects projects={projects} />
-      <Experience />
-      {/* Latest posts section is added once the blog exists. */}
-      <Contact />
+      <HomeSections projects={projects} />
     </>
   );
 }

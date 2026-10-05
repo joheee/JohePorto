@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { saveProfile } from "@/app/admin/(protected)/actions";
+import { saveProfile, saveProfileSection } from "@/app/admin/(protected)/actions";
 import { formatPeriod } from "@/lib/format";
 import { buildSkillIndex, findUnassigned, findVariants, skillKey, suggestSkills, type SkillUsage } from "@/lib/skills";
 import type { Profile, Skill, SocialLink } from "@/types/content";
@@ -61,7 +61,19 @@ type Form = {
   education: EduRow[];
 };
 
-const SECTIONS: { id: string; label: string; icon: CardIcon }[] = [
+// The cards of this form. A scoped form (`cards`) shows only some of them and saves only their fields.
+export type CardId = "hero" | "about" | "skills" | "contact" | "experience" | "education";
+
+const CARD_FIELDS: Record<CardId, string[]> = {
+  hero: ["name", "roles", "pitch"],
+  about: ["bio", "location", "status", "focus"],
+  skills: ["skillGroups"],
+  contact: ["email", "socials"],
+  experience: ["experience"],
+  education: ["education"],
+};
+
+const SECTIONS: { id: CardId; label: string; icon: CardIcon }[] = [
   { id: "hero", label: "Hero", icon: "hero" },
   { id: "about", label: "About", icon: "about" },
   { id: "skills", label: "Skills", icon: "skills" },
@@ -167,6 +179,14 @@ function toPayload(f: Form) {
   };
 }
 
+// The payload of the whole form, or only of the cards a scoped form shows.
+function scopedPayload(f: Form, cards?: CardId[]): Record<string, unknown> {
+  const all: Record<string, unknown> = toPayload(f);
+  if (!cards) return all;
+  const keep = new Set(cards.flatMap((c) => CARD_FIELDS[c]));
+  return Object.fromEntries(Object.entries(all).filter(([k]) => keep.has(k)));
+}
+
 // Role and company are single-line values that wrap instead of scrolling sideways. They use an
 // auto-height textarea, so Enter must not add a line break and pasted line breaks become spaces.
 const flatten = (v: string) => v.replace(/\s*[\r\n]+\s*/g, " ");
@@ -198,8 +218,30 @@ const CLOSE = "M6 6l12 12M18 6L6 18";
 
 // ---------- the form ----------
 
-export default function SettingsForm({ initial, projectStacks }: { initial: Profile; projectStacks: SkillUsage[] }) {
-  const [form, setForm] = useState<Form>(() => toForm(initial));
+export default function SettingsForm({
+  initial,
+  projectStacks,
+  cards,
+  focusUid,
+  onSaved,
+  onCancel,
+  onDirtyChange,
+}: {
+  initial: Profile;
+  projectStacks: SkillUsage[];
+  cards?: CardId[]; // only these cards are shown and saved (the site editor); omitted: the whole settings page
+  focusUid?: string; // an experience or education entry to start expanded ("e0", "d1")
+  onSaved?: () => void;
+  onCancel?: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
+}) {
+  const show = (id: CardId) => !cards || cards.includes(id);
+  const [form, setForm] = useState<Form>(() => {
+    const f = toForm(initial);
+    if (!focusUid) return f;
+    const open = <T extends { uid: string; open: boolean }>(rows: T[]) => rows.map((r) => ({ ...r, open: r.uid === focusUid }));
+    return { ...f, experience: open(f.experience), education: open(f.education) };
+  });
   const [saved, setSaved] = useState<Form>(form); // last saved state: what "Discard" returns to
   const [toRemove, setToRemove] = useState<string | null>(null); // uid of the experience or education entry being removed
   const [pending, startTransition] = useTransition();
@@ -244,7 +286,11 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
   const unassigned = useMemo(() => findUnassigned(usage, skillIndex), [usage, skillIndex]);
   const variants = useMemo(() => findVariants(usage, skillIndex), [usage, skillIndex]);
 
-  const dirty = JSON.stringify(toPayload(form)) !== JSON.stringify(toPayload(saved));
+  const dirty = JSON.stringify(scopedPayload(form, cards)) !== JSON.stringify(scopedPayload(saved, cards));
+
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
 
   // Warn before leaving the page with unsaved changes.
   useEffect(() => {
@@ -259,8 +305,11 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
     setResult(null);
     const snapshot = form;
     startTransition(async () => {
-      const res = await saveProfile(toPayload(snapshot));
-      if (res.ok) setSaved(snapshot);
+      const res = cards ? await saveProfileSection(scopedPayload(snapshot, cards)) : await saveProfile(toPayload(snapshot));
+      if (res.ok) {
+        setSaved(snapshot);
+        onSaved?.();
+      }
       setResult(res.ok ? { ok: true, message: "Saved. The site is updating." } : { ok: false, message: res.error });
     });
   }
@@ -298,10 +347,10 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
           setEdu(uid, { open: true });
         }
       }}
-      className="lg:grid lg:grid-cols-[11rem_minmax(0,1fr)] lg:gap-10"
+      className={cards ? "" : "lg:grid lg:grid-cols-[11rem_minmax(0,1fr)] lg:gap-10"}
     >
       {/* Section navigation (desktop) */}
-      <nav aria-label="Sections" className="hidden lg:block">
+      <nav aria-label="Sections" className="hidden lg:block" hidden={!!cards}>
         <ul className="sticky top-8 space-y-1">
           {SECTIONS.map((s) => (
             <li key={s.id}>
@@ -318,7 +367,7 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
       </nav>
 
       <div className="min-w-0 space-y-6">
-        <FormCard id="hero" icon="hero" title="Hero" description="The first thing visitors see.">
+        <FormCard id="hero" hidden={!show("hero")} icon="hero" title="Hero" description="The first thing visitors see.">
           <Field label="Name">
             <input className={inputClass} value={form.name} onChange={(e) => set("name", e.target.value)} required placeholder="Your name" />
           </Field>
@@ -330,7 +379,7 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
           </Field>
         </FormCard>
 
-        <FormCard id="about" icon="about" title="About" description="Your story and what you're up to.">
+        <FormCard id="about" hidden={!show("about")} icon="about" title="About" description="Your story and what you're up to.">
           <Field label="Bio" hint="Separate paragraphs with a blank line.">
             <AutoTextarea className={inputClass} rows={6} value={form.bio} onChange={(e) => set("bio", e.target.value)} />
           </Field>
@@ -347,7 +396,7 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
           </Field>
         </FormCard>
 
-        <FormCard id="skills" icon="skills" title="Skills" description="Grouped like on your resume, in the order shown here. Jobs and projects pick from these, so spellings stay consistent.">
+        <FormCard id="skills" hidden={!show("skills")} icon="skills" title="Skills" description="Grouped like on your resume, in the order shown here. Jobs and projects pick from these, so spellings stay consistent.">
           {form.skillGroups.length === 0 && <p className="text-sm text-muted">No groups yet. Add one, for example &quot;DevOps Tools&quot;.</p>}
 
           <div className="space-y-3">
@@ -500,7 +549,7 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
           </div>
         </FormCard>
 
-        <FormCard id="contact" icon="contact" title="Contact & links" description="How people reach you.">
+        <FormCard id="contact" hidden={!show("contact")} icon="contact" title="Contact & links" description="How people reach you.">
           <Field label="Email">
             <input className={inputClass} type="email" value={form.email} onChange={(e) => set("email", e.target.value)} required placeholder="you@example.com" />
           </Field>
@@ -539,7 +588,7 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
           </div>
         </FormCard>
 
-        <FormCard id="experience" icon="experience" title="Experience" description="Shown on the site newest first, whatever the order here.">
+        <FormCard id="experience" hidden={!show("experience")} icon="experience" title="Experience" description="Shown on the site newest first, whatever the order here.">
           {form.experience.length === 0 && <p className="text-sm text-muted">No entries yet.</p>}
 
           <ul className="space-y-3">
@@ -648,7 +697,7 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
           </button>
         </FormCard>
 
-        <FormCard id="education" icon="education" title="Education" description="Shown under Experience, newest first, whatever the order here.">
+        <FormCard id="education" hidden={!show("education")} icon="education" title="Education" description="Shown under Experience, newest first, whatever the order here.">
           {form.education.length === 0 && <p className="text-sm text-muted">No entries yet.</p>}
 
           <ul className="space-y-3">
@@ -750,6 +799,11 @@ export default function SettingsForm({ initial, projectStacks }: { initial: Prof
             <SaveStatus status={result} />
           </div>
           <div className="flex items-center gap-2">
+            {onCancel && (
+              <button type="button" disabled={pending} className={ghostButtonClass} onClick={onCancel}>
+                Cancel
+              </button>
+            )}
             <button
               type="button"
               disabled={!dirty || pending}

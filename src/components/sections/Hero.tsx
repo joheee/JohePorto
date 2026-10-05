@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PingDot from "@/components/PingDot";
+import { EditButton } from "@/components/admin/SiteEditor";
 import RotatingText from "@/components/motion/RotatingText";
 import { experienceStats, sortExperienceNewestFirst } from "@/lib/format";
 import { getProfile } from "@/lib/settings";
@@ -24,17 +25,20 @@ function StatValue({ value }: { value: string }) {
   );
 }
 
-export default async function Hero() {
+// `admin`: the copy on /admin/site, with an Edit button and in-page links.
+export default async function Hero({ admin = false }: { admin?: boolean }) {
   const profile = await getProfile();
   const stats = experienceStats(profile.experience, profile.skills.length);
   // The newest role you are still in (nothing to maintain: it follows Settings > Experience).
   const current = sortExperienceNewestFirst(profile.experience).find((e) => e.current);
+  const home = admin ? "" : "/"; // on /admin/site the in-page links must stay on that page
 
   return (
     <section
       id="hero"
       className="relative mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-5xl flex-col justify-center px-6 py-20"
     >
+      {admin && <EditButton section="hero" className="absolute right-6 top-4 z-10" />}
       <div className="grid items-end gap-12 lg:grid-cols-[minmax(0,1fr)_14rem]">
         <div>
           {profile.status && (
@@ -73,7 +77,7 @@ export default async function Hero() {
           <div className="rise mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center" style={rise(5)}>
             <div className="grid grid-cols-2 gap-3 sm:contents">
               <Link
-                href="/#contact"
+                href={`${home}#contact`}
                 className="group inline-flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-3 text-sm font-medium text-accent-foreground transition hover:opacity-90 sm:px-6"
               >
                 Get in touch
@@ -126,7 +130,7 @@ export default async function Hero() {
 
       {/* Scroll cue */}
       <Link
-        href="/#about"
+        href={`${home}#about`}
         aria-label="Scroll to the About section"
         className="absolute bottom-6 left-6 hidden items-center gap-3 text-xs uppercase tracking-widest text-muted transition-colors hover:text-foreground sm:flex"
       >

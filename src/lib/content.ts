@@ -1,6 +1,6 @@
 import type { Profile } from "@/types/content";
 
-// Shown until you save your profile in /admin/settings (then Firestore takes over).
+// Shown until you save your profile in /admin/site (then Firestore takes over).
 export const defaultProfile: Profile = {
   name: "Your Name",
   roles: ["Software Engineer", "Web Developer", "Problem Solver"],

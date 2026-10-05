@@ -5,7 +5,7 @@ import { revalidatePath, updateTag } from "next/cache";
 import { getAdmin } from "@/lib/auth";
 import { withCreatedAt } from "@/lib/format";
 import { buildSkillIndex, canonicalizeStack } from "@/lib/skills";
-import { getProfile } from "@/lib/settings";
+import { getProfile, loadProfile } from "@/lib/settings";
 import { adminDb } from "@/lib/firebase-admin";
 import { SLUG_RE, ValidationError, assertHasLink, parseProfile, parseProject } from "@/lib/validation";
 
@@ -32,36 +32,65 @@ async function guard(fn: () => Promise<void>, { paths }: { paths?: string[] } = 
 }
 
 export async function saveProfile(input: unknown): Promise<ActionResult> {
+  return guard(() => writeProfile(parseProfile(input)));
+}
+
+// The profile fields an editor can send on their own (see SettingsForm `cards`).
+const PROFILE_FIELDS = ["name", "roles", "pitch", "bio", "location", "status", "focus", "skillGroups", "email", "socials", "experience", "education"];
+
+// Saves some sections only: the fields sent replace the stored ones, everything else is kept as it is now.
+// The merged profile goes through the same validation and stack rewrite as a full save.
+export async function saveProfileSection(input: unknown): Promise<ActionResult> {
   return guard(async () => {
-    const parsed = parseProfile(input);
-    // Rewrite every technology to its spelling in the skill groups (ReactJS -> React JS, Golang -> Go).
-    const index = buildSkillIndex(parsed.skillGroups);
-    const profile = { ...parsed, experience: parsed.experience.map((e) => ({ ...e, stack: canonicalizeStack(e.stack, index) })) };
-    const db = adminDb();
-
-    // Same for the projects. updatedAt is left alone: older projects borrow it as their date.
-    const projects = await db.collection("projects").get();
-    const batch = db.batch();
-    for (const doc of projects.docs) {
-      const stack: unknown = doc.data().stack;
-      if (!Array.isArray(stack)) continue;
-      const fixed = canonicalizeStack(stack.filter((s): s is string => typeof s === "string"), index);
-      if (JSON.stringify(fixed) !== JSON.stringify(stack)) batch.update(doc.ref, { stack: fixed });
-    }
-
-    await db
-      .doc("settings/profile")
-      .set({
-        ...profile,
-        // createdAt is a real Firestore Timestamp: kept for existing entries, set now for new ones.
-        experience: withCreatedAt(profile.experience).map((e) => ({
-          ...e,
-          createdAt: Timestamp.fromDate(new Date(e.createdAt)),
-        })),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
-    await batch.commit();
+    const o = (input ?? {}) as Record<string, unknown>;
+    const patch = Object.fromEntries(PROFILE_FIELDS.filter((k) => k in o).map((k) => [k, o[k]]));
+    if (Object.keys(patch).length === 0) throw new ValidationError("Nothing to save");
+    await writeProfile(parseProfile({ ...(await loadProfile()), ...patch }));
   });
+}
+
+// Removes one experience or education entry. `label` must match the stored entry, so a stale page can't
+// delete the wrong one after the list changed.
+export async function deleteProfileItem(kind: string, index: number, label: string): Promise<ActionResult> {
+  return guard(async () => {
+    if ((kind !== "experience" && kind !== "education") || !Number.isInteger(index) || index < 0) throw new ValidationError("Invalid entry");
+    const current = await loadProfile();
+    const list = current[kind] as unknown as Record<string, string>[];
+    const item = list[index];
+    const stored = item ? (kind === "experience" ? `${item.role}|${item.company}` : `${item.degree}|${item.school}`) : "";
+    if (!item || stored !== label) throw new ValidationError("This entry changed. Refresh the page and try again.");
+    await writeProfile(parseProfile({ ...current, [kind]: list.filter((_, i) => i !== index) }));
+  });
+}
+
+async function writeProfile(parsed: ReturnType<typeof parseProfile>) {
+  // Rewrite every technology to its spelling in the skill groups (ReactJS -> React JS, Golang -> Go).
+  const index = buildSkillIndex(parsed.skillGroups);
+  const profile = { ...parsed, experience: parsed.experience.map((e) => ({ ...e, stack: canonicalizeStack(e.stack, index) })) };
+  const db = adminDb();
+
+  // Same for the projects. updatedAt is left alone: older projects borrow it as their date.
+  const projects = await db.collection("projects").get();
+  const batch = db.batch();
+  for (const doc of projects.docs) {
+    const stack: unknown = doc.data().stack;
+    if (!Array.isArray(stack)) continue;
+    const fixed = canonicalizeStack(stack.filter((s): s is string => typeof s === "string"), index);
+    if (JSON.stringify(fixed) !== JSON.stringify(stack)) batch.update(doc.ref, { stack: fixed });
+  }
+
+  await db
+    .doc("settings/profile")
+    .set({
+      ...profile,
+      // createdAt is a real Firestore Timestamp: kept for existing entries, set now for new ones.
+      experience: withCreatedAt(profile.experience).map((e) => ({
+        ...e,
+        createdAt: Timestamp.fromDate(new Date(e.createdAt)),
+      })),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+  await batch.commit();
 }
 
 export async function saveProject(input: unknown, isNew: boolean): Promise<ActionResult> {

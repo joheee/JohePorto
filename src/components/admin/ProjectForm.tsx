@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { saveProject } from "@/app/admin/(protected)/actions";
@@ -57,7 +56,19 @@ const toPayload = (f: Form) => ({
   year: f.year === "" ? null : Number(f.year),
 });
 
-export default function ProjectForm({ initial, skillGroups }: { initial?: Project; skillGroups: SkillGroup[] }) {
+export default function ProjectForm({
+  initial,
+  skillGroups,
+  onSaved,
+  onCancel,
+  onDirtyChange,
+}: {
+  initial?: Project;
+  skillGroups: SkillGroup[];
+  onSaved?: () => void;
+  onCancel: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
+}) {
   const router = useRouter();
   const isNew = !initial;
 
@@ -75,6 +86,10 @@ export default function ProjectForm({ initial, skillGroups }: { initial?: Projec
 
   const dirty = JSON.stringify(toPayload(form)) !== JSON.stringify(toPayload(saved));
 
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
+
   // Warn before leaving the page with unsaved changes.
   useEffect(() => {
     if (!dirty) return;
@@ -91,7 +106,7 @@ export default function ProjectForm({ initial, skillGroups }: { initial?: Projec
       const res = await saveProject(toPayload(snapshot), isNew);
       if (res.ok) {
         setSaved(snapshot); // nothing is "unsaved" any more, so leaving doesn't warn
-        router.push("/admin/projects");
+        onSaved?.();
         router.refresh();
       } else {
         setResult({ ok: false, message: res.error });
@@ -215,10 +230,9 @@ export default function ProjectForm({ initial, skillGroups }: { initial?: Projec
           <SaveStatus status={result} />
         </div>
         <div className="flex items-center gap-2">
-          {/* On phones the "← Projects" link at the top does this job, so the bar stays on one row. */}
-          <Link href="/admin/projects" className={`${ghostButtonClass} max-sm:hidden`}>
+          <button type="button" disabled={pending} className={ghostButtonClass} onClick={onCancel}>
             Cancel
-          </Link>
+          </button>
           <button
             type="button"
             disabled={!dirty || pending}
