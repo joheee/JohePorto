@@ -11,11 +11,13 @@ export default function RotatingText({
   words: string[];
   className?: string;
 }) {
-  const [i, setI] = useState(0);
+  const [n, setN] = useState(0);
+  // The list can shrink while `n` points past its end (a role was deleted): wrap instead of showing nothing.
+  const word = words.length > 0 ? words[n % words.length] : "";
 
   useEffect(() => {
     if (words.length < 2) return;
-    const id = setInterval(() => setI((n) => (n + 1) % words.length), 2600);
+    const id = setInterval(() => setN((c) => c + 1), 2600);
     return () => clearInterval(id);
   }, [words.length]);
 
@@ -23,13 +25,13 @@ export default function RotatingText({
     <span className={`relative inline-flex h-[1.8em] items-center overflow-hidden align-bottom leading-[1.8] ${className ?? ""}`}>
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
-          key={words[i]}
+          key={word}
           initial={{ y: "100%", opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "-100%", opacity: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
         >
-          {words[i]}
+          {word}
         </motion.span>
       </AnimatePresence>
     </span>
