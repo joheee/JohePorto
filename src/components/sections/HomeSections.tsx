@@ -47,7 +47,7 @@ export default async function HomeSections({ projects, preview = false, slots = 
       <Projects projects={projects} action={slots.projects} cardFooter={slots.projectCard} />
       <Experience action={slots.experience} entryActions={slots.experienceEntry} educationAction={slots.education} educationActions={slots.educationEntry} />
       {showReviews && <Reviews number={pad(reviewsNumber)} action={slots.reviews} entryActions={slots.reviewEntry} />}
-      {showPosts && <LatestPosts number={pad(postsNumber)} posts={posts} />}
+      {showPosts && <LatestPosts number={pad(postsNumber)} posts={posts} allHref={preview ? "/admin/blogs" : "/blog"} />}
       <Contact number={pad(contactNumber)} action={slots.contact} inertForm={preview} />
     </>
   );

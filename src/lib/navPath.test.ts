@@ -53,6 +53,6 @@ describe("blogPath", () => {
   it("is null elsewhere", () => {
     expect(blogPath("/")).toBeNull();
     expect(blogPath("/blogger")).toBeNull();
-    expect(blogPath("/admin/posts")).toBeNull();
+    expect(blogPath("/admin/blogs")).toBeNull();
   });
 });

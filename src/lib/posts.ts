@@ -64,18 +64,10 @@ export const getPost = cache(async (slug: string): Promise<Post | null> => {
   }
 });
 
-// Admin only (never cached): every post including drafts, most recently saved first.
-export async function getAllPosts(): Promise<PostSummary[]> {
+// Admin only (never cached): every post with its text, drafts included. Newest first by publish date; a draft
+// has none yet, so it goes by its last save (a draft you are working on is at the top).
+export async function getAllPosts(): Promise<Post[]> {
   const snap = await adminDb().collection("posts").get();
-  return snap.docs
-    .map((d) => toPost(d.id, d.data()))
-    .filter((p): p is Post => p !== null)
-    .map(summarize)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-}
-
-// Admin only: one post, draft or published, for the editor.
-export async function getPostForAdmin(slug: string): Promise<Post | null> {
-  const snap = await adminDb().collection("posts").doc(slug).get();
-  return snap.exists ? toPost(snap.id, snap.data()!) : null;
+  const posts = snap.docs.map((d) => toPost(d.id, d.data())).filter((p): p is Post => p !== null);
+  return posts.sort((a, b) => (b.publishedAt || b.updatedAt).localeCompare(a.publishedAt || a.updatedAt));
 }

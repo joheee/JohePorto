@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { ghostButtonClass } from "./fields";
 
 // A styled confirmation modal (native <dialog>: focus trap, Escape, backdrop) instead of confirm().
@@ -22,6 +22,7 @@ export default function ConfirmDialog({
   onCancel: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId(); // one per dialog: a page can hold many (one per post, per entry)
 
   useEffect(() => {
     const dialog = ref.current;
@@ -33,7 +34,7 @@ export default function ConfirmDialog({
   return (
     <dialog
       ref={ref}
-      aria-labelledby="confirm-title"
+      aria-labelledby={titleId}
       onCancel={(e) => {
         // Escape: let React state decide, so the dialog and `open` never disagree.
         e.preventDefault();
@@ -46,7 +47,7 @@ export default function ConfirmDialog({
       className="m-auto w-[min(90vw,26rem)] rounded-2xl border border-border bg-background p-0 text-foreground backdrop:bg-black/50"
     >
       <div className="p-6">
-        <h2 id="confirm-title" className="text-lg font-semibold">
+        <h2 id={titleId} className="text-lg font-semibold">
           {title}
         </h2>
         {description && <p className="mt-2 break-words text-sm leading-6 text-muted">{description}</p>}

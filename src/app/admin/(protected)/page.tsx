@@ -122,9 +122,9 @@ export default async function AdminDashboard() {
           note={profile.experience.length === 0 ? "Nothing added yet" : `${profile.experience.length === 1 ? "role" : "roles"} at ${companies} ${companies === 1 ? "company" : "companies"}`}
         />
         <StatCard
-          href="/admin/posts"
+          href="/admin/blogs"
           icon="post"
-          label="Posts"
+          label="Blogs"
           value={String(posts.length)}
           note={posts.length === 0 ? "Write your first one" : `${published} published${drafts > 0 ? `, ${drafts} ${drafts === 1 ? "draft" : "drafts"}` : ""}`}
         />

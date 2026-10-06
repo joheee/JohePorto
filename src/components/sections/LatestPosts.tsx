@@ -7,8 +7,9 @@ import Section from "./Section";
 const SHOWN = 3;
 
 // The newest posts as a `git log --oneline`: a short hash, the title and the date. The section only exists when
-// there is a published post (the caller decides), like Reviews.
-export default function LatestPosts({ number, posts }: { number: string; posts: PostSummary[] }) {
+// there is a published post (the caller decides), like Reviews. `allHref`: where "View all" goes: /blog, or
+// /admin/blogs inside the editor (/admin/site), so the owner lands on the page where posts are managed.
+export default function LatestPosts({ number, posts, allHref = "/blog" }: { number: string; posts: PostSummary[]; allHref?: string }) {
   if (posts.length === 0) return null;
   const latest = posts.slice(0, SHOWN);
 
@@ -36,7 +37,7 @@ export default function LatestPosts({ number, posts }: { number: string; posts: 
             </li>
           ))}
         </ul>
-        <Link href="/blog" className="mt-6 inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 font-mono text-sm transition-colors hover:border-accent hover:text-accent">
+        <Link href={allHref} className="mt-6 inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 font-mono text-sm transition-colors hover:border-accent hover:text-accent">
           {posts.length > latest.length ? `View all ${posts.length} posts` : "View all posts"}
           <span aria-hidden>→</span>
         </Link>

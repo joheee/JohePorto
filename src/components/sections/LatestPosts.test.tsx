@@ -30,4 +30,9 @@ describe("LatestPosts", () => {
     render(<LatestPosts number="05" posts={many(2)} />);
     expect(screen.getByRole("link", { name: /View all posts/ })).toBeInTheDocument();
   });
+
+  it("sends 'View all' to the given address (the admin blog page inside the editor)", () => {
+    render(<LatestPosts number="05" posts={many(5)} allHref="/admin/blogs" />);
+    expect(screen.getByRole("link", { name: /View all 5 posts/ })).toHaveAttribute("href", "/admin/blogs");
+  });
 });

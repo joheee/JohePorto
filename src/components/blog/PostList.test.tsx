@@ -55,4 +55,32 @@ describe("PostList", () => {
     render(<PostList posts={[]} />);
     expect(screen.getByText("No posts yet")).toBeInTheDocument();
   });
+
+  describe("in the admin (with actions)", () => {
+    const actions = { tf: <button>Edit tf</button>, pg: <button>Edit pg</button> };
+
+    it("looks the same but the rows are not links, and each has its buttons", () => {
+      render(<PostList posts={posts} actions={actions} />);
+      expect(titles()).toEqual(["Terraform base", "pgBackRest backups"]);
+      expect(screen.queryAllByRole("link")).toHaveLength(0);
+      expect(screen.getByRole("button", { name: "Edit tf" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Edit pg" })).toBeInTheDocument();
+    });
+
+    it("marks a draft, which has no date", () => {
+      const draft = postSummary({ slug: "wip", title: "Work in progress", status: "draft", publishedAt: "" });
+      render(<PostList posts={[draft]} actions={{ wip: <button>Edit wip</button> }} />);
+      expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(/Work in progress.*Draft/);
+      expect(document.querySelector("time")).toBeNull();
+    });
+
+    it("still searches and filters, and tells you how to write the first post", async () => {
+      const { unmount } = render(<PostList posts={posts} actions={actions} />);
+      await userEvent.click(screen.getByRole("button", { name: /^postgres/ }));
+      expect(titles()).toEqual(["pgBackRest backups"]);
+      unmount();
+      render(<PostList posts={[]} actions={{}} />);
+      expect(screen.getByText(/New post button/)).toBeInTheDocument();
+    });
+  });
 });

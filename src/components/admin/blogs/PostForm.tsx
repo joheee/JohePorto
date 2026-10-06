@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { savePost } from "@/app/admin/(protected)/actions";
@@ -36,7 +35,17 @@ const STATUSES: { value: PostStatus; label: string; hint: string }[] = [
   { value: "published", label: "Published", hint: "Visible on your site" },
 ];
 
-export default function PostForm({ initial }: { initial?: Post }) {
+export default function PostForm({
+  initial,
+  onSaved,
+  onCancel,
+  onDirtyChange,
+}: {
+  initial?: Post; // none = a new post
+  onSaved?: () => void;
+  onCancel: () => void;
+  onDirtyChange?: (dirty: boolean) => void;
+}) {
   const router = useRouter();
   const isNew = !initial;
   const [slugTouched, setSlugTouched] = useState(false);
@@ -47,10 +56,10 @@ export default function PostForm({ initial }: { initial?: Post }) {
     changes: toPayload,
     save: (f) => savePost(toPayload(f), isNew),
     onSaved: () => {
-      // A new post now exists: carry on editing it at its own address, so the next save updates it.
-      if (isNew) router.replace(`/admin/posts/${form.slug}`);
-      else router.refresh();
+      onSaved?.();
+      router.refresh();
     },
+    onDirtyChange,
   });
 
   // The preview parses on demand only (not while writing). Code is shown without colours here: the site colours it.
@@ -168,15 +177,6 @@ export default function PostForm({ initial }: { initial?: Post }) {
         )}
       </FormCard>
 
-      {!isNew && initial?.status === "published" && (
-        <p className="text-sm text-muted">
-          Live at{" "}
-          <Link href={`/blog/${initial.slug}`} className="text-accent underline underline-offset-4" target="_blank">
-            /blog/{initial.slug}
-          </Link>
-        </p>
-      )}
-
       <SaveBar
         dirty={dirty}
         pending={pending}
@@ -187,7 +187,7 @@ export default function PostForm({ initial }: { initial?: Post }) {
           discard();
           setSlugTouched(false);
         }}
-        onCancel={() => router.push("/admin/posts")}
+        onCancel={onCancel}
       />
     </form>
   );

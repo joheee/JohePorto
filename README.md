@@ -14,7 +14,7 @@ A personal portfolio for a DevOps and cloud engineer, with a private admin. All 
   - **Site speed:** a button that runs Google PageSpeed Insights on the live site and keeps the history.
 - **SEO and resume:** link previews, sitemap, structured data, and an ATS-friendly PDF at `/resume.pdf` built from your data.
 - **Security:** nonce-based CSP, security headers, 3-hour admin sessions.
-- **Blog:** Markdown posts written in the admin (`/admin/posts`, drafts, tags, live preview) and published at `/blog`, styled as a terminal: a searchable listing, code blocks as terminal windows with server-side syntax colours and copy buttons, callouts, a heading outline, and a "latest posts" section on the home page.
+- **Blog:** Markdown posts written in the admin (`/admin/blogs`: the public list with New, Edit and Delete in a modal, drafts, tags, live preview) and published at `/blog`, styled as a terminal: a searchable listing, code blocks as terminal windows with server-side syntax colours and copy buttons, callouts, a heading outline, and a "latest posts" section on the home page.
 
 ## Tech stack
 
