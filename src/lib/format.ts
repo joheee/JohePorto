@@ -101,9 +101,9 @@ export function formatMonthYear(month: number, year: number): string {
   return `${MONTH_NAMES[month - 1]} ${year}`;
 }
 
-// Oldest first by month and year; projects from the same month are ordered by title.
+// Newest first by month and year; projects from the same month are ordered by title.
 export function sortProjectsByDate<T extends { month: number; year: number; title: string }>(items: T[]): T[] {
-  return [...items].sort((a, b) => a.year * 12 + a.month - (b.year * 12 + b.month) || a.title.localeCompare(b.title));
+  return [...items].sort((a, b) => b.year * 12 + b.month - (a.year * 12 + a.month) || a.title.localeCompare(b.title));
 }
 
 // How an entry of the profile is named when the editor asks the server to delete it. The page and the server

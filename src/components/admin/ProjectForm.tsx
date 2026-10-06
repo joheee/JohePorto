@@ -165,7 +165,7 @@ export default function ProjectForm({
 
         <div className="max-w-md space-y-1.5">
           <DateSelects label="Created" month={form.month} year={form.year} onMonth={(v) => set("month", v)} onYear={(v) => set("year", v)} />
-          <p className="text-xs leading-5 text-muted">When you made it. Projects appear on your site oldest first by this date.</p>
+          <p className="text-xs leading-5 text-muted">When you made it. Projects appear on your site newest first by this date.</p>
         </div>
       </FormCard>
 

@@ -44,7 +44,7 @@ describe("buildResume", () => {
     expect(data.experience[1].org).toBe("Acme, Remote");
   });
 
-  it("lists projects newest first (the site lists them oldest first), using the description as bullets", () => {
+  it("lists projects newest first (like the site), using the description as bullets", () => {
     expect(data.projects.map((p) => p.title)).toEqual(["Newer", "Older"]);
     expect(data.projects[0].bullets).toEqual(["VPC and EKS", "Modular code"]);
   });

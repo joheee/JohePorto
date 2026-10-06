@@ -14,7 +14,7 @@ function withLegacyDate(data: FirebaseFirestore.DocumentData) {
   return saved ? { ...data, month: saved.getUTCMonth() + 1, year: saved.getUTCFullYear() } : data;
 }
 
-// All projects, oldest first by their month and year. Invalid documents are skipped. Cached across
+// All projects, newest first by their month and year. Invalid documents are skipped. Cached across
 // requests like the profile (see settings.ts); a failed read throws, so it is never cached.
 const readProjects = unstable_cache(
   async (): Promise<Project[]> => {

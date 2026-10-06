@@ -114,13 +114,13 @@ describe("formatMonthYear and sortProjectsByDate", () => {
   it("formats a month and year", () => {
     expect(formatMonthYear(3, 2025)).toBe("Mar 2025");
   });
-  it("sorts oldest first, ties by title", () => {
+  it("sorts newest first, ties by title", () => {
     const list = [
       { title: "B", month: 5, year: 2026 },
       { title: "A", month: 5, year: 2026 },
       { title: "Old", month: 12, year: 2025 },
     ];
-    expect(sortProjectsByDate(list).map((p) => p.title)).toEqual(["Old", "A", "B"]);
+    expect(sortProjectsByDate(list).map((p) => p.title)).toEqual(["A", "B", "Old"]);
   });
 });
 

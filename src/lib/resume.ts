@@ -84,7 +84,7 @@ export function buildResume(profile: Profile, projects: Project[]): ResumeData {
       bullets: toBullets(e.summary),
     })),
     education: sortExperienceNewestFirst(profile.education).map(education),
-    // Newest first, like a resume (the site lists projects oldest first).
+    // Newest first, like a resume (like the site).
     projects: [...projects]
       .sort((a, b) => b.year * 12 + b.month - (a.year * 12 + a.month) || a.title.localeCompare(b.title))
       .map((p) => ({
