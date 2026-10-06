@@ -22,3 +22,9 @@ export function adminPath(pathname: string): string | null {
 }
 
 export const PROMPT_HOST = "portfolio";
+
+// The blog pages continue the prompt too: :~/blog, and :~/blog/<slug> inside a post.
+export function blogPath(pathname: string): string | null {
+  const clean = pathname.replace(/\/+$/, "");
+  return clean === "/blog" || clean.startsWith("/blog/") ? `~${clean}` : null;
+}

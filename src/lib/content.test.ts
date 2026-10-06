@@ -12,6 +12,15 @@ describe("publicNavLinks", () => {
   });
 });
 
+describe("publicNavLinks and the blog", () => {
+  it("adds Blog last, only when a post is published", () => {
+    expect(publicNavLinks(false, false).map((l) => l.label)).not.toContain("Blog");
+    expect(publicNavLinks(false, true).map((l) => l.label)).toEqual(["About", "Projects", "Experience", "Contact", "Blog"]);
+    expect(publicNavLinks(true, true).map((l) => l.label)).toEqual(["About", "Projects", "Experience", "Reviews", "Contact", "Blog"]);
+    expect(publicNavLinks(false, true).at(-1)?.href).toBe("/blog");
+  });
+});
+
 describe("siteSectionLinks (the editor always has the Reviews section)", () => {
   it("lists Reviews before Contact", () => {
     expect(siteSectionLinks.map((l) => l.label)).toEqual(["About", "Projects", "Experience", "Reviews", "Contact"]);

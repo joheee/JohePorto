@@ -1,4 +1,4 @@
-import type { EducationItem, ExperienceItem, Profile, Project, ReviewItem, SkillGroup, SocialLink } from "@/types/content";
+import type { EducationItem, ExperienceItem, Post, Profile, Project, ReviewItem, SkillGroup, SocialLink } from "@/types/content";
 import { skillKey } from "./skills";
 
 export class ValidationError extends Error {}
@@ -204,4 +204,39 @@ export function parseProject(input: unknown): Project {
 // link still load (and can be edited) instead of disappearing.
 export function assertHasLink(project: Project): void {
   if (project.links.length === 0) fail("Add at least one link");
+}
+
+// "new" is the address of the editor's new-post page, so it can never be a post.
+const RESERVED_POST_SLUGS = ["new"];
+
+// Tags are lower case, with spaces turned into hyphens ("Cloud Run" -> "cloud-run"), without duplicates.
+function tags(v: unknown): string[] {
+  const seen = new Set<string>();
+  return strings(v ?? [], "Tags", 8, 30)
+    .map((t) => t.toLowerCase().replace(/\s+/g, "-"))
+    .filter((t) => !seen.has(t) && !!seen.add(t));
+}
+
+// The editable fields of a post. Its dates are not sent by the editor: the server sets them (see savePost),
+// so the two date fields come back empty here.
+export function parsePost(input: unknown): Post {
+  const o = (input ?? {}) as Record<string, unknown>;
+
+  const slug = text(o.slug, "Slug", 60, true);
+  if (!SLUG_RE.test(slug)) fail("Slug may only contain lowercase letters, numbers and hyphens");
+  if (RESERVED_POST_SLUGS.includes(slug)) fail(`"${slug}" can't be used as a slug`);
+
+  const status = o.status ?? "draft";
+  if (status !== "draft" && status !== "published") fail("Status must be draft or published");
+
+  return {
+    slug,
+    title: line(o.title, "Title", 120, true),
+    excerpt: line(o.excerpt, "Excerpt", 200, true),
+    content: text(o.content, "Content", 60000, true),
+    tags: tags(o.tags),
+    status: status as Post["status"],
+    publishedAt: isoDateTime(o.publishedAt, "Published at"),
+    updatedAt: isoDateTime(o.updatedAt, "Updated at"),
+  };
 }

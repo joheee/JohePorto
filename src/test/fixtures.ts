@@ -1,4 +1,4 @@
-import type { EducationItem, ExperienceItem, Profile, Project, ReviewItem } from "@/types/content";
+import type { EducationItem, ExperienceItem, Post, PostSummary, Profile, Project, ReviewItem } from "@/types/content";
 
 // Small, valid sample data for tests. Override what a test cares about: `job({ current: true })`.
 export const job = (o: Partial<ExperienceItem> = {}): ExperienceItem => ({
@@ -72,3 +72,21 @@ export const profile = (o: Partial<Profile> = {}): Profile => ({
   reviews: [],
   ...o,
 });
+
+export const post = (o: Partial<Post> = {}): Post => ({
+  slug: "pgbackrest-backup",
+  title: "PostgreSQL backups with pgBackRest",
+  excerpt: "Full and differential backups with point-in-time recovery.",
+  content: "## Why\n\nBecause restores matter.",
+  tags: ["postgres", "backup"],
+  status: "published",
+  publishedAt: "2026-09-21T08:00:00.000Z",
+  updatedAt: "2026-09-21T08:00:00.000Z",
+  ...o,
+});
+
+export const postSummary = (o: Partial<PostSummary> = {}): PostSummary => {
+  const { content, ...rest } = post();
+  void content;
+  return { ...rest, readingMinutes: 3, ...o };
+};

@@ -82,10 +82,23 @@ describe("NavPath", () => {
     expect(text(again.container)).toBe(":~/admin");
   });
 
-  it("in the admin, is never hidden by width (the tabs move into the menu below laptop width)", () => {
+  it("in the admin, steps aside from lg up (the five tabs need the room) but shows below it", () => {
     pathname.value = "/admin/site";
-    const cls = render(<NavPath />).container.querySelector("p")!.className;
+    const cls = render(<NavPath />).container.querySelector("p")!.className.split(" ");
+    expect(cls).toContain("lg:hidden");
     expect(cls).not.toContain("hidden");
+  });
+
+  it("on the public pages, is never hidden by width", () => {
+    pathname.value = "/blog";
+    expect(render(<NavPath />).container.querySelector("p")!.className).not.toContain("hidden");
+  });
+
+  it("continues the prompt on the blog pages", () => {
+    pathname.value = "/blog";
+    expect(text(render(<NavPath />).container)).toBe(":~/blog");
+    pathname.value = "/blog/my-post";
+    expect(text(render(<NavPath />).container)).toBe(":~/blog/my-post");
   });
 
   it("shows nothing on the login page or any other page", () => {

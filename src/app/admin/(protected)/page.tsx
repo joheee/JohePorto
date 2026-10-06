@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { adminDb } from "@/lib/firebase-admin";
 import { timeAgo } from "@/lib/format";
 import { getMessages } from "@/lib/messages";
+import { getAllPosts } from "@/lib/posts";
 import { getProjects } from "@/lib/projects";
 import { getProfile, getProfileReadAt } from "@/lib/settings";
 import RecentMessages from "@/components/admin/RecentMessages";
@@ -55,9 +56,10 @@ export default async function AdminDashboard() {
   const admin = await requireAdmin();
   const db = adminDb();
 
-  const [profile, projects, recent, totalSnap, readSnap, profileDoc, readAt] = await Promise.all([
+  const [profile, projects, posts, recent, totalSnap, readSnap, profileDoc, readAt] = await Promise.all([
     getProfile(),
     getProjects(),
+    getAllPosts(),
     getMessages(5),
     db.collection("messages").count().get(),
     db.collection("messages").where("read", "==", true).count().get(),
@@ -71,6 +73,8 @@ export default async function AdminDashboard() {
   const companies = new Set(profile.experience.map((e) => e.company.trim().toLowerCase())).size;
   const lastSaved = profileDoc.exists ? profileDoc.data()?.updatedAt?.toDate?.() : undefined;
   const firstName = profile.name.split(" ")[0];
+  const published = posts.filter((p) => p.status === "published").length;
+  const drafts = posts.length - published;
 
   return (
     <div className="space-y-10">
@@ -117,7 +121,13 @@ export default async function AdminDashboard() {
           value={String(profile.experience.length)}
           note={profile.experience.length === 0 ? "Nothing added yet" : `${profile.experience.length === 1 ? "role" : "roles"} at ${companies} ${companies === 1 ? "company" : "companies"}`}
         />
-        <StatCard icon="post" label="Posts" value="–" note="Blog coming soon" />
+        <StatCard
+          href="/admin/posts"
+          icon="post"
+          label="Posts"
+          value={String(posts.length)}
+          note={posts.length === 0 ? "Write your first one" : `${published} published${drafts > 0 ? `, ${drafts} ${drafts === 1 ? "draft" : "drafts"}` : ""}`}
+        />
       </section>
 
       {/* Recent messages and the system status side by side from lg, stacked below it. minmax(0, …): without it

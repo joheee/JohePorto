@@ -6,7 +6,8 @@ import { track } from "@/lib/track";
 
 // A small icon button: copies `text`, then shows a check for two seconds. There is no visible word, so `label` is
 // its accessible name and tooltip ("Copy email address") and `copiedLabel` is announced once it has copied.
-export default function CopyButton({ text, label, copiedLabel, track: event }: { text: string; label: string; copiedLabel: string; track?: string }) {
+// `dark`: for a window that is dark in every theme (the code blocks of a post), where the theme's own colours would not read.
+export default function CopyButton({ text, label, copiedLabel, track: event, dark = false }: { text: string; label: string; copiedLabel: string; track?: string; dark?: boolean }) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -24,7 +25,13 @@ export default function CopyButton({ text, label, copiedLabel, track: event }: {
         aria-label={copied ? copiedLabel : label}
         title={copied ? copiedLabel : label}
         className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
-          copied ? "border-emerald-600/50 text-emerald-700 dark:text-emerald-400" : "border-border text-muted hover:border-accent hover:text-accent"
+          dark
+            ? copied
+              ? "border-emerald-500/50 text-emerald-400"
+              : "border-white/15 text-zinc-300 hover:border-violet-400 hover:text-violet-300"
+            : copied
+              ? "border-emerald-600/50 text-emerald-700 dark:text-emerald-400"
+              : "border-border text-muted hover:border-accent hover:text-accent"
         }`}
       >
         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

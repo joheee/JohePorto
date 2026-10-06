@@ -8,7 +8,7 @@ import { buildSkillIndex, canonicalizeStack } from "@/lib/skills";
 import { getProfile, loadProfile } from "@/lib/settings";
 import { adminDb } from "@/lib/firebase-admin";
 import type { EducationItem, ExperienceItem, ReviewItem } from "@/types/content";
-import { SLUG_RE, ValidationError, assertHasLink, parseProfile, parseProject } from "@/lib/validation";
+import { SLUG_RE, ValidationError, assertHasLink, parsePost, parseProfile, parseProject } from "@/lib/validation";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -124,6 +124,36 @@ export async function deleteProject(slug: string): Promise<ActionResult> {
   return guard(async () => {
     if (typeof slug !== "string" || !SLUG_RE.test(slug)) throw new ValidationError("Invalid project");
     await adminDb().collection("projects").doc(slug).delete();
+  });
+}
+
+// Saves a post (the slug is the document ID). The first time it is published it gets its publish date; after that
+// the date stays, even if the post goes back to draft and is published again.
+export async function savePost(input: unknown, isNew: boolean): Promise<ActionResult> {
+  return guard(async () => {
+    const { slug, ...post } = parsePost(input);
+    const ref = adminDb().collection("posts").doc(slug);
+    const existing = await ref.get();
+    if (isNew && existing.exists) throw new ValidationError("A post with this slug already exists");
+    if (!isNew && !existing.exists) throw new ValidationError("Post not found");
+
+    const publishedAt = existing.data()?.publishedAt ?? (post.status === "published" ? Timestamp.fromDate(new Date()) : null);
+    await ref.set({
+      title: post.title,
+      excerpt: post.excerpt,
+      content: post.content,
+      tags: post.tags,
+      status: post.status,
+      publishedAt,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+  });
+}
+
+export async function deletePost(slug: string): Promise<ActionResult> {
+  return guard(async () => {
+    if (typeof slug !== "string" || !SLUG_RE.test(slug)) throw new ValidationError("Invalid post");
+    await adminDb().collection("posts").doc(slug).delete();
   });
 }
 

@@ -1,3 +1,4 @@
+import { getPosts } from "@/lib/posts";
 import { getProfile } from "@/lib/settings";
 import BrandLink from "./BrandLink";
 import AdminActions from "./AdminActions";
@@ -10,8 +11,8 @@ import NavPath from "./NavPath";
 import ThemeToggle from "./ThemeToggle";
 
 export default async function Navbar() {
-  const profile = await getProfile();
-  const links = publicNavLinks(profile.reviews.length > 0);
+  const [profile, posts] = await Promise.all([getProfile(), getPosts()]);
+  const links = publicNavLinks(profile.reviews.length > 0, posts.length > 0);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">

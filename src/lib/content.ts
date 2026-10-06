@@ -43,14 +43,13 @@ export const defaultProfile: Profile = {
   reviews: [],
 };
 
-// Add { label: "Blog", href: "/blog" } here once the blog exists: a link to a missing page is a 404
-// for visitors, a console error, and a broken internal link for search engines.
 // The admin area's tabs, shown in the same navbar instead of the public links.
 export const adminNavLinks = [
   { label: "Dashboard", href: "/admin" },
   { label: "Site", href: "/admin/site" },
   { label: "Messages", href: "/admin/messages" },
   { label: "Analytics", href: "/admin/analytics" },
+  { label: "Posts", href: "/admin/posts" },
 ];
 
 // The page-section bar under the navbar on /admin/site (same sections as the public links).
@@ -69,7 +68,9 @@ export const navLinks = [
   { label: "Contact", href: "/#contact" },
 ];
 
-// The public links, with Reviews before Contact when the Reviews section exists (a link to a missing section
-// would scroll nowhere).
-export const publicNavLinks = (hasReviews: boolean) =>
-  hasReviews ? [...navLinks.slice(0, 3), { label: "Reviews", href: "/#reviews" }, ...navLinks.slice(3)] : navLinks;
+// The public links. Reviews (before Contact) and Blog (last) are only there when they have something to show: a
+// link to an empty section would scroll nowhere, and an empty blog is not worth a visit.
+export const publicNavLinks = (hasReviews: boolean, hasPosts = false) => {
+  const links = hasReviews ? [...navLinks.slice(0, 3), { label: "Reviews", href: "/#reviews" }, ...navLinks.slice(3)] : navLinks;
+  return hasPosts ? [...links, { label: "Blog", href: "/blog" }] : links;
+};

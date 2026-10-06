@@ -76,3 +76,20 @@ export type Message = {
   createdAt: string; // ISO datetime (Firestore Timestamp)
   read: boolean; // messages saved before this field existed count as unread
 };
+
+export type PostStatus = "draft" | "published";
+
+// Stored in Firestore as `posts/{slug}`. Dates are ISO strings here (Firestore Timestamps never reach components).
+export type Post = {
+  slug: string;
+  title: string;
+  excerpt: string; // one or two lines for the list, the home page and the search-result description
+  content: string; // Markdown
+  tags: string[];
+  status: PostStatus;
+  publishedAt: string; // ISO datetime of the first publish; "" while it has never been published
+  updatedAt: string; // ISO datetime of the last save
+};
+
+// What the lists need: the post without its body, plus the reading time worked out from it.
+export type PostSummary = Omit<Post, "content"> & { readingMinutes: number };

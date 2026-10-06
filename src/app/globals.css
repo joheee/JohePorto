@@ -480,3 +480,42 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+/* Blog code blocks (see components/blog/CodeBlock.tsx and lib/highlight.ts). The window is dark in every theme,
+   so the syntax colours are one palette, each at least 4.5:1 on #0b0d12. The numbers are a CSS counter, which
+   is neither selected nor copied. */
+:root {
+  --shiki-foreground: #e4e4e7;
+  --shiki-background: #0b0d12;
+  --shiki-token-keyword: #c4a7ff;
+  --shiki-token-function: #7dd3fc;
+  --shiki-token-string: #86efac;
+  --shiki-token-string-expression: #86efac;
+  --shiki-token-constant: #fdba74;
+  --shiki-token-comment: #8e8e9a;
+  --shiki-token-parameter: #fda4af;
+  --shiki-token-punctuation: #a1a1aa;
+  --shiki-token-link: #7dd3fc;
+}
+
+.code {
+  counter-reset: ln;
+}
+
+.code-ln {
+  counter-increment: ln;
+  padding-left: 3.25rem;
+  position: relative;
+  white-space: pre;
+}
+
+.code-ln::before {
+  content: counter(ln);
+  content: counter(ln) / "";
+  position: absolute;
+  left: 0;
+  width: 2.25rem;
+  text-align: right;
+  color: #7d7d89;
+  user-select: none;
+}

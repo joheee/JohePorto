@@ -9,16 +9,16 @@ A personal portfolio for a DevOps and cloud engineer, with a private admin. All 
 - **Public site, styled as an infra console:** a hero terminal (typed role, pitch, `terraform plan` of your skills), career-uptime strip, skills as a CI pipeline, projects as files, experience as GitHub-style releases, reviews as PR approvals, and a contact form drawn as an API request builder.
 - **Themes:** ten VS Code-style colour themes (Aura Soft Dark by default, Dracula, Nord, Tokyo Night, Gruvbox Light and more), picked from the navbar.
 - **Admin (owner-only):**
-  - Dashboard with cache refresh, system status and resume check; site editor; message inbox.
+  - Dashboard with cache refresh, system status and resume check; site editor; blog editor; message inbox.
   - **Analytics:** cookie-free, first-party visit counts (sources, funnel, clicks, countries, tracked links).
   - **Site speed:** a button that runs Google PageSpeed Insights on the live site and keeps the history.
 - **SEO and resume:** link previews, sitemap, structured data, and an ATS-friendly PDF at `/resume.pdf` built from your data.
 - **Security:** nonce-based CSP, security headers, 3-hour admin sessions.
-- **Planned:** blog.
+- **Blog:** Markdown posts written in the admin (`/admin/posts`, drafts, tags, live preview) and published at `/blog`, styled as a terminal: a searchable listing, code blocks as terminal windows with server-side syntax colours and copy buttons, callouts, a heading outline, and a "latest posts" section on the home page.
 
 ## Tech stack
 
-Next.js 16, React 19, TypeScript, Tailwind CSS 4, Motion, Firebase (Firestore and Auth), `@react-pdf/renderer`, Vitest. Hosted on Vercel.
+Next.js 16, React 19, TypeScript, Tailwind CSS 4, Motion, Firebase (Firestore and Auth), `@react-pdf/renderer`, `marked` and Shiki (blog), Vitest. Hosted on Vercel.
 
 ## Getting started
 

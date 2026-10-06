@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { adminPath, sectionPath, shellUser } from "./navPath";
+import { adminPath, blogPath, sectionPath, shellUser } from "./navPath";
 
 describe("shellUser", () => {
   it("lower-cases the whole name and turns spaces into hyphens", () => {
@@ -41,5 +41,18 @@ describe("adminPath", () => {
     expect(adminPath("/admin/login")).toBeNull();
     expect(adminPath("/")).toBeNull();
     expect(adminPath("/administrator")).toBeNull(); // not under /admin/
+  });
+});
+
+describe("blogPath", () => {
+  it("is the blog and each post under it", () => {
+    expect(blogPath("/blog")).toBe("~/blog");
+    expect(blogPath("/blog/")).toBe("~/blog");
+    expect(blogPath("/blog/my-post")).toBe("~/blog/my-post");
+  });
+  it("is null elsewhere", () => {
+    expect(blogPath("/")).toBeNull();
+    expect(blogPath("/blogger")).toBeNull();
+    expect(blogPath("/admin/posts")).toBeNull();
   });
 });
