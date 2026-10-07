@@ -515,8 +515,8 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Blog code blocks (see components/blog/CodeBlock.tsx and lib/highlight.ts). The window is dark in every theme,
-   so the syntax colours are one palette, each at least 4.5:1 on #0b0d12. The numbers are a CSS counter, which
+/* Blog code blocks (see components/blog/CodeBlock.tsx and lib/highlight.ts). The window follows the theme
+   (--term-*), so the syntax colours are one palette per mode, each at least 4.5:1 on the cards. The numbers are a CSS counter, which
    is neither selected nor copied. */
 :root {
   --shiki-foreground: #e4e4e7;
@@ -530,6 +530,19 @@ body {
   --shiki-token-parameter: #fda4af;
   --shiki-token-punctuation: #a1a1aa;
   --shiki-token-link: #7dd3fc;
+}
+
+[data-mode="light"] {
+  --shiki-foreground: #1f2937;
+  --shiki-token-keyword: #6d28d9;
+  --shiki-token-function: #0369a1;
+  --shiki-token-string: #166534;
+  --shiki-token-string-expression: #166534;
+  --shiki-token-constant: #9a3412;
+  --shiki-token-comment: var(--term-dim);
+  --shiki-token-parameter: #be123c;
+  --shiki-token-punctuation: #4b5563;
+  --shiki-token-link: #0369a1;
 }
 
 .code {
@@ -550,6 +563,6 @@ body {
   left: 0;
   width: 2.25rem;
   text-align: right;
-  color: #7d7d89;
+  color: var(--term-dim);
   user-select: none;
 }

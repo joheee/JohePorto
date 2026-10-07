@@ -6,7 +6,7 @@ import { track } from "@/lib/track";
 
 // A small icon button: copies `text`, then shows a check for two seconds. There is no visible word, so `label` is
 // its accessible name and tooltip ("Copy email address") and `copiedLabel` is announced once it has copied.
-// `dark`: for a window that is dark in every theme (the code blocks of a post), where the theme's own colours would not read.
+// `dark`: for a terminal window (the code blocks of a post), which uses the --term-* colours.
 export default function CopyButton({ text, label, copiedLabel, track: event, dark = false }: { text: string; label: string; copiedLabel: string; track?: string; dark?: boolean }) {
   const [copied, setCopied] = useState(false);
 
@@ -27,8 +27,8 @@ export default function CopyButton({ text, label, copiedLabel, track: event, dar
         className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
           dark
             ? copied
-              ? "border-emerald-500/50 text-emerald-400"
-              : "border-white/15 text-zinc-300 hover:border-violet-400 hover:text-violet-300"
+              ? "border-term-ok/50 text-term-ok"
+              : "border-term-edge text-term-dim hover:border-term-role hover:text-term-role"
             : copied
               ? "border-emerald-600/50 text-emerald-700 dark:text-emerald-400"
               : "border-border text-muted hover:border-accent hover:text-accent"
