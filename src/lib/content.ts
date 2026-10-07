@@ -46,9 +46,9 @@ export const defaultProfile: Profile = {
 // The admin area's tabs, shown in the same navbar instead of the public links.
 export const adminNavLinks = [
   { label: "Dashboard", href: "/admin" },
-  { label: "Site", href: "/admin/site" },
   { label: "Messages", href: "/admin/messages" },
   { label: "Analytics", href: "/admin/analytics" },
+  { label: "Site", href: "/admin/site" },
   { label: "Blogs", href: "/admin/blogs" },
 ];
 
