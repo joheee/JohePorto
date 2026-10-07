@@ -159,6 +159,25 @@
   --accent-foreground: #fffbef;
 }
 
+/* Hero terminal colours. They follow the active theme: surface, text, muted text and the role line come from
+   the theme tokens (all measured >= 4.5:1 against --card); green and red are fixed per mode, light enough
+   on dark cards and dark enough on light ones. */
+:root {
+  --term-bg: var(--card);
+  --term-fg: var(--foreground);
+  --term-dim: var(--muted);
+  --term-role: var(--accent);
+  --term-ok: #34d399;
+  --term-err: #fca5a5;
+  --term-edge: color-mix(in srgb, var(--foreground) 16%, transparent);
+  --term-bar: color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+
+[data-mode="light"] {
+  --term-ok: #065f46;
+  --term-err: #b91c1c;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -167,6 +186,14 @@
   --color-card: var(--card);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-term-bg: var(--term-bg);
+  --color-term-fg: var(--term-fg);
+  --color-term-dim: var(--term-dim);
+  --color-term-role: var(--term-role);
+  --color-term-ok: var(--term-ok);
+  --color-term-err: var(--term-err);
+  --color-term-edge: var(--term-edge);
+  --color-term-bar: var(--term-bar);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -322,11 +349,11 @@ summary:focus-visible {
   }
 }
 
-/* The typed-output area of the hero terminal: a thin, quiet scrollbar that suits the always-dark card
-   (the browser default is a wide, light bar that looks out of place in every theme). */
+/* The typed-output area of the hero terminal: a thin, quiet scrollbar in the terminal's own text colour
+   (the browser default is a wide bar that looks out of place in every theme). */
 .term-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 0.22) transparent;
+  scrollbar-color: color-mix(in srgb, var(--term-fg) 28%, transparent) transparent;
 }
 
 .term-cursor {

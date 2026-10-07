@@ -5,7 +5,7 @@ import { complete, runCommand, type TermEffect, type TermLine, type TerminalData
 import { applyTheme } from "@/lib/themes";
 import { track } from "@/lib/track";
 
-const TONE = { ok: "text-emerald-400", add: "text-emerald-400", dim: "text-zinc-400", text: "text-zinc-200", err: "text-red-400" };
+const TONE = { ok: "text-term-ok", add: "text-term-ok", dim: "text-term-dim", text: "text-term-fg", err: "text-term-err" };
 const MAX_LINES = 300;
 
 type Entry = { id: number; command: string; lines: TermLine[] };
@@ -116,7 +116,7 @@ export default function TerminalPrompt({ data, delay }: { data: TerminalData; de
           {entries.map((entry) => (
             <div key={entry.id}>
               <p className="whitespace-pre-wrap break-words">
-                <span aria-hidden className="text-emerald-400">$</span> {entry.command}
+                <span aria-hidden className="text-term-ok">$</span> {entry.command}
               </p>
               {entry.lines.map((l, i) => (
                 <p key={i} className={`min-h-6 whitespace-pre-wrap break-words pl-4 ${TONE[l.tone ?? "text"]}`}>
@@ -128,7 +128,7 @@ export default function TerminalPrompt({ data, delay }: { data: TerminalData; de
         </div>
       )}
       <label className="relative flex items-center gap-2 whitespace-nowrap">
-        <span aria-hidden className="text-emerald-400">$</span>
+        <span aria-hidden className="text-term-ok">$</span>
         <span className="sr-only">Terminal command. Type help for the list of commands.</span>
         <input
           ref={input}
@@ -145,12 +145,12 @@ export default function TerminalPrompt({ data, delay }: { data: TerminalData; de
           autoCapitalize="none"
           autoCorrect="off"
           enterKeyHint="send"
-          className="peer min-w-0 flex-1 bg-transparent font-mono text-[13px] leading-6 text-zinc-100 caret-zinc-200 outline-none"
+          className="peer min-w-0 flex-1 bg-transparent font-mono text-[13px] leading-6 text-term-fg caret-term-fg outline-none"
         />
         {/* The blinking block while nobody has focused or typed (the same cursor as before); decoration */}
-        <span aria-hidden className="term-cursor pointer-events-none absolute left-4 inline-block h-4 w-2 bg-zinc-300 peer-focus:hidden peer-[:not(:placeholder-shown)]:hidden" />
-        <span aria-hidden className="pointer-events-none absolute left-8 text-zinc-400 peer-focus:hidden peer-[:not(:placeholder-shown)]:hidden max-sm:hidden">
-          type <span className="text-zinc-300">help</span>
+        <span aria-hidden className="term-cursor pointer-events-none absolute left-4 inline-block h-4 w-2 bg-term-fg peer-focus:hidden peer-[:not(:placeholder-shown)]:hidden" />
+        <span aria-hidden className="pointer-events-none absolute left-8 text-term-dim peer-focus:hidden peer-[:not(:placeholder-shown)]:hidden max-sm:hidden">
+          type <span className="text-term-fg">help</span>
         </span>
       </label>
     </div>
