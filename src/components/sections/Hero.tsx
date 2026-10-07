@@ -3,6 +3,10 @@ import { buildConsole } from "@/lib/console";
 import { careerUptime } from "@/lib/career";
 import { experienceStats, sortExperienceNewestFirst } from "@/lib/format";
 import { getProfile } from "@/lib/settings";
+import { getProjects } from "@/lib/projects";
+import { shellUser } from "@/lib/navPath";
+import { formatPeriod } from "@/lib/format";
+import type { TerminalData } from "@/lib/terminal";
 import CareerUptime from "./CareerUptime";
 import InfraConsole from "./InfraConsole";
 
@@ -24,11 +28,26 @@ function Cursor() {
 // `action`: extra controls shown in the corner (the editor puts its Edit button there).
 // `anchorBase`: where the in-page links point; "" keeps them on the current page (the editor preview).
 export default async function Hero({ action, anchorBase = "/" }: { action?: React.ReactNode; anchorBase?: string }) {
-  const profile = await getProfile();
+  const [profile, projects] = await Promise.all([getProfile(), getProjects()]);
   const stats = experienceStats(profile.experience, profile.skills.length);
   // The newest role you are still in (nothing to maintain: it follows Settings > Experience).
   const current = sortExperienceNewestFirst(profile.experience).find((e) => e.current);
   const consoleLines = buildConsole({ roles: profile.roles, pitch: profile.pitch, skills: profile.skills, status: profile.status });
+  // What the typeable terminal can answer with (small: this is sent to the browser)
+  const terminalData: TerminalData = {
+    user: shellUser(profile.name),
+    name: profile.name,
+    email: profile.email,
+    location: profile.location,
+    status: profile.status,
+    roles: profile.roles,
+    pitch: profile.pitch,
+    bio: profile.bio,
+    skillGroups: profile.skillGroups.map((g) => ({ name: g.name, items: g.items.map((i) => i.name) })),
+    socials: profile.socials,
+    experience: sortExperienceNewestFirst(profile.experience).map((e) => ({ role: e.role, company: e.company, period: formatPeriod(e) })),
+    projects: projects.map((p) => ({ slug: p.slug, title: p.title, year: p.year })),
+  };
   const uptime = careerUptime(profile.experience);
   const summary = stats.map((s) => `${s.value} ${s.label}`).join(" · ");
 
@@ -64,7 +83,7 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
 
         {consoleLines.length > 0 && (
           <div className="rise min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center" style={rise(1)}>
-            <InfraConsole lines={consoleLines} />
+            <InfraConsole lines={consoleLines} data={terminalData} />
           </div>
         )}
 

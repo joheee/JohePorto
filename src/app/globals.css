@@ -322,6 +322,13 @@ summary:focus-visible {
   }
 }
 
+/* The typed-output area of the hero terminal: a thin, quiet scrollbar that suits the always-dark card
+   (the browser default is a wide, light bar that looks out of place in every theme). */
+.term-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.22) transparent;
+}
+
 .term-cursor {
   animation: term-blink 1.1s steps(1) infinite;
 }

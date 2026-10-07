@@ -1,5 +1,7 @@
 import TypedText from "@/components/motion/TypedText";
 import { timeConsole, type ConsoleLine } from "@/lib/console";
+import type { TerminalData } from "@/lib/terminal";
+import TerminalPrompt from "./TerminalPrompt";
 
 const TONE = { ok: "text-emerald-400", add: "text-emerald-400", dim: "text-zinc-400", text: "text-zinc-200", plain: "text-zinc-300" };
 
@@ -8,9 +10,9 @@ const seconds = (n: number) => `${n.toFixed(2)}s`;
 // The hero's terminal card. It is always dark, whatever the theme, so every colour in it is a fixed one that
 // passes 4.5:1 against #0b0d12. The role and the pitch are there from the first paint and are real text for
 // screen readers; the Terraform run and the status script type and print one after another in pure CSS (see
-// .term-* in globals.css, no JavaScript needed) and are hidden from screen readers, because they only decorate.
+// .term-* in globals.css, no JavaScript needed) and are hidden from screen readers, because they only decorate. The last line is a live prompt (TerminalPrompt): visitors can type commands.
 // With reduced motion everything is simply shown.
-export default function InfraConsole({ lines }: { lines: ConsoleLine[] }) {
+export default function InfraConsole({ lines, data }: { lines: ConsoleLine[]; data: TerminalData }) {
   if (lines.length === 0) return null;
   const { timings, end } = timeConsole(lines);
 
@@ -22,7 +24,8 @@ export default function InfraConsole({ lines }: { lines: ConsoleLine[] }) {
         <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
         <span className="ml-2 font-mono text-xs text-zinc-400">infra ~ zsh</span>
       </div>
-      <div className="space-y-0.5 px-4 py-4 font-mono text-[13px] leading-6 text-zinc-200">
+      {/* The whole body scrolls when typed output makes it taller than this (data-term-body: TerminalPrompt keeps the newest line in view) */}
+      <div data-term-body data-lenis-prevent className="term-scroll max-h-[32rem] space-y-0.5 overflow-y-auto px-4 py-4 font-mono text-[13px] leading-6 text-zinc-200">
         {lines.map((line, i) => {
           const { start, typing } = timings[i];
           const anim = line.kind !== "role" && line.still ? "" : "term-line ";
@@ -56,9 +59,7 @@ export default function InfraConsole({ lines }: { lines: ConsoleLine[] }) {
             </p>
           );
         })}
-        <p aria-hidden className="term-line pt-2" style={{ "--s": seconds(end) } as React.CSSProperties}>
-          <span className="text-emerald-400">$</span> <span className="term-cursor inline-block h-4 w-2 translate-y-0.5 bg-zinc-300" />
-        </p>
+        <TerminalPrompt data={data} delay={end} />
       </div>
     </div>
   );

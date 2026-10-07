@@ -16,6 +16,7 @@ export const EVENT_NAMES = [
   "copy.email",
   "copy.clone", // the `git clone` command of a project
   "copy.curl", // the curl command of the contact form
+  "terminal.used", // a command was typed into the hero terminal
   "contact.started", // typed into the contact form
   "contact.sent", // the message was accepted
 ] as const;
