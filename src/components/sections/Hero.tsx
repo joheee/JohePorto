@@ -14,17 +14,6 @@ import InfraConsole from "./InfraConsole";
 // visible before JavaScript has loaded. That keeps Largest Contentful Paint fast.
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
-// A block cursor that blinks after a button's label while it is hovered or focused (its space is always
-// reserved, so nothing shifts). Decoration: it needs the `group` class on the button.
-function Cursor() {
-  return (
-    <span
-      aria-hidden
-      className="btn-cursor -ml-0.5 inline-block h-3.5 w-1.5 bg-current opacity-0"
-    />
-  );
-}
-
 // `action`: extra controls shown in the corner (the editor puts its Edit button there).
 // `anchorBase`: where the in-page links point; "" keeps them on the current page (the editor preview).
 export default async function Hero({ action, anchorBase = "/" }: { action?: React.ReactNode; anchorBase?: string }) {
@@ -91,31 +80,25 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
           {/* Phones: the two main actions side by side, the social links as an even row below.
               From sm up the wrappers disappear (`contents`) and everything sits in one row. */}
           {/* sm+: the wrapper is as wide as the two main buttons, and the social buttons share that width equally */}
-          <div className="rise flex flex-col gap-4 sm:w-fit" style={rise(2)}>
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+          <div className="rise flex flex-col gap-4 sm:w-fit lg:w-full lg:max-w-md" style={rise(2)}>
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap lg:grid">
               <Link
                 href={`${anchorBase}#contact`}
-                className="group inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 font-mono text-sm font-medium text-accent-foreground transition hover:brightness-110 active:translate-y-px sm:px-5"
+                className="inline-flex items-center justify-center rounded-lg bg-accent px-4 py-3 text-sm font-medium text-accent-foreground transition hover:brightness-110 active:translate-y-px sm:px-5"
               >
-                <span className="sr-only">Get in touch</span>
-                <span aria-hidden className="opacity-70">$</span>
-                <span aria-hidden>./contact.sh</span>
-                <Cursor />
-                {/* An Enter key cap: the command waiting to run */}
-                <kbd aria-hidden className="rounded border border-current/30 px-1.5 font-mono text-[11px] leading-5 opacity-80">↵</kbd>
+                Contact me
               </Link>
               <a
                 href="/resume.pdf"
                 download
-                className="group inline-flex items-center justify-center gap-2 rounded-lg border border-accent/60 px-4 py-3 font-mono text-sm font-medium text-accent transition-colors hover:bg-accent/10 active:translate-y-px sm:px-5"
+                aria-label="Download resume"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-accent/60 px-4 py-3 text-sm font-medium text-accent transition-colors hover:bg-accent/10 active:translate-y-px sm:px-5"
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />
                 </svg>
-                <span className="sr-only">Download resume</span>
-                <span aria-hidden className="sm:hidden">resume.pdf</span>
-                <span aria-hidden className="max-sm:hidden">curl -O resume.pdf</span>
-                <Cursor />
+                <span className="sm:hidden">Resume</span>
+                <span className="max-sm:hidden">Download resume</span>
               </a>
             </div>
             <div className="grid grid-cols-3 gap-3 max-[360px]:grid-cols-2 sm:auto-cols-fr sm:grid-flow-col sm:grid-cols-none">
@@ -125,11 +108,9 @@ export default async function Hero({ action, anchorBase = "/" }: { action?: Reac
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group inline-flex items-center justify-center rounded-lg border border-border px-2 py-3 font-mono text-[13px] font-medium lowercase transition-colors hover:border-accent hover:text-accent active:translate-y-px sm:px-5 sm:text-sm"
+                  className="inline-flex items-center justify-center rounded-lg border border-border px-2 py-3 text-[13px] font-medium transition-colors hover:border-accent hover:text-accent active:translate-y-px sm:px-5 sm:text-sm"
                 >
-                  <span aria-hidden>./</span>
                   {s.label}
-                  <Cursor />
                 </a>
               ))}
             </div>
