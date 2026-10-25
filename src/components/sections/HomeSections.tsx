@@ -44,8 +44,8 @@ export default async function HomeSections({ projects, preview = false, slots = 
       <CursorGlow />
       <Hero action={slots.hero} anchorBase={preview ? "" : "/"} />
       <About action={slots.about} />
-      <Projects projects={projects} action={slots.projects} cardFooter={slots.projectCard} />
       <Experience action={slots.experience} entryActions={slots.experienceEntry} educationAction={slots.education} educationActions={slots.educationEntry} />
+      <Projects projects={projects} action={slots.projects} cardFooter={slots.projectCard} />
       {showReviews && <Reviews number={pad(reviewsNumber)} action={slots.reviews} entryActions={slots.reviewEntry} />}
       {showPosts && <LatestPosts number={pad(postsNumber)} posts={posts} allHref={preview ? "/admin/blogs" : "/blog"} />}
       <Contact number={pad(contactNumber)} action={slots.contact} inertForm={preview} />

@@ -31,7 +31,7 @@ export type TermResult = { lines: TermLine[]; effect?: TermEffect };
 export type TermContext = { theme: string; history: string[]; now: Date };
 
 const FILES = ["about.md", "pitch.txt", "skills.yaml", "contact.txt", "status.txt", "resume.pdf"];
-const SECTIONS = ["about", "projects", "experience", "reviews", "blog", "contact"];
+const SECTIONS = ["about", "experience", "projects", "reviews", "blog", "contact"];
 
 export const COMMANDS = [
   "help", "whoami", "ls", "cat", "pwd", "cd", "open", "skills", "projects", "kubectl", "git", "theme",

@@ -72,7 +72,7 @@ describe("summarize", () => {
   });
 
   it("shows how far visitors got, as a share of visits, in page order", () => {
-    expect(s.journey.sections.map((x) => x.id)).toEqual(["hero", "about", "projects", "experience", "reviews", "contact"]);
+    expect(s.journey.sections.map((x) => x.id)).toEqual(["hero", "about", "experience", "projects", "reviews", "contact"]);
     const by = Object.fromEntries(s.journey.sections.map((x) => [x.id, x]));
     expect(by.hero).toEqual({ id: "hero", count: 30, share: 1 });
     expect(by.projects.count).toBe(13);

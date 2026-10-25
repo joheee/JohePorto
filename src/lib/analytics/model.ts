@@ -2,7 +2,7 @@
 // keeps daily totals only (see record.ts), never a profile of a visitor.
 
 // The sections of the home page the browser reports having scrolled to, in page order.
-export const SECTION_IDS = ["hero", "about", "projects", "experience", "reviews", "contact"] as const;
+export const SECTION_IDS = ["hero", "about", "experience", "projects", "reviews", "contact"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
 // The actions a visitor can take that are worth counting. `project.<slug>` (a click on a project's link) is

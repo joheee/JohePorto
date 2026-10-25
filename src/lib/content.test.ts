@@ -3,11 +3,11 @@ import { navLinks, publicNavLinks, siteSectionLinks } from "./content";
 
 describe("publicNavLinks", () => {
   it("is the normal list when there are no reviews, so no link points at a missing section", () => {
-    expect(publicNavLinks(false).map((l) => l.label)).toEqual(["About", "Projects", "Experience", "Contact"]);
+    expect(publicNavLinks(false).map((l) => l.label)).toEqual(["About", "Experience", "Projects", "Contact"]);
     expect(publicNavLinks(false)).toBe(navLinks);
   });
   it("puts Reviews before Contact when the section exists", () => {
-    expect(publicNavLinks(true).map((l) => l.label)).toEqual(["About", "Projects", "Experience", "Reviews", "Contact"]);
+    expect(publicNavLinks(true).map((l) => l.label)).toEqual(["About", "Experience", "Projects", "Reviews", "Contact"]);
     expect(publicNavLinks(true).find((l) => l.label === "Reviews")?.href).toBe("/#reviews");
   });
 });
@@ -15,14 +15,14 @@ describe("publicNavLinks", () => {
 describe("publicNavLinks and the blog", () => {
   it("adds Blog last, only when a post is published", () => {
     expect(publicNavLinks(false, false).map((l) => l.label)).not.toContain("Blog");
-    expect(publicNavLinks(false, true).map((l) => l.label)).toEqual(["About", "Projects", "Experience", "Contact", "Blog"]);
-    expect(publicNavLinks(true, true).map((l) => l.label)).toEqual(["About", "Projects", "Experience", "Reviews", "Contact", "Blog"]);
+    expect(publicNavLinks(false, true).map((l) => l.label)).toEqual(["About", "Experience", "Projects", "Contact", "Blog"]);
+    expect(publicNavLinks(true, true).map((l) => l.label)).toEqual(["About", "Experience", "Projects", "Reviews", "Contact", "Blog"]);
     expect(publicNavLinks(false, true).at(-1)?.href).toBe("/blog");
   });
 });
 
 describe("siteSectionLinks (the editor always has the Reviews section)", () => {
   it("lists Reviews before Contact", () => {
-    expect(siteSectionLinks.map((l) => l.label)).toEqual(["About", "Projects", "Experience", "Reviews", "Contact"]);
+    expect(siteSectionLinks.map((l) => l.label)).toEqual(["About", "Experience", "Projects", "Reviews", "Contact"]);
   });
 });

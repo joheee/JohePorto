@@ -42,7 +42,7 @@ describe("AnalyticsView with data", () => {
     const journey = panel("How far visitors get");
     const labels = within(journey).getAllByRole("listitem").map((li) => li.textContent);
     expect(labels[0]).toContain("Visited the page");
-    expect(labels.join("|")).toMatch(/Reached About.*Reached Projects.*Reached Experience.*Reached Contact.*Started the contact form.*Sent a message/);
+    expect(labels.join("|")).toMatch(/Reached About.*Reached Experience.*Reached Projects.*Reached Contact.*Started the contact form.*Sent a message/);
     expect(labels.join("|")).not.toContain("Reached Reviews"); // nobody reached it, so no empty row
     expect(labels.join("|")).not.toContain("Top of the page");
   });

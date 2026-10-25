@@ -8,7 +8,7 @@ export default function Projects({ projects, action, cardFooter }: { projects: P
   return (
     <Section
       id="projects"
-      number="02"
+      number="03"
       title="Projects"
       actions={action}
     >

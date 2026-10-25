@@ -35,7 +35,7 @@ export default async function Experience({
   const isLatest = (i: number, e: { current: boolean; endYear: number | null }) => i === 0 && running(e);
 
   return (
-    <Section id="experience" number="03" title="Experience" actions={action}>
+    <Section id="experience" number="02" title="Experience" actions={action}>
       {experience.length === 0 ? (
         <p className="text-muted">Nothing here yet.</p>
       ) : (

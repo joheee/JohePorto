@@ -4,8 +4,8 @@ import type { SectionId } from "./model";
 export const SECTION_LABELS: Record<SectionId, string> = {
   hero: "Top of the page",
   about: "About",
-  projects: "Projects",
   experience: "Experience",
+  projects: "Projects",
   reviews: "Reviews",
   contact: "Contact",
 };

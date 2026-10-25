@@ -55,16 +55,16 @@ export const adminNavLinks = [
 // The page-section bar under the navbar on /admin/site (same sections as the public links).
 export const siteSectionLinks = [
   { label: "About", href: "/admin/site#about" },
-  { label: "Projects", href: "/admin/site#projects" },
   { label: "Experience", href: "/admin/site#experience" },
+  { label: "Projects", href: "/admin/site#projects" },
   { label: "Reviews", href: "/admin/site#reviews" },
   { label: "Contact", href: "/admin/site#contact" },
 ];
 
 export const navLinks = [
   { label: "About", href: "/#about" },
-  { label: "Projects", href: "/#projects" },
   { label: "Experience", href: "/#experience" },
+  { label: "Projects", href: "/#projects" },
   { label: "Contact", href: "/#contact" },
 ];
 
