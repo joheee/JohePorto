@@ -26,7 +26,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
 
   if (reduce) return <>{children}</>;
   return (
-    <ReactLenis root options={{ anchors: true, lerp: 0.1 }}>
+    <ReactLenis root options={{ anchors: true, lerp: 0.1, allowNestedScroll: true }}>
       {children}
     </ReactLenis>
   );

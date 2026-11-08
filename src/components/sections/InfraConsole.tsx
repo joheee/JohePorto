@@ -25,7 +25,7 @@ export default function InfraConsole({ lines, data }: { lines: ConsoleLine[]; da
         <span className="ml-2 font-mono text-xs text-term-dim">infra ~ zsh</span>
       </div>
       {/* The whole body scrolls when typed output makes it taller than this (data-term-body: TerminalPrompt keeps the newest line in view) */}
-      <div data-term-body data-lenis-prevent className="term-scroll max-h-[32rem] space-y-0.5 overflow-y-auto px-4 py-4 font-mono text-[13px] leading-6 text-term-fg">
+      <div data-term-body className="term-scroll max-h-[32rem] space-y-0.5 overflow-y-auto px-4 py-4 font-mono text-[13px] leading-6 text-term-fg">
         {lines.map((line, i) => {
           const { start, typing } = timings[i];
           const anim = line.kind !== "role" && line.still ? "" : "term-line ";
