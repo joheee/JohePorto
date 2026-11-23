@@ -11,6 +11,7 @@ const s = StyleSheet.create({
   name: { fontFamily: "Times-Bold", fontSize: 22, lineHeight: 1.1, textAlign: "center" },
   contact: { marginTop: 6, textAlign: "center", fontSize: 10 },
   link: { color: "#000", textDecoration: "none" },
+  titleLink: { color: "#000", textDecoration: "underline" },
   heading: { marginTop: 10, paddingBottom: 1, borderBottomWidth: 0.8, borderBottomColor: "#000", fontFamily: "Times-Bold", fontSize: 12.5 },
   entry: { marginTop: 5 },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
@@ -32,7 +33,7 @@ function Entry({ entry, projectStyle = false }: { entry: ResumeEntry; projectSty
         <View style={s.row}>
           <Text style={[s.left, s.bold]}>
             {entry.href ? (
-              <Link src={entry.href} style={s.link}>
+              <Link src={entry.href} style={s.titleLink}>
                 {entry.title}
               </Link>
             ) : (
