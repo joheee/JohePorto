@@ -31,7 +31,13 @@ function Entry({ entry, projectStyle = false }: { entry: ResumeEntry; projectSty
       <View wrap={false} minPresenceAhead={40}>
         <View style={s.row}>
           <Text style={[s.left, s.bold]}>
-            {entry.title}
+            {entry.href ? (
+              <Link src={entry.href} style={s.link}>
+                {entry.title}
+              </Link>
+            ) : (
+              entry.title
+            )}
             {projectStyle && entry.detail ? <Text style={s.italic}>{`  |  ${entry.detail}`}</Text> : null}
           </Text>
           <Text style={s.right}>{projectStyle ? entry.period : entry.org}</Text>

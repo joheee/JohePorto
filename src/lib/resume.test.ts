@@ -49,6 +49,14 @@ describe("buildResume", () => {
     expect(data.projects[0].bullets).toEqual(["VPC and EKS", "Modular code"]);
   });
 
+  it("links a project title to GitHub, else its first link, else nothing", () => {
+    const l = (href: string) => ({ label: "x", href });
+    const href = (links: { label: string; href: string }[]) => buildResume(profile(), [project({ links })]).projects[0].href;
+    expect(href([l("http://example.com"), l("https://github.com/a/b")])).toBe("https://github.com/a/b");
+    expect(href([l("http://example.com")])).toBe("https://example.com");
+    expect(href([])).toBeUndefined();
+  });
+
   it("falls back to the summary when a project has no description", () => {
     expect(buildResume(profile(), [project({ description: "" })]).projects[0].bullets).toEqual(["Terraform for AWS"]);
   });

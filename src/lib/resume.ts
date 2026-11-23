@@ -9,6 +9,7 @@ export type ResumeEntry = {
   detail: string; // technologies used ("" when none)
   period: string;
   bullets: string[];
+  href?: string; // makes the title a link (projects: GitHub, else first link)
 };
 
 export type ResumeData = {
@@ -58,6 +59,11 @@ const isHost = (href: string, host: string) => {
   }
 };
 
+function projectHref(p: Project): string | undefined {
+  const l = p.links.find((x) => isHost(x.href, "github.com")) ?? p.links[0];
+  return l?.href.replace(/^http:/, "https:");
+}
+
 export function buildResume(profile: Profile, projects: Project[]): ResumeData {
   const contact: ResumeLink[] = [{ text: profile.email, href: `mailto:${profile.email}` }];
   for (const host of ["linkedin.com", "github.com"]) {
@@ -93,6 +99,7 @@ export function buildResume(profile: Profile, projects: Project[]): ResumeData {
         detail: p.stack.join(", "),
         period: monthYear(p.month, p.year),
         bullets: toBullets(p.description || p.summary),
+        href: projectHref(p),
       })),
     skills: profile.skillGroups.map((g) => ({ name: g.name, items: g.items.map((s) => s.name) })),
   };
